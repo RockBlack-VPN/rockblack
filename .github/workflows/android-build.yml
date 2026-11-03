@@ -168,6 +168,7 @@ jobs:
         id: meta
         run: |
           set -euo pipefail
+          trap 'echo "::error::Collect APKs failed (exit $?) at line $LINENO: $BASH_COMMAND"' ERR
           OUT=android/V2rayNG/app/build/outputs/apk/playstore/release
           ls -l "$OUT"
           rm -rf dist && mkdir dist
@@ -177,12 +178,15 @@ jobs:
           done
 
           BT="$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION"
+          # No pipes below: every value is read from a file so pipefail cannot
+          # fail silently on a non-matching grep.
           "$BT/aapt2" dump badging dist/RockBlack.apk > "$RUNNER_TEMP/badging.txt"
           BADGING=$(sed -n '1p' "$RUNNER_TEMP/badging.txt")
           echo "$BADGING"
-          PKG=$(echo "$BADGING" | sed -n "s/^package: name='\([^']*\)'.*/\1/p")
-          VERSION=$(echo "$BADGING" | sed -n "s/.* versionName='\([^']*\)'.*/\1/p")
+          PKG=$(sed -n "1s/^package: name='\([^']*\)'.*/\1/p" "$RUNNER_TEMP/badging.txt")
+          VERSION=$(sed -n "1s/.* versionName='\([^']*\)'.*/\1/p" "$RUNNER_TEMP/badging.txt")
           GRADLE_VERSION=$(sed -n 's/^ *versionName = "\([^"]*\)".*/\1/p' android/V2rayNG/app/build.gradle.kts)
+          echo "applicationId=$PKG versionName=$VERSION (gradle: $GRADLE_VERSION)"
           if [ "$VERSION" != "$GRADLE_VERSION" ]; then
             echo "::error::APK versionName '$VERSION' differs from build.gradle.kts '$GRADLE_VERSION'"; exit 1
           fi
@@ -193,7 +197,17 @@ jobs:
             echo "::error::versionName '$VERSION' is not X.Y.Z"; exit 1
           fi
           for apk in dist/*.apk; do
-            "$BT/apksigner" verify --print-certs "$apk" | grep -E 'Signer #1 certificate (DN|SHA-256)' | sed "s|^|$(basename "$apk"): |"
+            name=$(basename "$apk")
+            echo "::group::apksigner verify $name"
+            rc=0
+            "$BT/apksigner" verify --print-certs -v "$apk" > "$RUNNER_TEMP/apksigner.txt" 2>&1 || rc=$?
+            cat "$RUNNER_TEMP/apksigner.txt"
+            echo "::endgroup::"
+            if [ "$rc" -ne 0 ]; then
+              echo "::error::apksigner verify failed for $name (exit $rc)"
+              exit 1
+            fi
+            echo "$name: $(grep -i -m 1 'certificate SHA-256' "$RUNNER_TEMP/apksigner.txt" || echo 'certificate SHA-256 digest not reported')"
           done
           (cd dist && sha256sum RockBlack.apk RockBlack-*.apk > SHA256SUMS && cat SHA256SUMS)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
