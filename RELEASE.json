@@ -12,7 +12,25 @@
     }
   },
   "desktop": {
-    "version": null,
-    "name": "RockBlack Desktop"
+    "version": "7.25.6",
+    "name": "RockBlack Desktop 7.25.6",
+    "tag": "desktop-v7.25.6",
+    "windows": {
+      "x64": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.6/rockblack-windows-x64-setup.exe",
+      "x64_portable": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.6/rockblack-windows-x64-portable.zip",
+      "arm64_portable": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.6/rockblack-windows-arm64-portable.zip"
+    },
+    "macos": {
+      "arm64": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.6/rockblack-macos-arm64.dmg",
+      "intel": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.6/rockblack-macos-intel.dmg"
+    },
+    "linux": {
+      "x64_deb": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.6/rockblack-linux-x64.deb",
+      "arm64_deb": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.6/rockblack-linux-arm64.deb",
+      "x64_rpm": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.6/rockblack-linux-x64.rpm",
+      "arm64_rpm": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.6/rockblack-linux-arm64.rpm",
+      "x64_portable": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.6/rockblack-linux-x64-portable.zip",
+      "arm64_portable": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.6/rockblack-linux-arm64-portable.zip"
+    }
   }
 }
