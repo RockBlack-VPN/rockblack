@@ -127,13 +127,21 @@ object AppConfig {
     const val GITHUB_RAW_URL = "https://raw.githubusercontent.com"
     const val GITHUB_DOWNLOAD_URL = "$GITHUB_URL/%s/releases/latest/download"
     const val ANDROID_PACKAGE_NAME_LIST_URL = "$GITHUB_RAW_URL/2dust/androidpackagenamelist/master/proxy.txt"
-    const val APP_URL = "$GITHUB_URL/2dust/v2rayNG"
-    const val APP_API_URL = "https://api.github.com/repos/2dust/v2rayNG/releases"
+    // RockBlack: project links (see branding/README.md in the monorepo root).
+    const val APP_URL = "$GITHUB_URL/RockBlack-VPN/rockblack"
+    const val APP_API_URL = "https://api.github.com/repos/RockBlack-VPN/rockblack/releases"
     const val APP_ISSUES_URL = "$APP_URL/issues"
-    const val APP_WIKI_MODE = "$APP_URL/wiki/Mode"
-    const val APP_PRIVACY_POLICY = "$GITHUB_RAW_URL/2dust/v2rayNG/master/CR.md"
-    const val APP_PROMOTION_URL = "aHR0cHM6Ly85LjIzNDQ1Ni54eXovYWJjLmh0bWw="
-    const val TG_CHANNEL_URL = "https://t.me/github_2dust"
+    const val APP_WEBSITE_URL = "https://my.rockblack.tech"
+    const val APP_PRIVACY_POLICY = "$APP_URL/blob/main/android/PRIVACY.md"
+    const val TG_CHANNEL_URL = "https://t.me/rockblack_vpn"
+
+    /** Android releases in the monorepo are tagged `android-vX.Y.Z`. */
+    const val APP_RELEASE_TAG_PREFIX = "android-v"
+    const val APP_APK_NAME = "RockBlack"
+
+    /** Upstream project this client is based on (GPL-3.0 attribution, documentation). */
+    const val UPSTREAM_URL = "$GITHUB_URL/2dust/v2rayNG"
+    const val APP_WIKI_MODE = "$UPSTREAM_URL/wiki/Mode"
     const val DELAY_TEST_URL = "https://www.gstatic.com/generate_204"
     const val DELAY_TEST_URL2 = "https://www.google.com/generate_204"
     const val OBSERVATORY_LEAST_PING_INTERVAL = "3m"

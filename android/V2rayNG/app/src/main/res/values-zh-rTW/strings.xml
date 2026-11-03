@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">v2rayNG</string>
+    <string name="app_name" translatable="false">RockBlack</string>
     <string name="app_widget_name">開關</string>
     <string name="app_tile_name">開關</string>
     <string name="app_tile_first_use">首次使用此功能，請使用此應用程式新增伺服器</string>
@@ -14,7 +14,7 @@
     <string name="pull_down_to_refresh">請下拉重新整理！</string>
 
     <!-- Notifications -->
-    <string name="notification_channel_service">v2rayNG 服務</string>
+    <string name="notification_channel_service">RockBlack 服務</string>
     <string name="notification_channel_subscription_updates">訂閱更新</string>
     <string name="notification_channel_connection_checks">連線檢查</string>
     <string name="notification_action_stop_v2ray">停止</string>
@@ -293,6 +293,8 @@
     <string name="title_oss_license">開放原始碼授權</string>
     <string name="title_translators">翻譯貢獻者</string>
     <string name="title_tg_channel">Telegram 頻道</string>
+    <string name="title_website">官方網站</string>
+    <string name="title_upstream_credit">基於 2dust 的 v2rayNG (GPL-3.0)</string>
 
     <string name="title_pref_promotion">推廣</string>
 

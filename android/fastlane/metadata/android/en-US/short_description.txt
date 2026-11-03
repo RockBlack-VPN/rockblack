@@ -1,1 +1,1 @@
-A V2Ray client for Android, support Xray core and v2fly core
+RockBlack VPN client for Android (Xray core), based on v2rayNG

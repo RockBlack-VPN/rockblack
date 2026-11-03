@@ -364,6 +364,7 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "Desktop v${VERSION}" \
+            --latest=false \
             --notes-file notes.md \
             rockblack-*.exe rockblack-*.zip rockblack-*.dmg rockblack-*.deb rockblack-*.rpm SHA256SUMS
 

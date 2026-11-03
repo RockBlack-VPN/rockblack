@@ -1,0 +1,289 @@
+name: Android build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - '.github/workflows/android-build.yml'
+  pull_request:
+    paths:
+      - 'android/**'
+      - '.github/workflows/android-build.yml'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Publish GitHub release android-v<versionName> (requires the production signing key)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NDK_VERSION: '30.0.16248370'
+  BUILD_TOOLS_VERSION: '37.0.0'
+  # AndroidLibXrayLite tag of the android/AndroidLibXrayLite submodule; used when
+  # `git describe` cannot find the tag in the checked-out submodule.
+  XRAYLITE_FALLBACK_TAG: 'v26.10.31'
+  APP_ID: 'tech.rockblack.app'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      signed: ${{ steps.keystore.outputs.signed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          submodules: 'recursive'
+          fetch-depth: '0'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          log-accepted-android-sdk-licenses: false
+          cmdline-tools-version: '14742923'
+          packages: 'platforms;android-37.0 build-tools;${{ env.BUILD_TOOLS_VERSION }} platform-tools'
+
+      - name: Install NDK
+        run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            --channel=0 \
+            --install "ndk;${NDK_VERSION}"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+          # Same as upstream CI: pin the NDK used by AGP (native lib stripping).
+          sed -i "/^    namespace = /a\    ndkVersion = \"${NDK_VERSION}\"" android/V2rayNG/app/build.gradle.kts
+          grep -n 'ndkVersion' android/V2rayNG/app/build.gradle.kts
+
+      - name: Resolve native submodule revisions
+        run: |
+          echo "HEVTUN_REV=$(git rev-parse HEAD:android/hev-socks5-tunnel)" >> "$GITHUB_ENV"
+          pushd android/AndroidLibXrayLite
+          CURRENT_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || git describe --tags --abbrev=0 2>/dev/null || true)
+          popd
+          if [ -z "$CURRENT_TAG" ]; then
+            echo "::warning::No tag found in android/AndroidLibXrayLite, falling back to $XRAYLITE_FALLBACK_TAG"
+            CURRENT_TAG="$XRAYLITE_FALLBACK_TAG"
+          fi
+          echo "AndroidLibXrayLite tag: $CURRENT_TAG"
+          echo "CURRENT_TAG=$CURRENT_TAG" >> "$GITHUB_ENV"
+
+      - name: Restore cached libhevtun
+        id: cache-libhevtun-restore
+        uses: actions/cache/restore@v6
+        with:
+          path: android/libs
+          key: libhevtun-${{ runner.os }}-${{ env.NDK_VERSION }}-${{ env.HEVTUN_REV }}-${{ hashFiles('android/compile-hevtun.sh') }}
+
+      - name: Build libhevtun
+        if: steps.cache-libhevtun-restore.outputs.cache-hit != 'true'
+        run: bash android/compile-hevtun.sh
+
+      - name: Save libhevtun
+        if: steps.cache-libhevtun-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: android/libs
+          key: libhevtun-${{ runner.os }}-${{ env.NDK_VERSION }}-${{ env.HEVTUN_REV }}-${{ hashFiles('android/compile-hevtun.sh') }}
+
+      - name: Copy libhevtun
+        run: cp -r android/libs android/V2rayNG/app
+
+      - name: Download libv2ray
+        uses: robinraju/release-downloader@v1.13
+        with:
+          repository: '2dust/AndroidLibXrayLite'
+          tag: ${{ env.CURRENT_TAG }}
+          fileName: 'libv2ray.aar'
+          out-file-path: android/V2rayNG/app/libs/
+
+      - name: Setup Java
+        uses: actions/setup-java@v6.1.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+          cache-dependency-path: |
+            android/V2rayNG/**/*.gradle*
+            android/V2rayNG/gradle/libs.versions.toml
+            android/V2rayNG/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Decode keystore
+        id: keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ] && [ -n "$ANDROID_KEY_PASSWORD" ]; then
+            KEYSTORE="$RUNNER_TEMP/rockblack-release.p12"
+            printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$KEYSTORE"
+            echo "KEYSTORE_FILE=$KEYSTORE" >> "$GITHUB_ENV"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+            echo "Production signing key available."
+          else
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::ANDROID_* signing secrets are not available; release APKs are debug-signed and cannot be published."
+          fi
+
+      - name: Generate license report
+        continue-on-error: true
+        working-directory: android/V2rayNG
+        run: |
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          chmod 755 gradlew
+          ./gradlew --no-daemon licenseFdroidReleaseReport
+
+      - name: Build APK
+        working-directory: android/V2rayNG
+        env:
+          SIGNED: ${{ steps.keystore.outputs.signed }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          chmod 755 gradlew
+          if [ "$SIGNED" = "true" ]; then
+            ./gradlew --no-daemon assemblePlaystoreRelease \
+              -Pandroid.injected.signing.store.file="$KEYSTORE_FILE" \
+              -Pandroid.injected.signing.store.type=pkcs12 \
+              -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD"
+          else
+            ./gradlew --no-daemon assemblePlaystoreRelease -Prockblack.debugSignRelease=true
+          fi
+
+      - name: Collect APKs
+        id: meta
+        run: |
+          set -euo pipefail
+          OUT=android/V2rayNG/app/build/outputs/apk/playstore/release
+          ls -l "$OUT"
+          rm -rf dist && mkdir dist
+          cp "$OUT/RockBlack-universal.apk" dist/RockBlack.apk
+          for abi in arm64-v8a armeabi-v7a x86_64 x86; do
+            cp "$OUT/RockBlack-$abi.apk" "dist/RockBlack-$abi.apk"
+          done
+
+          BT="$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION"
+          "$BT/aapt2" dump badging dist/RockBlack.apk > "$RUNNER_TEMP/badging.txt"
+          BADGING=$(sed -n '1p' "$RUNNER_TEMP/badging.txt")
+          echo "$BADGING"
+          PKG=$(echo "$BADGING" | sed -n "s/^package: name='\([^']*\)'.*/\1/p")
+          VERSION=$(echo "$BADGING" | sed -n "s/.* versionName='\([^']*\)'.*/\1/p")
+          GRADLE_VERSION=$(sed -n 's/^ *versionName = "\([^"]*\)".*/\1/p' android/V2rayNG/app/build.gradle.kts)
+          if [ "$VERSION" != "$GRADLE_VERSION" ]; then
+            echo "::error::APK versionName '$VERSION' differs from build.gradle.kts '$GRADLE_VERSION'"; exit 1
+          fi
+          if [ "$PKG" != "$APP_ID" ]; then
+            echo "::error::Unexpected applicationId '$PKG' (expected $APP_ID)"; exit 1
+          fi
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::versionName '$VERSION' is not X.Y.Z"; exit 1
+          fi
+          for apk in dist/*.apk; do
+            "$BT/apksigner" verify --print-certs "$apk" | grep -E 'Signer #1 certificate (DN|SHA-256)' | sed "s|^|$(basename "$apk"): |"
+          done
+          (cd dist && sha256sum RockBlack.apk RockBlack-*.apk > SHA256SUMS && cat SHA256SUMS)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Built RockBlack Android $VERSION"
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: rockblack-android-${{ steps.meta.outputs.version }}${{ steps.keystore.outputs.signed != 'true' && '-debug-signed' || '' }}
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Unit tests (informational)
+        if: github.event_name != 'workflow_dispatch' || !inputs.release
+        continue-on-error: true
+        working-directory: android/V2rayNG
+        run: ./gradlew --no-daemon :app:testPlaystoreDebugUnitTest
+
+  release:
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.release
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.publish.outputs.tag }}
+    steps:
+      - name: Require production signing and main branch
+        env:
+          SIGNED: ${{ needs.build.outputs.signed }}
+        run: |
+          if [ "$SIGNED" != "true" ]; then
+            echo "::error::Refusing to publish: the APKs were not signed with the production key (ANDROID_* secrets missing)."
+            exit 1
+          fi
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Releases are only published from main (got $GITHUB_REF)."
+            exit 1
+          fi
+
+      - name: Download APK artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: rockblack-android-${{ needs.build.outputs.version }}
+          path: dist
+
+      - name: Create release
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="android-v$VERSION"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release $TAG already exists. Bump versionName/versionCode before releasing."
+            exit 1
+          fi
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG already exists."
+            exit 1
+          fi
+          (cd dist && sha256sum -c SHA256SUMS)
+          cat > notes.md <<EOF
+          RockBlack for Android $VERSION (based on [v2rayNG](https://github.com/2dust/v2rayNG) $VERSION).
+
+          - \`RockBlack.apk\` — universal APK (recommended)
+          - \`RockBlack-<abi>.apk\` — per-ABI APKs
+          - \`SHA256SUMS\` — checksums
+
+          applicationId: \`$APP_ID\`
+          EOF
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Android v$VERSION" \
+            --latest=false \
+            --notes-file notes.md \
+            dist/RockBlack.apk \
+            dist/RockBlack-arm64-v8a.apk \
+            dist/RockBlack-armeabi-v7a.apk \
+            dist/RockBlack-x86_64.apk \
+            dist/RockBlack-x86.apk \
+            dist/SHA256SUMS
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+  manifest:
+    needs: [build, release]
+    if: github.event_name == 'workflow_dispatch' && inputs.release
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-manifest.yml
+    with:
+      tag: android-v${{ needs.build.outputs.version }}
+    secrets: inherit

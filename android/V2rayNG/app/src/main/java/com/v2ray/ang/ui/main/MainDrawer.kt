@@ -23,15 +23,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.v2ray.ang.R
 import com.v2ray.ang.ui.compose.AppDivider
-import com.v2ray.ang.ui.compose.LocalDarkTheme
 import com.v2ray.ang.ui.compose.verticalScrollbar
 
 enum class MainDestination(@DrawableRes val iconRes: Int, @StringRes val labelRes: Int) {
@@ -40,7 +36,8 @@ enum class MainDestination(@DrawableRes val iconRes: Int, @StringRes val labelRe
     Routing(R.drawable.ic_routing_24dp, R.string.routing_settings_title),
     UserAssets(R.drawable.ic_file_24dp, R.string.title_user_asset_setting),
     Settings(R.drawable.ic_settings_24dp, R.string.title_settings),
-    Promotion(R.drawable.ic_promotion_24dp, R.string.title_pref_promotion),
+    // RockBlack: upstream "Promotion" entry now opens the RockBlack website.
+    Promotion(R.drawable.ic_website_24dp, R.string.title_website),
     Logcat(R.drawable.ic_logcat_24dp, R.string.title_logcat),
     CheckUpdate(R.drawable.ic_check_update_24dp, R.string.update_check_for_update),
     BackupRestore(R.drawable.ic_restore_24dp, R.string.title_configuration_backup_restore),
@@ -89,16 +86,12 @@ fun MainDrawerContent(drawerState: DrawerState, onNavigate: (MainDestination) ->
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    val isDarkTheme = LocalDarkTheme.current
                     Image(
-                        painter = painterResource(R.mipmap.ic_launcher_foreground),
+                        painter = painterResource(R.drawable.ic_brand_logo),
                         contentDescription = null,
-                        modifier = Modifier.size(120.dp),
-                        colorFilter = if (isDarkTheme) {
-                            ColorFilter.tint(Color.White, BlendMode.SrcIn)
-                        } else {
-                            null
-                        }
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .size(96.dp)
                     )
                     Text(
                         text = stringResource(R.string.app_name),

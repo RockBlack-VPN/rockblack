@@ -156,10 +156,8 @@ class MainActivity : HelperBaseComponentActivity() {
             MainDestination.BackupRestore -> Intent(this, BackupActivity::class.java)
             MainDestination.About -> Intent(this, AboutActivity::class.java)
             MainDestination.Promotion -> {
-                Utils.openUri(
-                    this,
-                    "${Utils.decode(AppConfig.APP_PROMOTION_URL)}?t=${System.currentTimeMillis()}"
-                )
+                // RockBlack: the upstream promotion link is replaced by the project website.
+                Utils.openUri(this, AppConfig.APP_WEBSITE_URL)
                 return
             }
         }

@@ -10,7 +10,8 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.v2ray.ang"
+        // RockBlack: own applicationId; the Kotlin namespace stays com.v2ray.ang.
+        applicationId = "tech.rockblack.app"
         minSdk = 24
         targetSdk = 37
         versionCode = 755
@@ -45,6 +46,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // RockBlack CI: without the production keystore (forks, PRs) the release
+            // APKs are signed with the debug key so they stay installable for testing.
+            // Production signing is injected by CI via -Pandroid.injected.signing.*.
+            if (project.findProperty("rockblack.debugSignRelease") == "true") {
+                signingConfig = signingConfigs.getByName("debug")
+            }
         }
     }
 
@@ -92,7 +99,7 @@ android {
                 .map { it as com.android.build.gradle.internal.api.ApkVariantOutputImpl }
                 .forEach { output ->
                     val abi = output.getFilter("ABI") ?: "universal"
-                    output.outputFileName = "v2rayNG_${variant.versionName}-fdroid_${abi}.apk"
+                    output.outputFileName = "RockBlack-fdroid-${abi}.apk"
                     if (versionCodes.containsKey(abi)) {
                         output.versionCodeOverride =
                             (100 * variant.versionCode + versionCodes[abi]!!).plus(5000000)
@@ -112,7 +119,7 @@ android {
                     else
                         "universal"
 
-                    output.outputFileName = "v2rayNG_${variant.versionName}_${abi}.apk"
+                    output.outputFileName = "RockBlack-${abi}.apk"
                     if (versionCodes.containsKey(abi)) {
                         output.versionCodeOverride =
                             (1000000 * versionCodes[abi]!!).plus(variant.versionCode)

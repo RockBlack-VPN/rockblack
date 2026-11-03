@@ -458,7 +458,9 @@ object Utils {
      *
      * @return True if the package is Xray, false otherwise.
      */
-    fun isXray(): Boolean = BuildConfig.APPLICATION_ID.startsWith("com.v2ray.ang")
+    // RockBlack ships the Xray core under applicationId tech.rockblack.app.
+    fun isXray(): Boolean = BuildConfig.APPLICATION_ID.startsWith("com.v2ray.ang") ||
+            BuildConfig.APPLICATION_ID.startsWith("tech.rockblack")
 
     /**
      * Check if an IPv4 address is within an IPv4 CIDR range

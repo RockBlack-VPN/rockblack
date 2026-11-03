@@ -83,9 +83,20 @@ fun AboutScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             SettingsMenuItem(
+                icon = painterResource(R.drawable.ic_website_24dp),
+                title = stringResource(R.string.title_website),
+                onClick = { Utils.openUri(context, AppConfig.APP_WEBSITE_URL) }
+            )
+            SettingsMenuItem(
                 icon = painterResource(R.drawable.ic_source_code_24dp),
                 title = stringResource(R.string.title_source_code),
                 onClick = { Utils.openUri(context, AppConfig.APP_URL) }
+            )
+            // GPL-3.0 attribution: RockBlack is a modified version of v2rayNG.
+            SettingsMenuItem(
+                icon = painterResource(R.drawable.ic_github_24dp),
+                title = stringResource(R.string.title_upstream_credit),
+                onClick = { Utils.openUri(context, AppConfig.UPSTREAM_URL) }
             )
             SettingsMenuItem(
                 icon = painterResource(R.drawable.license_24px),

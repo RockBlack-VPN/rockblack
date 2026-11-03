@@ -45,6 +45,8 @@ V2rayNG/app/google-services.json
 *.orig
 *.class
 *.jar
+# The Gradle wrapper must be versioned for ./gradlew to work in CI.
+!V2rayNG/gradle/wrapper/gradle-wrapper.jar
 *.war
 *.ear
 
