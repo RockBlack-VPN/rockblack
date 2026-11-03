@@ -927,7 +927,7 @@ public class Utils
         {
             return blFull
                 ? $"{Global.AppName} - V{GetVersionInfo()} - {RuntimeInformation.ProcessArchitecture}"
-                : $"{Global.AppName}/{GetVersionInfo()}";
+                : $"{Global.UserAgentCompatName}/{GetVersionInfo()}";
         }
         catch (Exception ex)
         {
@@ -1177,7 +1177,7 @@ public class Utils
     {
         if (Environment.GetEnvironmentVariable(Global.LocalAppData) == "1")
         {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "v2rayN");
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Global.AppName);
         }
 
         return GetBaseDirectory();
@@ -1357,9 +1357,15 @@ public class Utils
     {
         try
         {
-            if (IsWindows() || IsMacOS())
+            if (IsWindows())
             {
                 return false;
+            }
+
+            // RockBlack ships macOS only as a DMG app bundle: update by installing a new DMG.
+            if (IsMacOS())
+            {
+                return true;
             }
 
             var exePath = GetExePath();
@@ -1369,6 +1375,11 @@ public class Utils
             if (string.IsNullOrEmpty(p))
             {
                 return false;
+            }
+
+            if (p.StartsWith("/opt/rockblack", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
             }
 
             if (p.StartsWith("/opt/v2rayN", StringComparison.OrdinalIgnoreCase))

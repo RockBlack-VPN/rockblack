@@ -2,13 +2,43 @@ namespace ServiceLib;
 
 public class Global
 {
-    public const string AppName = "v2rayN";
+    public const string AppName = "RockBlack";
+
+    // RockBlack branding (see branding/README.md in the RockBlack repository)
+    public const string BrandSiteUrl = "https://my.rockblack.tech";
+    public const string BrandRepo = "RockBlack-VPN/rockblack";
+    public const string BrandRepoUrl = "https://github.com/" + BrandRepo;
+    public const string BrandIssuesUrl = BrandRepoUrl + "/issues";
+    public const string BrandReleasesUrl = BrandRepoUrl + "/releases";
+    public const string BrandTelegramUrl = "https://t.me/rockblack_vpn";
+    public const string UpstreamProjectUrl = "https://github.com/2dust/v2rayN";
+    public const string UpstreamCredit = "Based on v2rayN by 2dust (GPL-3.0)";
+
+    /// <summary>Desktop releases in the RockBlack monorepo are tagged desktop-vX.Y.Z.</summary>
+    public const string DesktopReleaseTagPrefix = "desktop-";
+
+    /// <summary>
+    /// Product token sent as the default User-Agent for subscription requests.
+    /// Kept as "v2rayN" on purpose: subscription panels select the response format by this token.
+    /// </summary>
+    public const string UserAgentCompatName = "v2rayN";
+
+    /// <summary>Links shown in the Help menu (RockBlack resources + GPL attribution to upstream v2rayN).</summary>
+    public static List<(string Title, string Url)> GetBrandLinks() =>
+    [
+        (string.Format(ResUI.menuWebsiteItem, AppName), BrandSiteUrl),
+        ($"{AppName} GitHub", BrandRepoUrl),
+        ($"{AppName} GitHub Issues", BrandIssuesUrl),
+        ($"{AppName} Telegram", BrandTelegramUrl),
+        (UpstreamCredit, UpstreamProjectUrl),
+    ];
+
     public const string GithubUrl = "https://github.com";
     public const string GithubApiUrl = "https://api.github.com/repos";
     public const string GeoUrl = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/{0}.dat";
     public const string SingboxRulesetUrl = @"https://raw.githubusercontent.com/2dust/sing-box-rules/rule-set-{0}/{1}.srs";
 
-    public const string PromotionUrl = @"aHR0cHM6Ly85LjIzNDQ1Ni54eXovYWJjLmh0bWw=";
+    public const string PromotionUrl = BrandSiteUrl;
     public const string ConfigFileName = "guiNConfig.json";
     public const string CoreConfigFileName = "config.json";
     public const string CorePreConfigFileName = "configPre.json";
@@ -77,7 +107,7 @@ public class Global
 
     public const string UserEMail = "t@t.tt";
     public const string AutoRunRegPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    public const string AutoRunName = "v2rayNAutoRun";
+    public const string AutoRunName = "RockBlackAutoRun";
     public const string SystemProxyExceptionsWindows = "localhost;127.*;10.*;172.16.*;172.17.*;172.18.*;172.19.*;172.20.*;172.21.*;172.22.*;172.23.*;172.24.*;172.25.*;172.26.*;172.27.*;172.28.*;172.29.*;172.30.*;172.31.*;192.168.*";
     public const string SystemProxyExceptionsLinux = "localhost,127.0.0.0/8,::1";
     public const string RoutingRuleComma = "<COMMA>";
@@ -87,7 +117,7 @@ public class Global
     public const int MinFontSize = 8;
     public const int MinFontSizeCount = 13;
     public const string RebootAs = "rebootas";
-    public const string AvaAssets = "avares://v2rayN/Assets/";
+    public const string AvaAssets = "avares://RockBlack/Assets/";
     public const string LocalAppData = "V2RAYN_LOCAL_APPLICATION_DATA_V2";
     public const string V2RayLocalAsset = "V2RAY_LOCATION_ASSET";
     public const string XrayLocalAsset = "XRAY_LOCATION_ASSET";
@@ -680,7 +710,7 @@ public class Global
         { ECoreType.overtls, "ShadowsocksR-Live/overtls" },
         { ECoreType.shadowquic, "spongebob888/shadowquic" },
         { ECoreType.mieru, "enfein/mieru" },
-        { ECoreType.v2rayN, "2dust/v2rayN" },
+        { ECoreType.v2rayN, BrandRepo },
     };
 
     public static readonly List<string> OtherGeoUrls =

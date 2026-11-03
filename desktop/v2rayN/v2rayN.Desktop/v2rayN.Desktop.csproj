@@ -5,7 +5,10 @@
 		<ApplicationIcon>Assets\v2rayN.ico</ApplicationIcon>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-		<AssemblyName>v2rayN</AssemblyName>
+		<!-- RockBlack: executable is RockBlack (avares://RockBlack/...); namespaces keep v2rayN.Desktop -->
+		<AssemblyName>RockBlack</AssemblyName>
+		<RootNamespace>v2rayN.Desktop</RootNamespace>
+		<AssemblyTitle>RockBlack</AssemblyTitle>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<CETCompat>false</CETCompat>
 	</PropertyGroup>

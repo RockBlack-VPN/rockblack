@@ -73,7 +73,7 @@ public partial class CheckUpdateViewModel : MyReactiveObject
                 ShowCheckPreRelease = false,
                 CoreType = coreType,
                 IsGeoFile = false,
-                Remarks = ResUI.menuCheckUpdate + $" ({ResUI.MsgNotSupport})",
+                Remarks = $"{ResUI.MsgNotSupport}: {Global.BrandReleasesUrl}",
             };
         }
 
@@ -167,7 +167,7 @@ public partial class CheckUpdateViewModel : MyReactiveObject
             var result = await updateService.CheckHasUpdateOnly(item.CoreType.Value, item.IsCheckPreRelease, EnableUpdateViaProxy);
             if (result.Success && result.Version != null)
             {
-                await UpdateView(item.CoreType, string.Format(ResUI.MsgCheckUpdateHasNewVersion, item.CoreType, result.Version));
+                await UpdateView(item.CoreType, string.Format(ResUI.MsgCheckUpdateHasNewVersion, item.CoreTypeDisplay, result.Version));
             }
             else
             {
@@ -207,7 +207,7 @@ public partial class CheckUpdateViewModel : MyReactiveObject
             {
                 if (Utils.IsPackagedInstall())
                 {
-                    await UpdateView(_v2rayN, ResUI.MsgNotSupport);
+                    await UpdateView(_v2rayN, $"{ResUI.MsgNotSupport}: {Global.BrandReleasesUrl}");
                     continue;
                 }
                 await CheckUpdateN(item.IsCheckPreRelease);

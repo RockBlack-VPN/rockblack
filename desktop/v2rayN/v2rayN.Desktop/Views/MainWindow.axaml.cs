@@ -240,7 +240,7 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
 
     private void MenuPromotion_Click(object? sender, RoutedEventArgs e)
     {
-        ProcUtils.ProcessStart($"{Utils.Base64Decode(Global.PromotionUrl)}?t={DateTime.Now.Ticks}");
+        ProcUtils.ProcessStart(Global.PromotionUrl);
     }
 
     private void MenuSettingsSetUWP_Click(object? sender, RoutedEventArgs e)
@@ -469,10 +469,23 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
 
     private void AddHelpMenuItem()
     {
+        foreach (var (title, url) in Global.GetBrandLinks())
+        {
+            var brandItem = new MenuItem()
+            {
+                Tag = url,
+                Header = title
+            };
+            brandItem.Click += MenuItem_Click;
+            menuHelp.Items.Add(brandItem);
+        }
+        menuHelp.Items.Add(new Separator());
+
         var coreInfo = CoreInfoManager.Instance.GetCoreInfo();
         foreach (var it in coreInfo
             .Where(t => t.CoreType is not ECoreType.v2fly
-                        and not ECoreType.hysteria))
+                        and not ECoreType.hysteria
+                        and not ECoreType.v2rayN))
         {
             var item = new MenuItem()
             {

@@ -29,11 +29,11 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
             _ = UpdateFunc(false, args.GetException().Message);
         };
 
-        await UpdateFunc(false, string.Format(ResUI.MsgStartUpdating, ECoreType.v2rayN));
+        await UpdateFunc(false, string.Format(ResUI.MsgStartUpdating, Global.AppName));
         var result = await CheckUpdateAsync(downloadHandle, ECoreType.v2rayN, preRelease, blProxy);
         if (result.Success)
         {
-            await UpdateFunc(false, string.Format(ResUI.MsgParsingSuccessfully, ECoreType.v2rayN));
+            await UpdateFunc(false, string.Format(ResUI.MsgParsingSuccessfully, Global.AppName));
             await UpdateFunc(false, result.Msg);
 
             url = result.Url!;
@@ -125,7 +125,7 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
             var result = await CheckHasUpdateOnly(type, preRelease, blProxy, cancellationToken);
             if (result.Success && result.Version != null)
             {
-                var msg = string.Format(ResUI.MsgCheckUpdateHasNewVersion, type, result.Version);
+                var msg = string.Format(ResUI.MsgCheckUpdateHasNewVersion, type == ECoreType.v2rayN ? Global.AppName : type.ToString(), result.Version);
                 msgs.Add(msg);
                 AppManager.Instance.SetLastCheckUpdateResult(type, msg);
             }
@@ -174,6 +174,10 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
     {
         var coreInfo = CoreInfoManager.Instance.GetCoreInfo(type);
         var tagName = string.Empty;
+        if (type == ECoreType.v2rayN)
+        {
+            return await GetRemoteVersionRockBlack(downloadHandle, coreInfo, preRelease, blProxy, cancellationToken);
+        }
         if (preRelease || coreInfo?.LockedMaxVersion != null)
         {
             var url = coreInfo?.ReleaseApiUrl;
@@ -218,6 +222,37 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
             tagName = lastUrl?.Split("/tag/").LastOrDefault();
         }
         return new UpdateResult(true, new SemanticVersion(tagName));
+    }
+
+    /// <summary>
+    /// The RockBlack monorepo publishes several products (desktop-vX.Y.Z, android-vX.Y.Z, latest),
+    /// so "releases/latest" cannot be used: list the releases and pick the newest desktop-v* tag.
+    /// The returned version is "vX.Y.Z" (the tag without the "desktop-" prefix).
+    /// </summary>
+    private async Task<UpdateResult> GetRemoteVersionRockBlack(DownloadService downloadHandle, CoreInfo? coreInfo, bool preRelease, bool blProxy, CancellationToken cancellationToken = default)
+    {
+        var url = $"{coreInfo?.ReleaseApiUrl}?per_page=100";
+        var result = await downloadHandle.TryDownloadString(url, blProxy, Global.AppName, cancellationToken);
+        if (result.IsNullOrEmpty())
+        {
+            return new UpdateResult(false, "");
+        }
+
+        var gitHubReleases = JsonUtils.Deserialize<List<GitHubRelease>>(result);
+        var prefix = Global.DesktopReleaseTagPrefix + "v";
+        var best = gitHubReleases?
+            .Where(r => !r.Draft && (preRelease || !r.Prerelease))
+            .Where(r => r.TagName?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) == true)
+            .Select(r => new SemanticVersion(r.TagName![Global.DesktopReleaseTagPrefix.Length..]))
+            .Where(v => !v.Equals(new SemanticVersion(0, 0, 0)))
+            .OrderByDescending(v => v)
+            .FirstOrDefault();
+
+        if (best == null)
+        {
+            return new UpdateResult(false, $"{ResUI.MsgNotSupport}: {Global.BrandReleasesUrl}");
+        }
+        return new UpdateResult(true, best);
     }
 
     [GeneratedRegex(@"v?(?<version>\d+\.\d+\.\d+(?:-[0-9a-zA-Z.-]+)?(?:\+[0-9a-zA-Z.-]+)?)", RegexOptions.IgnoreCase)]
@@ -291,8 +326,12 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
                     }
                 case ECoreType.v2rayN:
                     {
+                        if (coreUrl.IsNullOrEmpty())
+                        {
+                            return new UpdateResult(false, $"{ResUI.MsgNotSupport}: {Global.BrandReleasesUrl}");
+                        }
                         curVersion = new SemanticVersion(Utils.GetVersionInfo());
-                        message = string.Format(ResUI.IsLatestN, type, curVersion.ToStandardVersionString("v"));
+                        message = string.Format(ResUI.IsLatestN, Global.AppName, curVersion.ToStandardVersionString("v"));
                         url = string.Format(coreUrl, version);
                         break;
                     }
@@ -327,21 +366,7 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
                 _ => null,
             };
 
-            if (coreInfo?.CoreType != ECoreType.v2rayN)
-            {
-                return url;
-            }
-
-            //Check for avalonia desktop windows version
-            if (File.Exists(Path.Combine(Utils.GetBaseDirectory(), "libHarfBuzzSharp.dll")))
-            {
-                url = url?.Replace(".zip", "-desktop.zip");
-            }
-
-#if V2RAYN_IS_AOT
-            url = url?.Replace(".zip", "-aot.zip");
-#endif
-
+            // RockBlack publishes only the WPF build for Windows (no -desktop / -aot variants).
             return url;
         }
         else if (Utils.IsLinux())

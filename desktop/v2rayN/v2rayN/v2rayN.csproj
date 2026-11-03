@@ -2,6 +2,10 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
+		<!-- RockBlack: executable is RockBlack.exe; namespaces/resources keep the upstream v2rayN root namespace -->
+		<AssemblyName>RockBlack</AssemblyName>
+		<RootNamespace>v2rayN</RootNamespace>
+		<AssemblyTitle>RockBlack</AssemblyTitle>
 		<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
 		<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
 		<UseWPF>true</UseWPF>

@@ -7,7 +7,7 @@
     xmlns:semi="https://irihi.tech/semi"
     xmlns:service="clr-namespace:ServiceLib;assembly=ServiceLib"
     xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
-    Name="v2rayN"
+    Name="RockBlack"
     x:DataType="vms:StatusBarViewModel"
     RequestedThemeVariant="Default">
     <Application.Resources>

@@ -1,0 +1,378 @@
+name: Desktop build
+
+# Builds the RockBlack desktop client (desktop/, based on v2rayN) for Windows, macOS and Linux.
+# Manual run with release=true publishes GitHub release desktop-v<version> with the asset
+# names fixed in branding/README.md, then refreshes RELEASE.json / README download links.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop-build.yml'
+  pull_request:
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop-build.yml'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Publish GitHub release desktop-v<version> (version from desktop/v2rayN/Directory.Build.props)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+
+jobs:
+  version:
+    name: Determine version
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      tag: ${{ steps.v.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: v
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' desktop/v2rayN/Directory.Build.props | head -n1 | tr -d '[:space:]')"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Unexpected version '$version' in desktop/v2rayN/Directory.Build.props"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=desktop-v$version" >> "$GITHUB_OUTPUT"
+          echo "Desktop version: $version (tag desktop-v$version)" >> "$GITHUB_STEP_SUMMARY"
+
+  test:
+    name: ServiceLib tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'ga'
+      - name: Test
+        working-directory: desktop
+        run: dotnet test --project ./v2rayN/ServiceLib.Tests -c Release
+
+  windows:
+    name: Windows ${{ matrix.arch }}
+    needs: version
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            bundle: windows-64
+          - arch: arm64
+            bundle: windows-arm64
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      ARCH: ${{ matrix.arch }}
+      BUNDLE: ${{ matrix.bundle }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Purge preinstalled SDKs
+        shell: pwsh
+        run: |
+          dotnet --list-sdks | % {
+            $_ -match '^\S+\s+\[(.+)\]$' > $null
+            $d = Join-Path $Matches[1] $_.Split()[0]
+            Write-Host "Removing $d"
+            rm $d -r -fo
+          }
+          dotnet --list-sdks 2>$null; $LASTEXITCODE=0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish
+        shell: pwsh
+        working-directory: desktop/v2rayN
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $out = Join-Path $env:GITHUB_WORKSPACE "dist\app\rockblack-windows-$env:ARCH"
+          "APP_DIR=$out" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          dotnet publish ./AmazTool/AmazTool.csproj -c Release -r "win-$env:ARCH" -p:SelfContained=true -p:PublishTrimmed=true -p:EnableWindowsTargeting=true -o $out
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          dotnet publish ./v2rayN/v2rayN.csproj -c Release -r "win-$env:ARCH" -p:SelfContained=true -p:EnableWindowsTargeting=true -o $out
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Get-ChildItem $out -Recurse -Include *.pdb | Remove-Item -Force
+          if (-not (Test-Path (Join-Path $out 'RockBlack.exe'))) { throw 'RockBlack.exe was not produced' }
+          Get-ChildItem $out
+
+      - name: Bundle cores (Xray-core, sing-box, mihomo, geo files)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = Join-Path $env:RUNNER_TEMP 'cores.zip'
+          $tmp = Join-Path $env:RUNNER_TEMP 'cores'
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/2dust/v2rayN-core-bin/refs/heads/master/v2rayN-$env:BUNDLE.zip" -OutFile $zip -MaximumRetryCount 5 -RetryIntervalSec 5
+          Expand-Archive -Path $zip -DestinationPath $tmp -Force
+          $bin = Get-ChildItem $tmp -Recurse -Directory -Filter bin | Select-Object -First 1
+          if (-not $bin) { throw 'bin/ not found in core bundle' }
+          Copy-Item -Path (Join-Path $bin.FullName '*') -Destination (New-Item -ItemType Directory -Force (Join-Path $env:APP_DIR 'bin')).FullName -Recurse -Force
+          if (-not (Test-Path (Join-Path $env:APP_DIR 'bin\xray\xray.exe'))) { throw 'Xray-core missing from bundle' }
+          Get-ChildItem (Join-Path $env:APP_DIR 'bin')
+
+      - name: Portable zip
+        shell: pwsh
+        working-directory: dist/app
+        run: |
+          New-Item -ItemType Directory -Force ../out | Out-Null
+          7z a -tzip "../out/rockblack-windows-$env:ARCH-portable.zip" "rockblack-windows-$env:ARCH" -mx5
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - name: Installer (Inno Setup)
+        if: matrix.arch == 'x64'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
+          $out = Join-Path $env:GITHUB_WORKSPACE 'dist\out'
+          & $iscc "/DAppVersion=$env:VERSION" "/DSourceDir=$env:APP_DIR" "/DOutputDir=$out" desktop\packaging\rockblack.iss
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          if (-not (Test-Path (Join-Path $out 'rockblack-windows-x64-setup.exe'))) { throw 'installer not produced' }
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: desktop-windows-${{ matrix.arch }}
+          path: dist/out/*
+          if-no-files-found: error
+          compression-level: 0
+
+  linux:
+    name: Linux ${{ matrix.arch }}
+    needs: version
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            bundle: linux-64
+          - arch: arm64
+            bundle: linux-arm64
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Init GlobalHotKeys submodule
+        run: git submodule update --init --depth 1 desktop/v2rayN/GlobalHotKeys
+
+      - name: Purge preinstalled SDKs
+        shell: pwsh
+        run: |
+          dotnet --list-sdks | % {
+            $_ -match '^\S+\s+\[(.+)\]$' > $null
+            $d = Join-Path $Matches[1] $_.Split()[0]
+            Write-Host "Removing $d"
+            sudo rm -rf "$d"
+          }
+          dotnet --list-sdks 2>$null; $LASTEXITCODE=0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm zip unzip
+
+      - name: Publish
+        shell: bash
+        working-directory: desktop/v2rayN
+        run: |
+          set -euo pipefail
+          out="$GITHUB_WORKSPACE/dist/app/rockblack-linux-$ARCH"
+          echo "APP_DIR=$out" >> "$GITHUB_ENV"
+          dotnet publish ./AmazTool/AmazTool.csproj -c Release -r "linux-$ARCH" -p:SelfContained=true -p:PublishTrimmed=true -o "$out"
+          dotnet publish ./v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r "linux-$ARCH" -p:SelfContained=true -o "$out"
+          find "$out" -type f \( -name '*.pdb' -o -name '*.dbg' -o -name '*.debug' \) -delete
+          test -f "$out/RockBlack"
+          ls -la "$out"
+
+      - name: Bundle cores (Xray-core, sing-box, mihomo, geo files)
+        run: bash desktop/packaging/fetch-cores.sh "${{ matrix.bundle }}" "$APP_DIR"
+
+      - name: Package deb, rpm, portable zip
+        run: bash desktop/packaging/package-linux.sh "$ARCH" "$VERSION" "$APP_DIR" dist/out
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: desktop-linux-${{ matrix.arch }}
+          path: dist/out/*
+          if-no-files-found: error
+          compression-level: 0
+
+  macos:
+    name: macOS ${{ matrix.label }}
+    needs: version
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            label: arm64
+            bundle: macos-arm64
+          - arch: x64
+            label: intel
+            bundle: macos-64
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Init GlobalHotKeys submodule
+        run: git submodule update --init --depth 1 desktop/v2rayN/GlobalHotKeys
+
+      - name: Purge preinstalled SDKs
+        shell: pwsh
+        run: |
+          dotnet --list-sdks | % {
+            $_ -match '^\S+\s+\[(.+)\]$' > $null
+            $d = Join-Path $Matches[1] $_.Split()[0]
+            Write-Host "Removing $d"
+            sudo rm -rf "$d"
+          }
+          dotnet --list-sdks 2>$null; $LASTEXITCODE=0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish
+        shell: bash
+        working-directory: desktop/v2rayN
+        run: |
+          set -euo pipefail
+          out="$GITHUB_WORKSPACE/dist/app/rockblack-macos-${{ matrix.label }}"
+          echo "APP_DIR=$out" >> "$GITHUB_ENV"
+          dotnet publish ./AmazTool/AmazTool.csproj -c Release -r "osx-$ARCH" -p:SelfContained=true -p:PublishTrimmed=true -o "$out"
+          dotnet publish ./v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r "osx-$ARCH" -p:SelfContained=true -o "$out"
+          find "$out" -type f \( -name '*.pdb' -o -name '*.dbg' -o -name '*.debug' \) -delete
+          find "$out" -name '*.dSYM' -prune -exec rm -rf {} +
+          test -f "$out/RockBlack"
+          ls -la "$out"
+
+      - name: Bundle cores (Xray-core, sing-box, mihomo, geo files)
+        run: bash desktop/packaging/fetch-cores.sh "${{ matrix.bundle }}" "$APP_DIR"
+
+      - name: Package DMG
+        run: |
+          mkdir -p dist/out
+          bash desktop/packaging/package-macos.sh "$VERSION" "$APP_DIR" "dist/out/rockblack-macos-${{ matrix.label }}.dmg"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: desktop-macos-${{ matrix.label }}
+          path: dist/out/*
+          if-no-files-found: error
+          compression-level: 0
+
+  release:
+    name: Publish release
+    if: github.event_name == 'workflow_dispatch' && inputs.release
+    needs: [version, test, windows, linux, macos]
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.version.outputs.version }}
+      TAG: ${{ needs.version.outputs.tag }}
+    steps:
+      - name: Fail if the release already exists
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release $TAG already exists. Bump <Version> in desktop/v2rayN/Directory.Build.props."
+            exit 1
+          fi
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG already exists."
+            exit 1
+          fi
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: desktop-*
+          path: dist
+          merge-multiple: true
+
+      - name: Verify assets and write SHA256SUMS
+        working-directory: dist
+        run: |
+          set -euo pipefail
+          expected=(
+            rockblack-windows-x64-setup.exe
+            rockblack-windows-x64-portable.zip
+            rockblack-windows-arm64-portable.zip
+            rockblack-macos-arm64.dmg
+            rockblack-macos-intel.dmg
+            rockblack-linux-x64.deb
+            rockblack-linux-arm64.deb
+            rockblack-linux-x64.rpm
+            rockblack-linux-arm64.rpm
+            rockblack-linux-x64-portable.zip
+            rockblack-linux-arm64-portable.zip
+          )
+          for f in "${expected[@]}"; do
+            [[ -s "$f" ]] || { echo "::error::missing asset $f"; exit 1; }
+          done
+          sha256sum "${expected[@]}" > SHA256SUMS
+          cat SHA256SUMS
+          ls -la
+
+      - name: Create release
+        working-directory: dist
+        run: |
+          set -euo pipefail
+          cat > notes.md <<EOF
+          RockBlack desktop client ${VERSION} (built from v2rayN ${VERSION}, Xray-core; sing-box and mihomo bundled).
+
+          | Platform | Download |
+          |:--|:--|
+          | Windows x64 (installer) | rockblack-windows-x64-setup.exe |
+          | Windows x64 / arm64 (portable) | rockblack-windows-x64-portable.zip, rockblack-windows-arm64-portable.zip |
+          | macOS Apple Silicon / Intel | rockblack-macos-arm64.dmg, rockblack-macos-intel.dmg |
+          | Linux deb / rpm / portable | rockblack-linux-{x64,arm64}.{deb,rpm}, rockblack-linux-{x64,arm64}-portable.zip |
+
+          Verify downloads with \`sha256sum -c SHA256SUMS\`.
+
+          Based on [v2rayN](https://github.com/2dust/v2rayN) by 2dust, GPL-3.0.
+          EOF
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Desktop v${VERSION}" \
+            --notes-file notes.md \
+            rockblack-*.exe rockblack-*.zip rockblack-*.dmg rockblack-*.deb rockblack-*.rpm SHA256SUMS
+
+  manifest:
+    name: Update download links
+    needs: [version, release]
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-manifest.yml
+    with:
+      tag: ${{ needs.version.outputs.tag }}
+    secrets: inherit

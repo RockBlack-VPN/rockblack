@@ -108,14 +108,12 @@ public sealed class CoreInfoManager
                     CoreType = ECoreType.v2rayN,
                     Url = GetCoreUrl(ECoreType.v2rayN),
                     ReleaseApiUrl = urlN.Replace(Global.GithubUrl, Global.GithubApiUrl),
-                    DownloadUrlWin64 = urlN + "/download/{0}/v2rayN-windows-64.zip",
-                    DownloadUrlWinArm64 = urlN + "/download/{0}/v2rayN-windows-arm64.zip",
-                    DownloadUrlLinux64 = urlN + "/download/{0}/v2rayN-linux-64.zip",
-                    DownloadUrlLinuxArm64 = urlN + "/download/{0}/v2rayN-linux-arm64.zip",
-                    DownloadUrlLinuxRiscV64 = urlN + "/download/{0}/v2rayN-linux-riscv64.zip",
-                    DownloadUrlLinuxLoong64 = urlN + "/download/{0}/v2rayN-linux-loong64.zip",
-                    DownloadUrlOSX64 = urlN + "/download/{0}/v2rayN-macos-64.zip",
-                    DownloadUrlOSXArm64 = urlN + "/download/{0}/v2rayN-macos-arm64.zip",
+                    // RockBlack desktop releases: tag desktop-vX.Y.Z ({0} = "vX.Y.Z"), portable zips only.
+                    // riscv64 / loong64 / macOS zips are not published (macOS updates via DMG).
+                    DownloadUrlWin64 = urlN + "/download/" + Global.DesktopReleaseTagPrefix + "{0}/rockblack-windows-x64-portable.zip",
+                    DownloadUrlWinArm64 = urlN + "/download/" + Global.DesktopReleaseTagPrefix + "{0}/rockblack-windows-arm64-portable.zip",
+                    DownloadUrlLinux64 = urlN + "/download/" + Global.DesktopReleaseTagPrefix + "{0}/rockblack-linux-x64-portable.zip",
+                    DownloadUrlLinuxArm64 = urlN + "/download/" + Global.DesktopReleaseTagPrefix + "{0}/rockblack-linux-arm64-portable.zip",
                 },
 
                 new CoreInfo

@@ -46,7 +46,8 @@ internal class Utils
             : StringComparison.Ordinal;
     }
 
-    public static string V2rayN => "v2rayN";
+    // RockBlack: the GUI executable is RockBlack(.exe)
+    public static string V2rayN => "RockBlack";
 
     public static void StartV2RayN()
     {
