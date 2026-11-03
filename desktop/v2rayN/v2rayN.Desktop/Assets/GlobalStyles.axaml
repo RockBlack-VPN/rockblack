@@ -33,6 +33,157 @@
         <Setter Property="Height" Value="{StaticResource IconButtonHeight}" />
         <Setter Property="MinWidth" Value="{StaticResource IconButtonWidth}" />
         <Setter Property="Theme" Value="{DynamicResource BorderlessButton}" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Background" Value="{DynamicResource RB.Surface2}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource RB.Outline}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!--  ===== RockBlack UI 2.0 (branding/DESIGN.md)  =====  -->
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{DynamicResource RB.Bg}" />
+    </Style>
+    <Style Selector="Button, ToggleButton, TextBox, ComboBox, NumericUpDown, AutoCompleteBox">
+        <Setter Property="CornerRadius" Value="12" />
+    </Style>
+    <Style Selector="DataGrid">
+        <Setter Property="GridLinesVisibility" Value="None" />
+        <Setter Property="RowHeight" Value="38" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="DataGridRow">
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+
+    <Style Selector="Border.rbCard">
+        <Setter Property="Background" Value="{DynamicResource RB.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource RB.Outline}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="20" />
+    </Style>
+    <Style Selector="Border.rbPanel">
+        <Setter Property="Background" Value="{DynamicResource RB.Bg}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource RB.Outline}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Padding" Value="16,12" />
+    </Style>
+    <Style Selector="Border.rbChip">
+        <Setter Property="Background" Value="{DynamicResource RB.PrimarySoft}" />
+        <Setter Property="CornerRadius" Value="999" />
+        <Setter Property="Padding" Value="10,3" />
+    </Style>
+    <Style Selector="Border.rbChip TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource RB.Primary}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Border.rbChipMuted">
+        <Setter Property="Background" Value="{DynamicResource RB.Surface2}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource RB.Outline}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="999" />
+        <Setter Property="Padding" Value="10,3" />
+    </Style>
+    <Style Selector="Border.rbChipMuted TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TextBlock.rbTitle">
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style Selector="TextBlock.rbSection">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+    </Style>
+    <Style Selector="TextBlock.rbCaption">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <!--  sidebar navigation  -->
+    <Style Selector="Button.rbNav, ToggleButton.rbNav">
+        <Setter Property="Theme" Value="{DynamicResource BorderlessButton}" />
+        <Setter Property="Height" Value="42" />
+        <Setter Property="Margin" Value="0,2" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="Button.rbNav:pointerover, ToggleButton.rbNav:pointerover">
+        <Setter Property="Background" Value="{DynamicResource RB.Surface2}" />
+        <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+    </Style>
+    <Style Selector="ToggleButton.rbNav:checked">
+        <Setter Property="Background" Value="{DynamicResource RB.PrimarySoft}" />
+        <Setter Property="Foreground" Value="{DynamicResource RB.Primary}" />
+    </Style>
+    <Style Selector=":is(Button).rbNav PathIcon">
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="Margin" Value="0,0,12,0" />
+        <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+    </Style>
+
+    <!--  the connect button  -->
+    <Style Selector="Button.rbConnect">
+        <Setter Property="Width" Value="148" />
+        <Setter Property="Height" Value="148" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <Ellipse
+                        Name="glow"
+                        Margin="10"
+                        Fill="{DynamicResource RB.Primary}"
+                        Opacity="0">
+                        <Ellipse.Effect>
+                            <BlurEffect Radius="24" />
+                        </Ellipse.Effect>
+                    </Ellipse>
+                    <Ellipse
+                        Name="disc"
+                        Margin="6"
+                        Fill="{DynamicResource RB.Surface2}"
+                        Stroke="{DynamicResource RB.Outline}"
+                        StrokeThickness="3" />
+                    <PathIcon
+                        Width="56"
+                        Height="56"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Data="M16.56,5.44L15.11,6.89C16.84,7.94 18,9.83 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12C6,9.83 7.16,7.94 8.88,6.88L7.44,5.44C5.36,6.88 4,9.28 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12C20,9.28 18.64,6.88 16.56,5.44M13,3H11V13H13"
+                        Foreground="{TemplateBinding Foreground}" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.rbConnect:pointerover /template/ Ellipse#disc">
+        <Setter Property="Stroke" Value="{DynamicResource RB.Primary}" />
+    </Style>
+    <Style Selector="Button.rbConnect.connected">
+        <Setter Property="Foreground" Value="{DynamicResource RB.OnPrimary}" />
+    </Style>
+    <Style Selector="Button.rbConnect.connected /template/ Ellipse#disc">
+        <Setter Property="Fill" Value="{DynamicResource RB.Primary}" />
+        <Setter Property="Stroke" Value="{DynamicResource RB.Primary}" />
+    </Style>
+    <Style Selector="Button.rbConnect.connected /template/ Ellipse#glow">
+        <Setter Property="Opacity" Value="0.35" />
     </Style>
 
 </Styles>

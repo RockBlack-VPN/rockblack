@@ -1770,4 +1770,25 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="menuNewUpdate" xml:space="preserve">
     <value>New Update</value>
   </data>
+  <data name="RbConnected" xml:space="preserve">
+    <value>Csatlakozva</value>
+  </data>
+  <data name="RbNotConnected" xml:space="preserve">
+    <value>Nincs csatlakozva</value>
+  </data>
+  <data name="RbLogs" xml:space="preserve">
+    <value>Naplók</value>
+  </data>
+  <data name="RbActiveServer" xml:space="preserve">
+    <value>Aktív szerver</value>
+  </data>
+  <data name="RbConnectTip" xml:space="preserve">
+    <value>Rendszerproxy be- vagy kikapcsolása</value>
+  </data>
+  <data name="RbServers" xml:space="preserve">
+    <value>Szerverek</value>
+  </data>
+  <data name="RbSubscriptions" xml:space="preserve">
+    <value>Előfizetések</value>
+  </data>
 </root>

@@ -13,9 +13,9 @@
     x:TypeArguments="vms:MsgViewModel"
     Style="{StaticResource ViewGlobal}"
     mc:Ignorable="d">
-    <DockPanel Margin="{StaticResource Margin4}">
+    <DockPanel Margin="0,6,0,0">
         <WrapPanel
-            Margin="{StaticResource Margin8}"
+            Margin="0,0,0,8"
             VerticalAlignment="Center"
             DockPanel.Dock="Top"
             Orientation="Horizontal">
@@ -32,8 +32,8 @@
                 ToolTip="{x:Static resx:ResUI.MsgFilterTitle}" />
             <Button
                 x:Name="btnCopy"
-                Width="24"
-                Height="24"
+                Width="30"
+                Height="30"
                 Margin="{StaticResource MarginLeftRight8}"
                 AutomationProperties.Name="{x:Static resx:ResUI.menuMsgViewCopyAll}"
                 Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
@@ -42,8 +42,8 @@
             </Button>
             <Button
                 x:Name="btnClear"
-                Width="24"
-                Height="24"
+                Width="30"
+                Height="30"
                 Margin="{StaticResource MarginLeftRight8}"
                 AutomationProperties.Name="{x:Static resx:ResUI.menuMsgViewClear}"
                 Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
@@ -76,9 +76,14 @@
         <TextBox
             Name="txtMsg"
             VerticalAlignment="Stretch"
+            Padding="6,4"
             AcceptsReturn="True"
+            Background="Transparent"
             BorderThickness="0"
+            FontFamily="{StaticResource RB.MonoFont}"
             FontSize="{DynamicResource StdFontSize-1}"
+            Foreground="{DynamicResource RB.TextMuted}"
+            materialDesign:TextFieldAssist.DecorationVisibility="Collapsed"
             HorizontalScrollBarVisibility="Auto"
             IsReadOnly="True"
             IsReadOnlyCaretVisible="True"
@@ -86,7 +91,7 @@
             TextAlignment="Left"
             TextWrapping="Wrap"
             UndoLimit="0"
-            VerticalScrollBarVisibility="Visible">
+            VerticalScrollBarVisibility="Auto">
             <TextBox.ContextMenu>
                 <ContextMenu Style="{StaticResource DefContextMenu}">
                     <MenuItem

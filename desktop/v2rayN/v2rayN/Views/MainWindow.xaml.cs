@@ -30,6 +30,14 @@ public partial class MainWindow
         btnNewUpdate.Click += MenuCheckUpdate_Click;
         menuBackupAndRestore.Click += MenuBackupAndRestore_Click;
 
+        //RockBlack sidebar: the upstream top menus open as side menus next to their nav item
+        navServers.Click += NavMenu_Click;
+        navSubscriptions.Click += NavMenu_Click;
+        navSettings.Click += NavMenu_Click;
+        navHelp.Click += NavMenu_Click;
+        navLogs.Checked += (_, _) => SetLogsPanelVisible(true);
+        navLogs.Unchecked += (_, _) => SetLogsPanelVisible(false);
+
         pbTheme.Content ??= new ThemeSettingView();
 
         this.WhenActivated(disposables =>
@@ -65,6 +73,7 @@ public partial class MainWindow
             //setting
             this.BindCommand(ViewModel, vm => vm.OptionSettingCmd, v => v.menuOptionSetting).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.RoutingSettingCmd, v => v.menuRoutingSetting).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.RoutingSettingCmd, v => v.navRouting).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.DNSSettingCmd, v => v.menuDNSSetting).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.FullConfigTemplateCmd, v => v.menuFullConfigTemplate).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.GlobalHotkeySettingCmd, v => v.menuGlobalHotkeySetting).DisposeWith(disposables);
@@ -441,7 +450,7 @@ public partial class MainWindow
             brandItem.Click += MenuItem_Click;
             menuHelp.Items.Add(brandItem);
         }
-        menuHelp.Items.Add(new Separator() { Margin = new Thickness(-40, 5, -40, 5) });
+        menuHelp.Items.Add(new Separator());
 
         var coreInfo = CoreInfoManager.Instance.GetCoreInfo();
         foreach (var it in coreInfo
@@ -456,6 +465,50 @@ public partial class MainWindow
             };
             item.Click += MenuItem_Click;
             menuHelp.Items.Add(item);
+        }
+    }
+
+    private void NavMenu_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { ContextMenu: { } menu } element)
+        {
+            menu.PlacementTarget = element;
+            menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Right;
+            menu.HorizontalOffset = 8;
+            menu.IsOpen = true;
+        }
+    }
+
+    private GridLength _logsLength = new(1, GridUnitType.Star);
+
+    /// <summary>Collapsible logs panel (view only): hides the log/Clash tabs of the current layout.</summary>
+    private void SetLogsPanelVisible(bool visible)
+    {
+        switch (_config.UiItem.MainGirdOrientation)
+        {
+            case EGirdOrientation.Horizontal:
+                if (!visible && gridMain.ColumnDefinitions[2].Width.Value > 0)
+                {
+                    _logsLength = gridMain.ColumnDefinitions[2].Width;
+                }
+                gridMain.ColumnDefinitions[2].Width = visible ? _logsLength : new GridLength(0);
+                cardLogs.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+                splitMain.Visibility = cardLogs.Visibility;
+                break;
+
+            case EGirdOrientation.Vertical:
+                if (!visible && gridMain1.RowDefinitions[2].Height.Value > 0)
+                {
+                    _logsLength = gridMain1.RowDefinitions[2].Height;
+                }
+                gridMain1.RowDefinitions[2].Height = visible ? _logsLength : new GridLength(0);
+                cardLogs1.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+                splitMain1.Visibility = cardLogs1.Visibility;
+                break;
+
+            default:
+                tabMain2.SelectedIndex = visible ? 1 : 0;
+                break;
         }
     }
 

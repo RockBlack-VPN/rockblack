@@ -15,6 +15,8 @@ public partial class StatusBarView : ReactiveUserControl<StatusBarViewModel>
 
         txtRunningServerDisplay.Tapped += TxtRunningServerDisplay_Tapped;
         txtRunningInfoDisplay.Tapped += TxtRunningServerDisplay_Tapped;
+        txtServerName.Tapped += TxtRunningServerDisplay_Tapped;
+        btnConnect.Click += BtnConnect_Click;
 
         this.WhenActivated(disposables =>
         {
@@ -29,6 +31,24 @@ public partial class StatusBarView : ReactiveUserControl<StatusBarViewModel>
 
             this.Bind(ViewModel, vm => vm.SystemProxySelected, v => v.cmbSystemProxy.SelectedIndex).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.SelectedRouting, v => v.cmbRoutings2.SelectedItem).DisposeWith(disposables);
+
+            //RockBlack status card (view only)
+            this.WhenAnyValue(v => v.ViewModel.BlSystemProxySet, v => v.ViewModel.BlSystemProxyPac, (set, pac) => set || pac)
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(UpdateConnectState)
+                .DisposeWith(disposables);
+            this.WhenAnyValue(v => v.ViewModel.RunningServerDisplay)
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(UpdateServerCard)
+                .DisposeWith(disposables);
+            this.WhenAnyValue(v => v.ViewModel.SpeedProxyDisplay)
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(s => chipSpeedProxy.IsVisible = s.IsNotEmpty())
+                .DisposeWith(disposables);
+            this.WhenAnyValue(v => v.ViewModel.SpeedDirectDisplay)
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(s => chipSpeedDirect.IsVisible = s.IsNotEmpty())
+                .DisposeWith(disposables);
 
             ViewModel.SetClipboardDataInteraction.RegisterHandler(async interaction =>
             {
@@ -92,4 +112,59 @@ public partial class StatusBarView : ReactiveUserControl<StatusBarViewModel>
     {
         ViewModel?.TestServerAvailability();
     }
+
+    #region RockBlack status card
+
+    /// <summary>The connect button toggles the existing "set / clear system proxy" commands.</summary>
+    private void BtnConnect_Click(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel == null)
+        {
+            return;
+        }
+        var connected = ViewModel.BlSystemProxySet || ViewModel.BlSystemProxyPac;
+        System.Windows.Input.ICommand command = connected ? ViewModel.SystemProxyClearCmd : ViewModel.SystemProxySetCmd;
+        if (command.CanExecute(null))
+        {
+            command.Execute(null);
+        }
+    }
+
+    private void UpdateConnectState(bool connected)
+    {
+        btnConnect.Classes.Set("connected", connected);
+        txtConnectState.Text = connected ? ResUI.RbConnected : ResUI.RbNotConnected;
+        txtConnectState.Foreground = this.TryFindResource(connected ? "RB.Primary" : "RB.TextMuted", ActualThemeVariant, out var brush)
+            ? brush as IBrush
+            : null;
+    }
+
+    /// <summary>Splits the upstream summary "[VLESS] name(addr:port)" into chip, title and caption.</summary>
+    private void UpdateServerCard(string? summary)
+    {
+        var text = (summary ?? string.Empty).Trim();
+        var protocol = string.Empty;
+        if (text.StartsWith('[') && text.IndexOf(']') > 0)
+        {
+            var end = text.IndexOf(']');
+            protocol = text[1..end];
+            text = text[(end + 1)..].Trim();
+        }
+
+        var address = string.Empty;
+        if (text.EndsWith(')') && text.LastIndexOf('(') > 0)
+        {
+            var start = text.LastIndexOf('(');
+            address = text[(start + 1)..^1];
+            text = text[..start].Trim();
+        }
+
+        txtProtocol.Text = protocol;
+        chipProtocol.IsVisible = protocol.IsNotEmpty();
+        txtServerName.Text = text.IsNullOrEmpty() ? address : text;
+        txtServerAddress.Text = text.IsNullOrEmpty() ? string.Empty : address;
+        txtServerAddress.IsVisible = txtServerAddress.Text.IsNotEmpty();
+    }
+
+    #endregion RockBlack status card
 }

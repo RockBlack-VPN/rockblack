@@ -1794,4 +1794,25 @@ Tindakan "Ambil sertifikat" mungkin gagal jika sertifikat self-signed digunakan 
   <data name="TbEnableFinalFragmentTip" xml:space="preserve">
     <value>Memecah bagian akhir paket menjadi fragmen yang lebih kecil. Hal ini dapat memengaruhi throughput dan latensi.</value>
   </data>
+  <data name="RbConnected" xml:space="preserve">
+    <value>Terhubung</value>
+  </data>
+  <data name="RbNotConnected" xml:space="preserve">
+    <value>Tidak terhubung</value>
+  </data>
+  <data name="RbLogs" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="RbActiveServer" xml:space="preserve">
+    <value>Server aktif</value>
+  </data>
+  <data name="RbConnectTip" xml:space="preserve">
+    <value>Aktifkan atau nonaktifkan proxy sistem</value>
+  </data>
+  <data name="RbServers" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="RbSubscriptions" xml:space="preserve">
+    <value>Langganan</value>
+  </data>
 </root>

@@ -8,16 +8,36 @@
     <Application.Resources>
         <ResourceDictionary xmlns:system="clr-namespace:System;assembly=mscorlib">
             <ResourceDictionary.MergedDictionaries>
-                <materialDesign:BundledTheme
-                    BaseTheme="Light"
-                    PrimaryColor="Blue"
-                    SecondaryColor="Lime" />
+                <!--  RockBlack UI 2.0 (branding/DESIGN.md): dark graphite, teal is the only accent  -->
+                <materialDesign:CustomColorTheme
+                    BaseTheme="Dark"
+                    PrimaryColor="#26D6B0"
+                    SecondaryColor="#26D6B0" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!--  RockBlack design tokens (dark defaults; RockBlackPalette switches them with the theme)  -->
+            <SolidColorBrush x:Key="RB.Bg" Color="#0F1011" />
+            <SolidColorBrush x:Key="RB.Surface" Color="#18191B" />
+            <SolidColorBrush x:Key="RB.Surface2" Color="#212326" />
+            <SolidColorBrush x:Key="RB.Outline" Color="#2D3034" />
+            <SolidColorBrush x:Key="RB.Primary" Color="#26D6B0" />
+            <SolidColorBrush x:Key="RB.OnPrimary" Color="#04231C" />
+            <SolidColorBrush x:Key="RB.PrimarySoft" Color="#2426D6B0" />
+            <SolidColorBrush x:Key="RB.Text" Color="#F1F3F4" />
+            <SolidColorBrush x:Key="RB.TextMuted" Color="#8E959C" />
+            <SolidColorBrush x:Key="RB.Danger" Color="#FF5C6C" />
+            <SolidColorBrush x:Key="RB.Warning" Color="#FFB547" />
+            <SolidColorBrush x:Key="RB.Graphite" Color="#5F6062" />
+            <Color x:Key="RB.PrimaryColor">#26D6B0</Color>
+            <CornerRadius x:Key="RB.RadiusCard">16</CornerRadius>
+            <CornerRadius x:Key="RB.RadiusControl">12</CornerRadius>
+            <FontFamily x:Key="RB.MonoFont">Cascadia Mono, Consolas, Courier New</FontFamily>
+
             <system:Double x:Key="MenuItemHeight">32</system:Double>
-            <system:Double x:Key="StdFontSize">12</system:Double>
-            <system:Double x:Key="StdFontSize1">13</system:Double>
-            <system:Double x:Key="StdFontSize-1">11</system:Double>
+            <system:Double x:Key="StdFontSize">13</system:Double>
+            <system:Double x:Key="StdFontSize1">14</system:Double>
+            <system:Double x:Key="StdFontSize-1">12</system:Double>
 
             <conv:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <Thickness
@@ -35,8 +55,8 @@
             <Thickness
                 x:Key="OutlinedTextBoxDefaultPadding"
                 Bottom="8"
-                Left="8"
-                Right="8"
+                Left="10"
+                Right="10"
                 Top="8" />
             <Thickness
                 x:Key="MarginLeftRight4"
@@ -62,11 +82,14 @@
                 Left="0"
                 Right="8"
                 Top="0" />
+
+            <!--  ===== Text  =====  -->
             <Style
                 x:Key="ModuleTitle"
                 BasedOn="{StaticResource MaterialDesignTextBlock}"
                 TargetType="{x:Type TextBlock}">
                 <Setter Property="FontSize" Value="{DynamicResource StdFontSize1}" />
+                <Setter Property="FontWeight" Value="SemiBold" />
             </Style>
             <Style
                 x:Key="ToolbarTextBlock"
@@ -78,8 +101,25 @@
                 x:Key="StatusbarItem"
                 BasedOn="{StaticResource MaterialDesignTextBlock}"
                 TargetType="{x:Type TextBlock}">
-                <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
+                <Setter Property="FontSize" Value="{DynamicResource StdFontSize-1}" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
                 <Setter Property="Padding" Value="0" />
+            </Style>
+            <Style x:Key="RB.Title" TargetType="{x:Type TextBlock}">
+                <Setter Property="FontSize" Value="22" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            </Style>
+            <Style x:Key="RB.Section" TargetType="{x:Type TextBlock}">
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+            </Style>
+            <Style x:Key="RB.Caption" TargetType="{x:Type TextBlock}">
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
             </Style>
             <Style TargetType="{x:Type TextElement}">
                 <Setter Property="FontWeight" Value="Regular" />
@@ -87,17 +127,229 @@
             <Style TargetType="{x:Type TextBlock}">
                 <Setter Property="FontWeight" Value="Regular" />
             </Style>
+
+            <!--  ===== Surfaces  =====  -->
+            <Style x:Key="RB.Card" TargetType="{x:Type Border}">
+                <Setter Property="Background" Value="{DynamicResource RB.Surface}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource RB.Outline}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="{StaticResource RB.RadiusCard}" />
+                <Setter Property="Padding" Value="20" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+            </Style>
+            <Style x:Key="RB.Chip" TargetType="{x:Type Border}">
+                <Setter Property="Background" Value="{DynamicResource RB.PrimarySoft}" />
+                <Setter Property="CornerRadius" Value="999" />
+                <Setter Property="Padding" Value="10,3" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource RB.Primary}" />
+                <Setter Property="TextElement.FontSize" Value="12" />
+                <Setter Property="TextElement.FontWeight" Value="SemiBold" />
+            </Style>
+            <Style x:Key="RB.ChipMuted" TargetType="{x:Type Border}">
+                <Setter Property="Background" Value="{DynamicResource RB.Surface2}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource RB.Outline}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="999" />
+                <Setter Property="Padding" Value="10,3" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource RB.TextMuted}" />
+                <Setter Property="TextElement.FontSize" Value="12" />
+            </Style>
+
+            <!--  ===== Buttons  =====  -->
+            <Style x:Key="RB.IconButton" TargetType="{x:Type ButtonBase}">
+                <Setter Property="Width" Value="34" />
+                <Setter Property="Height" Value="34" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Focusable" Value="True" />
+                <Setter Property="Background" Value="{DynamicResource RB.Surface2}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource RB.Outline}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ButtonBase}">
+                            <Border
+                                x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                SnapsToDevicePixels="True">
+                                <ContentPresenter
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource RB.Primary}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource RB.Primary}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="bd" Property="Background" Value="{DynamicResource RB.PrimarySoft}" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.4" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <!--  Upstream views use the MaterialDesign mini FAB for toolbar actions: render them as RockBlack icon buttons  -->
+            <Style
+                x:Key="MaterialDesignFloatingActionMiniLightButton"
+                BasedOn="{StaticResource RB.IconButton}"
+                TargetType="{x:Type ButtonBase}" />
+
+            <Style x:Key="RB.NavButton" TargetType="{x:Type ButtonBase}">
+                <Setter Property="Height" Value="42" />
+                <Setter Property="Margin" Value="0,2" />
+                <Setter Property="Padding" Value="14,0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ButtonBase}">
+                            <Border
+                                x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="12"
+                                SnapsToDevicePixels="True">
+                                <ContentPresenter
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bd" Property="Background" Value="{DynamicResource RB.Surface2}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="bd" Property="Background" Value="{DynamicResource RB.PrimarySoft}" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.4" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style
+                x:Key="RB.NavToggle"
+                BasedOn="{StaticResource RB.NavButton}"
+                TargetType="{x:Type ToggleButton}">
+                <Style.Triggers>
+                    <Trigger Property="IsChecked" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource RB.PrimarySoft}" />
+                        <Setter Property="Foreground" Value="{DynamicResource RB.Primary}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="RB.ConnectButton" TargetType="{x:Type Button}">
+                <Setter Property="Width" Value="148" />
+                <Setter Property="Height" Value="148" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Grid>
+                                <Ellipse
+                                    x:Name="glow"
+                                    Margin="10"
+                                    Fill="{DynamicResource RB.Primary}"
+                                    Opacity="0">
+                                    <Ellipse.Effect>
+                                        <BlurEffect Radius="24" />
+                                    </Ellipse.Effect>
+                                </Ellipse>
+                                <Ellipse
+                                    x:Name="disc"
+                                    Margin="6"
+                                    Fill="{DynamicResource RB.Surface2}"
+                                    Stroke="{DynamicResource RB.Outline}"
+                                    StrokeThickness="3" />
+                                <materialDesign:PackIcon
+                                    Width="56"
+                                    Height="56"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Kind="Power" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="disc" Property="Stroke" Value="{DynamicResource RB.Primary}" />
+                                </Trigger>
+                                <Trigger Property="Tag">
+                                    <Trigger.Value>
+                                        <system:Boolean>True</system:Boolean>
+                                    </Trigger.Value>
+                                    <Setter TargetName="disc" Property="Fill" Value="{DynamicResource RB.Primary}" />
+                                    <Setter TargetName="disc" Property="Stroke" Value="{DynamicResource RB.Primary}" />
+                                    <Setter TargetName="glow" Property="Opacity" Value="0.35" />
+                                    <Setter Property="Foreground" Value="{DynamicResource RB.OnPrimary}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="disc" Property="Margin" Value="9" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.5" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style
+                x:Key="DefButton"
+                BasedOn="{StaticResource MaterialDesignRaisedButton}"
+                TargetType="{x:Type ButtonBase}">
+                <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
+                <Setter Property="Height" Value="36" />
+                <Setter Property="Padding" Value="18,0" />
+                <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="12" />
+                <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp0" />
+                <Setter Property="Background" Value="{DynamicResource RB.Primary}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource RB.Primary}" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.OnPrimary}" />
+            </Style>
+
+            <!--  ===== Lists and grids  =====  -->
             <Style x:Key="lvItemSelected" TargetType="{x:Type ListViewItem}">
-                <Setter Property="Margin" Value="2" />
+                <Setter Property="Margin" Value="0,3" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ListViewItem">
-                            <materialDesign:Card Name="_Card" SnapsToDevicePixels="true">
+                            <Border
+                                Name="_Card"
+                                Background="{DynamicResource RB.Surface}"
+                                BorderBrush="{DynamicResource RB.Outline}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                SnapsToDevicePixels="true">
                                 <ContentPresenter />
-                            </materialDesign:Card>
+                            </Border>
                             <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="_Card" Property="Background" Value="{DynamicResource RB.Surface2}" />
+                                </Trigger>
                                 <Trigger Property="IsSelected" Value="true">
-                                    <Setter TargetName="_Card" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
+                                    <Setter TargetName="_Card" Property="Background" Value="{DynamicResource RB.PrimarySoft}" />
+                                    <Setter TargetName="_Card" Property="BorderBrush" Value="{DynamicResource RB.Primary}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -108,26 +360,153 @@
             <Style x:Key="GridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
                 <Setter Property="Height" Value="30" />
             </Style>
+
+            <Style x:Key="RB.DataGridRow" TargetType="{x:Type DataGridRow}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+                <Setter Property="MinHeight" Value="38" />
+                <Setter Property="Margin" Value="0,1" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type DataGridRow}">
+                            <Border
+                                x:Name="DGR_Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                SnapsToDevicePixels="True">
+                                <SelectiveScrollingGrid>
+                                    <SelectiveScrollingGrid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </SelectiveScrollingGrid.ColumnDefinitions>
+                                    <SelectiveScrollingGrid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </SelectiveScrollingGrid.RowDefinitions>
+                                    <DataGridCellsPresenter
+                                        Grid.Column="1"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                    <DataGridDetailsPresenter
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding AreRowDetailsFrozen, ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical}, Converter={x:Static DataGrid.RowDetailsScrollingConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                        Visibility="{TemplateBinding DetailsVisibility}" />
+                                    <DataGridRowHeader
+                                        Grid.RowSpan="2"
+                                        SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                        Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                                </SelectiveScrollingGrid>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource RB.Surface2}" />
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource RB.PrimarySoft}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="RB.DataGridCell" TargetType="{x:Type DataGridCell}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="10,0" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type DataGridCell}">
+                            <Border
+                                Padding="{TemplateBinding Padding}"
+                                Background="Transparent"
+                                SnapsToDevicePixels="True">
+                                <ContentPresenter VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style
+                x:Key="RB.DataGridColumnHeader"
+                BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}"
+                TargetType="{x:Type DataGridColumnHeader}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Padding" Value="10,6" />
+            </Style>
+            <Style x:Key="RB.DataGridRowHeader" TargetType="{x:Type DataGridRowHeader}">
+                <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="MinWidth" Value="34" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type DataGridRowHeader}">
+                            <Border Padding="8,0,2,0" Background="Transparent">
+                                <ContentPresenter HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style
+                x:Key="DefDataGrid"
+                BasedOn="{StaticResource MaterialDesignDataGrid}"
+                TargetType="{x:Type DataGrid}">
+                <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="RowBackground" Value="Transparent" />
+                <Setter Property="AlternatingRowBackground" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="GridLinesVisibility" Value="None" />
+                <Setter Property="HorizontalGridLinesBrush" Value="Transparent" />
+                <Setter Property="VerticalGridLinesBrush" Value="Transparent" />
+                <Setter Property="materialDesign:DataGridAssist.CellPadding" Value="10,0" />
+                <Style.Resources>
+                    <Style BasedOn="{StaticResource RB.DataGridRow}" TargetType="{x:Type DataGridRow}" />
+                    <Style BasedOn="{StaticResource RB.DataGridCell}" TargetType="{x:Type DataGridCell}" />
+                    <Style BasedOn="{StaticResource RB.DataGridColumnHeader}" TargetType="{x:Type DataGridColumnHeader}" />
+                    <Style BasedOn="{StaticResource RB.DataGridRowHeader}" TargetType="{x:Type DataGridRowHeader}" />
+                </Style.Resources>
+            </Style>
+
             <Style
                 x:Key="ListItemCheckBox"
                 BasedOn="{StaticResource MaterialDesignUserForegroundCheckBox}"
                 TargetType="{x:Type CheckBox}">
                 <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
             </Style>
-            <Style
-                x:Key="DefButton"
-                BasedOn="{StaticResource MaterialDesignRaisedButton}"
-                TargetType="{x:Type ButtonBase}">
-                <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
-            </Style>
+
+            <!--  ===== Menus  =====  -->
             <Style
                 x:Key="DefContextMenu"
                 BasedOn="{StaticResource MaterialDesignContextMenu}"
                 TargetType="{x:Type ContextMenu}">
                 <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
                 <Setter Property="FontFamily" Value="{x:Static conv:MaterialDesignFonts.MyFont}" />
+                <Setter Property="Background" Value="{DynamicResource RB.Surface}" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource RB.Outline}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp0" />
             </Style>
-
+            <Style
+                x:Key="RB.NavMenu"
+                BasedOn="{StaticResource DefContextMenu}"
+                TargetType="{x:Type ContextMenu}">
+                <Setter Property="Placement" Value="Right" />
+                <Setter Property="HorizontalOffset" Value="8" />
+            </Style>
             <Style
                 x:Key="ToolbarMenu"
                 BasedOn="{StaticResource MaterialDesignMenu}"
@@ -136,24 +515,26 @@
                 <Setter Property="FontFamily" Value="{x:Static conv:MaterialDesignFonts.MyFont}" />
             </Style>
 
+            <!--  ===== Inputs: 1 px outline, radius 12  =====  -->
             <Style
                 x:Key="DefComboBox"
-                BasedOn="{StaticResource MaterialDesignComboBox}"
+                BasedOn="{StaticResource MaterialDesignOutlinedComboBox}"
                 TargetType="{x:Type ComboBox}">
                 <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
                 <Setter Property="HorizontalAlignment" Value="Left" />
-            </Style>
-            <Style
-                x:Key="DefDataGrid"
-                BasedOn="{StaticResource MaterialDesignDataGrid}"
-                TargetType="{x:Type DataGrid}">
-                <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
+                <Setter Property="Padding" Value="10,7" />
+                <Setter Property="materialDesign:TextFieldAssist.TextFieldCornerRadius" Value="12" />
+                <Setter Property="materialDesign:HintAssist.IsFloating" Value="False" />
             </Style>
             <Style
                 x:Key="DefTextBox"
-                BasedOn="{StaticResource MaterialDesignTextBox}"
+                BasedOn="{StaticResource MaterialDesignOutlinedTextBox}"
                 TargetType="{x:Type TextBox}">
                 <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
+                <Setter Property="Padding" Value="10,7" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="materialDesign:TextFieldAssist.TextFieldCornerRadius" Value="12" />
+                <Setter Property="materialDesign:HintAssist.IsFloating" Value="False" />
             </Style>
             <Style
                 x:Key="MyOutlinedTextBox"
@@ -161,18 +542,7 @@
                 TargetType="{x:Type TextBox}">
                 <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
                 <Setter Property="Padding" Value="{StaticResource OutlinedTextBoxDefaultPadding}" />
-            </Style>
-            <Style
-                x:Key="MyGroupBox"
-                BasedOn="{StaticResource MaterialDesignGroupBox}"
-                TargetType="{x:Type GroupBox}">
-                <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
-            </Style>
-            <Style
-                x:Key="MyChipListBoxItem"
-                BasedOn="{StaticResource MaterialDesignChoiceChipPrimaryOutlineListBoxItem}"
-                TargetType="{x:Type ListBoxItem}">
-                <Setter Property="Margin" Value="-2,0" />
+                <Setter Property="materialDesign:TextFieldAssist.TextFieldCornerRadius" Value="12" />
             </Style>
             <Style
                 x:Key="MyOutlinedTextComboBox"
@@ -180,6 +550,44 @@
                 TargetType="{x:Type ComboBox}">
                 <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
                 <Setter Property="Padding" Value="{StaticResource OutlinedTextBoxDefaultPadding}" />
+                <Setter Property="materialDesign:TextFieldAssist.TextFieldCornerRadius" Value="12" />
+            </Style>
+
+            <!--  GroupBox = RockBlack card with a section title  -->
+            <Style x:Key="MyGroupBox" TargetType="{x:Type GroupBox}">
+                <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+                <Setter Property="Padding" Value="16,12" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type GroupBox}">
+                            <Border
+                                Padding="{TemplateBinding Padding}"
+                                Background="{DynamicResource RB.Surface}"
+                                BorderBrush="{DynamicResource RB.Outline}"
+                                BorderThickness="1"
+                                CornerRadius="16"
+                                SnapsToDevicePixels="True">
+                                <DockPanel>
+                                    <ContentPresenter
+                                        Margin="0,0,0,8"
+                                        ContentSource="Header"
+                                        DockPanel.Dock="Top"
+                                        RecognizesAccessKey="True"
+                                        TextElement.FontSize="15"
+                                        TextElement.FontWeight="SemiBold" />
+                                    <ContentPresenter />
+                                </DockPanel>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style
+                x:Key="MyChipListBoxItem"
+                BasedOn="{StaticResource MaterialDesignChoiceChipPrimaryOutlineListBoxItem}"
+                TargetType="{x:Type ListBoxItem}">
+                <Setter Property="Margin" Value="0,0,6,0" />
             </Style>
             <Style x:Key="ListItemChip" TargetType="{x:Type materialDesign:Chip}">
                 <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
@@ -189,29 +597,33 @@
                 BasedOn="{StaticResource MaterialDesignTextBlock}"
                 TargetType="{x:Type TextBlock}">
                 <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
+                <Setter Property="FontWeight" Value="SemiBold" />
             </Style>
             <Style
                 x:Key="ListItemSubTitle"
                 BasedOn="{StaticResource MaterialDesignTextBlock}"
                 TargetType="{x:Type TextBlock}">
                 <Setter Property="FontSize" Value="{DynamicResource StdFontSize}" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
             </Style>
             <Style
                 x:Key="ListItemSubTitle2"
                 BasedOn="{StaticResource MaterialDesignTextBlock}"
                 TargetType="{x:Type TextBlock}">
                 <Setter Property="FontSize" Value="{DynamicResource StdFontSize-1}" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
             </Style>
 
+            <!--  ===== Windows and views  =====  -->
             <Style
                 x:Key="WindowGlobal"
                 BasedOn="{StaticResource {x:Type Window}}"
                 TargetType="{x:Type Window}">
-                <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+                <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
                 <Setter Property="TextOptions.TextHintingMode" Value="Fixed" />
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource MaterialDesignBody}" />
-                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource RB.Text}" />
+                <Setter Property="Background" Value="{DynamicResource RB.Bg}" />
                 <Setter Property="TextElement.FontFamily" Value="{x:Static conv:MaterialDesignFonts.MyFont}" />
                 <Setter Property="FontFamily" Value="{x:Static conv:MaterialDesignFonts.MyFont}" />
                 <Setter Property="ResizeMode" Value="CanResize" />
@@ -220,11 +632,11 @@
                 x:Key="ViewGlobal"
                 BasedOn="{StaticResource {x:Type UserControl}}"
                 TargetType="{x:Type UserControl}">
-                <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+                <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
                 <Setter Property="TextOptions.TextHintingMode" Value="Fixed" />
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource MaterialDesignBody}" />
-                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource RB.Text}" />
+                <Setter Property="Background" Value="Transparent" />
                 <Setter Property="TextElement.FontFamily" Value="{x:Static conv:MaterialDesignFonts.MyFont}" />
                 <Setter Property="FontFamily" Value="{x:Static conv:MaterialDesignFonts.MyFont}" />
             </Style>

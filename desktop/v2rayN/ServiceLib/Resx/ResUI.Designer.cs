@@ -5444,5 +5444,67 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("UpgradeAppNotExistTip", resourceCulture);
             }
         }
+        /// <summary>
+        ///   Connected
+        /// </summary>
+        public static string RbConnected {
+            get {
+                return ResourceManager.GetString("RbConnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Not connected
+        /// </summary>
+        public static string RbNotConnected {
+            get {
+                return ResourceManager.GetString("RbNotConnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Logs
+        /// </summary>
+        public static string RbLogs {
+            get {
+                return ResourceManager.GetString("RbLogs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Active server
+        /// </summary>
+        public static string RbActiveServer {
+            get {
+                return ResourceManager.GetString("RbActiveServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Turn the system proxy on or off
+        /// </summary>
+        public static string RbConnectTip {
+            get {
+                return ResourceManager.GetString("RbConnectTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Servers
+        /// </summary>
+        public static string RbServers {
+            get {
+                return ResourceManager.GetString("RbServers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Subscriptions
+        /// </summary>
+        public static string RbSubscriptions {
+            get {
+                return ResourceManager.GetString("RbSubscriptions", resourceCulture);
+            }
+        }
     }
 }

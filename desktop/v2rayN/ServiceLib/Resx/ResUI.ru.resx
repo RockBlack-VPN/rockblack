@@ -1905,4 +1905,25 @@
   <data name="menuAddMasqueServer" xml:space="preserve">
     <value>Добавить сервер [MASQUE]</value>
   </data>
+  <data name="RbConnected" xml:space="preserve">
+    <value>Подключено</value>
+  </data>
+  <data name="RbNotConnected" xml:space="preserve">
+    <value>Не подключено</value>
+  </data>
+  <data name="RbLogs" xml:space="preserve">
+    <value>Журнал</value>
+  </data>
+  <data name="RbActiveServer" xml:space="preserve">
+    <value>Активный сервер</value>
+  </data>
+  <data name="RbConnectTip" xml:space="preserve">
+    <value>Включить или выключить системный прокси</value>
+  </data>
+  <data name="RbServers" xml:space="preserve">
+    <value>Серверы</value>
+  </data>
+  <data name="RbSubscriptions" xml:space="preserve">
+    <value>Подписки</value>
+  </data>
 </root>

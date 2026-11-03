@@ -29,6 +29,7 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         btnNewUpdate.Click += MenuCheckUpdate_Click;
         menuBackupAndRestore.Click += MenuBackupAndRestore_Click;
         menuClose.Click += MenuClose_Click;
+        navLogs.IsCheckedChanged += (_, _) => SetLogsPanelVisible(navLogs.IsChecked == true);
 
         conTheme.Content ??= new ThemeSettingView();
 
@@ -65,6 +66,7 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
             //setting
             this.BindCommand(ViewModel, vm => vm.OptionSettingCmd, v => v.menuOptionSetting).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.RoutingSettingCmd, v => v.menuRoutingSetting).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.RoutingSettingCmd, v => v.navRouting).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.DNSSettingCmd, v => v.menuDNSSetting).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.FullConfigTemplateCmd, v => v.menuFullConfigTemplate).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.GlobalHotkeySettingCmd, v => v.menuGlobalHotkeySetting).DisposeWith(disposables);
@@ -494,6 +496,41 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
             };
             item.Click += MenuItem_Click;
             menuHelp.Items.Add(item);
+        }
+    }
+
+    private MenuFlyout menuHelp => (MenuFlyout)navHelp.Flyout!;
+
+    private GridLength _logsLength = new(1, GridUnitType.Star);
+
+    /// <summary>Collapsible logs panel (view only): hides the log/Clash tabs of the current layout.</summary>
+    private void SetLogsPanelVisible(bool visible)
+    {
+        switch (_config.UiItem.MainGirdOrientation)
+        {
+            case EGirdOrientation.Horizontal:
+                if (!visible && gridMain.ColumnDefinitions[2].Width.Value > 0)
+                {
+                    _logsLength = gridMain.ColumnDefinitions[2].Width;
+                }
+                gridMain.ColumnDefinitions[2].Width = visible ? _logsLength : new GridLength(0);
+                cardLogs.IsVisible = visible;
+                splitMain.IsVisible = visible;
+                break;
+
+            case EGirdOrientation.Vertical:
+                if (!visible && gridMain1.RowDefinitions[2].Height.Value > 0)
+                {
+                    _logsLength = gridMain1.RowDefinitions[2].Height;
+                }
+                gridMain1.RowDefinitions[2].Height = visible ? _logsLength : new GridLength(0);
+                cardLogs1.IsVisible = visible;
+                splitMain1.IsVisible = visible;
+                break;
+
+            default:
+                tabMain2.SelectedIndex = visible ? 1 : 0;
+                break;
         }
     }
 

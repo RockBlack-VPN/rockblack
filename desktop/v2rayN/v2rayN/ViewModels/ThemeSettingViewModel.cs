@@ -114,18 +114,19 @@ public partial class ThemeSettingViewModel : MyReactiveObject
 
     public void ModifyTheme()
     {
-        var baseTheme = CurrentTheme switch
-        {
-            nameof(ETheme.Dark) => BaseTheme.Dark,
-            nameof(ETheme.Light) => BaseTheme.Light,
-            _ => BaseTheme.Inherit,
-        };
+        // RockBlack UI: dark graphite unless Light (or a light system theme with FollowSystem) is chosen
+        var dark = RockBlackPalette.IsDark(CurrentTheme);
 
         var theme = _paletteHelper.GetTheme();
-        theme.SetBaseTheme(baseTheme);
+        theme.SetBaseTheme(dark ? BaseTheme.Dark : BaseTheme.Light);
+        RockBlackPalette.Apply(theme, dark, _config.UiItem.ColorPrimaryName.IsNullOrEmpty());
         _paletteHelper.SetTheme(theme);
+        RockBlackPalette.ApplyBrushes(dark);
 
-        WindowsUtils.SetDarkBorder(Application.Current.MainWindow, CurrentTheme);
+        if (Application.Current.MainWindow != null)
+        {
+            WindowsUtils.SetDarkBorder(Application.Current.MainWindow, dark);
+        }
     }
 
     private void ModifyFontSize()

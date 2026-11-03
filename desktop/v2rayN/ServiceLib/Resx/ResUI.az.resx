@@ -1899,4 +1899,25 @@ Təyin edildikdə sertifikat sabitlənəcək və "Təhlükəsiz olmayan əlaqəy
   <data name="TbSortingProcess" xml:space="preserve">
     <value>Proses</value>
   </data>
+  <data name="RbConnected" xml:space="preserve">
+    <value>Qoşulub</value>
+  </data>
+  <data name="RbNotConnected" xml:space="preserve">
+    <value>Qoşulmayıb</value>
+  </data>
+  <data name="RbLogs" xml:space="preserve">
+    <value>Jurnallar</value>
+  </data>
+  <data name="RbActiveServer" xml:space="preserve">
+    <value>Aktiv server</value>
+  </data>
+  <data name="RbConnectTip" xml:space="preserve">
+    <value>Sistem proksisini aç və ya bağla</value>
+  </data>
+  <data name="RbServers" xml:space="preserve">
+    <value>Serverlər</value>
+  </data>
+  <data name="RbSubscriptions" xml:space="preserve">
+    <value>Abunəliklər</value>
+  </data>
 </root>

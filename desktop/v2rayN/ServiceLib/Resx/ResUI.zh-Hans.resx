@@ -1906,4 +1906,25 @@
   <data name="LvPreResolve" xml:space="preserve">
     <value>预解析节点域名</value>
   </data>
+  <data name="RbConnected" xml:space="preserve">
+    <value>已连接</value>
+  </data>
+  <data name="RbNotConnected" xml:space="preserve">
+    <value>未连接</value>
+  </data>
+  <data name="RbLogs" xml:space="preserve">
+    <value>日志</value>
+  </data>
+  <data name="RbActiveServer" xml:space="preserve">
+    <value>当前服务器</value>
+  </data>
+  <data name="RbConnectTip" xml:space="preserve">
+    <value>开启或关闭系统代理</value>
+  </data>
+  <data name="RbServers" xml:space="preserve">
+    <value>服务器</value>
+  </data>
+  <data name="RbSubscriptions" xml:space="preserve">
+    <value>订阅</value>
+  </data>
 </root>

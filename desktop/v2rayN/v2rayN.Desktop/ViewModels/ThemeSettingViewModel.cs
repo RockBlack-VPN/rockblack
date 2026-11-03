@@ -85,7 +85,9 @@ public partial class ThemeSettingViewModel : MyReactiveObject
                 nameof(ETheme.Desert) => SemiTheme.Desert,
                 nameof(ETheme.Dusk) => SemiTheme.Dusk,
                 nameof(ETheme.NightSky) => SemiTheme.NightSky,
-                _ => ThemeVariant.Default,
+                nameof(ETheme.FollowSystem) => ThemeVariant.Default,
+                _ => ThemeVariant.Dark, // RockBlack UI: dark graphite by default
+
             };
         }
     }

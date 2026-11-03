@@ -10,73 +10,133 @@
     x:DataType="vms:StatusBarViewModel"
     Design.DataContext="{x:Static dd:DesignData.StatusBar}"
     mc:Ignorable="d">
-    <Grid>
-        <DockPanel Margin="{StaticResource Margin8}">
-            <StackPanel
-                Margin="{StaticResource MarginLr8}"
-                VerticalAlignment="Center"
-                DockPanel.Dock="Right">
-                <TextBlock x:Name="txtSpeedProxyDisplay" HorizontalAlignment="Right" />
-                <Border Margin="1" />
-                <TextBlock x:Name="txtSpeedDirectDisplay" HorizontalAlignment="Right" />
-            </StackPanel>
-
-            <StackPanel
-                Margin="{StaticResource MarginLr8}"
-                VerticalAlignment="Center"
-                DockPanel.Dock="Left">
-                <TextBlock x:Name="txtInboundDisplay" />
-                <Border Margin="1" />
-                <TextBlock x:Name="txtInboundLanDisplay" />
-            </StackPanel>
-
-            <StackPanel
-                x:Name="spEnableTun"
-                Margin="{StaticResource MarginLr8}"
-                VerticalAlignment="Center"
-                DockPanel.Dock="Left"
-                Orientation="Horizontal">
+    <!--  RockBlack status card: connect button, active server, live speed and mode switches  -->
+    <Border Padding="24,20" Classes="rbCard">
+        <Grid ColumnDefinitions="Auto,28,*,28,Auto">
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <Button
+                    x:Name="btnConnect"
+                    Classes="rbConnect"
+                    ToolTip.Tip="{x:Static resx:ResUI.RbConnectTip}" />
                 <TextBlock
-                    Margin="{StaticResource MarginLr8}"
-                    VerticalAlignment="Center"
-                    Text="{x:Static resx:ResUI.TbEnableTunAs}" />
-                <ToggleSwitch
-                    x:Name="togEnableTun"
-                    Margin="{StaticResource Margin4}"
+                    x:Name="txtConnectState"
+                    Margin="0,8,0,0"
                     HorizontalAlignment="Center"
-                    Theme="{DynamicResource SimpleToggleSwitch}" />
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource RB.TextMuted}"
+                    Text="{x:Static resx:ResUI.RbNotConnected}" />
             </StackPanel>
 
             <StackPanel
-                Margin="{StaticResource MarginLr8}"
+                Grid.Column="2"
+                MinWidth="200"
+                VerticalAlignment="Center">
+                <TextBlock Classes="rbCaption" Text="{x:Static resx:ResUI.RbActiveServer}" />
+                <DockPanel Margin="0,6,0,0">
+                    <Border
+                        x:Name="chipProtocol"
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        Classes="rbChip"
+                        DockPanel.Dock="Left"
+                        IsVisible="False">
+                        <TextBlock x:Name="txtProtocol" />
+                    </Border>
+                    <TextBlock
+                        x:Name="txtServerName"
+                        Classes="rbTitle"
+                        Cursor="Hand" />
+                </DockPanel>
+                <TextBlock
+                    x:Name="txtServerAddress"
+                    Margin="0,4,0,0"
+                    Classes="rbCaption" />
+                <TextBlock x:Name="txtRunningServerDisplay" IsVisible="False" />
+                <TextBlock
+                    x:Name="txtRunningInfoDisplay"
+                    Margin="0,6,0,0"
+                    Classes="rbCaption"
+                    Cursor="Hand"
+                    TextWrapping="Wrap" />
+                <WrapPanel Margin="0,12,0,0">
+                    <Border
+                        x:Name="chipSpeedProxy"
+                        Margin="0,0,8,6"
+                        Classes="rbChipMuted"
+                        IsVisible="False">
+                        <TextBlock x:Name="txtSpeedProxyDisplay" />
+                    </Border>
+                    <Border
+                        x:Name="chipSpeedDirect"
+                        Margin="0,0,8,6"
+                        Classes="rbChipMuted"
+                        IsVisible="False">
+                        <TextBlock x:Name="txtSpeedDirectDisplay" />
+                    </Border>
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock
+                        x:Name="txtInboundDisplay"
+                        Margin="0,0,14,0"
+                        Classes="rbCaption" />
+                    <TextBlock x:Name="txtInboundLanDisplay" Classes="rbCaption" />
+                </WrapPanel>
+            </StackPanel>
+
+            <Border
+                Grid.Column="4"
                 VerticalAlignment="Center"
-                DockPanel.Dock="Left"
-                Orientation="Horizontal">
-                <ComboBox
-                    x:Name="cmbSystemProxy"
-                    Width="160"
-                    Margin="{StaticResource MarginLr8}"
-                    ToolTip.Tip="{x:Static resx:ResUI.menuSystemproxy}">
-                    <ComboBoxItem Content="{x:Static resx:ResUI.menuSystemProxyClear}" />
-                    <ComboBoxItem Content="{x:Static resx:ResUI.menuSystemProxySet}" />
-                    <ComboBoxItem Content="{x:Static resx:ResUI.menuSystemProxyNothing}" />
-                    <ComboBoxItem Content="{x:Static resx:ResUI.menuSystemProxyPac}" />
-                </ComboBox>
+                Classes="rbPanel">
+                <Grid ColumnDefinitions="Auto,16,Auto" RowDefinitions="Auto,10,Auto,10,Auto">
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Text="{x:Static resx:ResUI.menuSystemproxy}" />
+                    <ComboBox
+                        x:Name="cmbSystemProxy"
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Width="190"
+                        ToolTip.Tip="{x:Static resx:ResUI.menuSystemproxy}">
+                        <ComboBoxItem Content="{x:Static resx:ResUI.menuSystemProxyClear}" />
+                        <ComboBoxItem Content="{x:Static resx:ResUI.menuSystemProxySet}" />
+                        <ComboBoxItem Content="{x:Static resx:ResUI.menuSystemProxyNothing}" />
+                        <ComboBoxItem Content="{x:Static resx:ResUI.menuSystemProxyPac}" />
+                    </ComboBox>
 
-                <ComboBox
-                    x:Name="cmbRoutings2"
-                    Width="160"
-                    Margin="{StaticResource MarginLr8}"
-                    DisplayMemberBinding="{Binding Remarks}"
-                    ItemsSource="{Binding RoutingItems}"
-                    ToolTip.Tip="{x:Static resx:ResUI.menuRouting}" />
-            </StackPanel>
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Text="{x:Static resx:ResUI.menuRouting}" />
+                    <ComboBox
+                        x:Name="cmbRoutings2"
+                        Grid.Row="2"
+                        Grid.Column="2"
+                        Width="190"
+                        DisplayMemberBinding="{Binding Remarks}"
+                        ItemsSource="{Binding RoutingItems}"
+                        ToolTip.Tip="{x:Static resx:ResUI.menuRouting}" />
 
-            <StackPanel Margin="{StaticResource MarginLr8}" VerticalAlignment="Center">
-                <TextBlock x:Name="txtRunningServerDisplay" />
-                <Border Margin="1" />
-                <TextBlock x:Name="txtRunningInfoDisplay" />
-            </StackPanel>
-        </DockPanel>
-    </Grid>
+                    <TextBlock
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Text="{x:Static resx:ResUI.TbEnableTunAs}" />
+                    <StackPanel
+                        x:Name="spEnableTun"
+                        Grid.Row="4"
+                        Grid.Column="2"
+                        Orientation="Horizontal">
+                        <ToggleSwitch
+                            x:Name="togEnableTun"
+                            HorizontalAlignment="Left"
+                            Theme="{DynamicResource SimpleToggleSwitch}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
 </UserControl>

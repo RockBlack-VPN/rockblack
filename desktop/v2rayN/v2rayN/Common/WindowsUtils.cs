@@ -52,17 +52,12 @@ internal static partial class WindowsUtils
 
     public static void SetDarkBorder(Window window, string? theme)
     {
-        var isDark = theme switch
-        {
-            nameof(ETheme.Dark) => true,
-            nameof(ETheme.Light) => false,
-            _ => IsDarkTheme(),
-        };
-
-        SetDarkBorder(window, isDark);
+        SetDarkBorder(window, RockBlackPalette.IsDark(theme));
     }
 
-    private static void SetDarkBorder(Window window, bool dark)
+    public static bool IsSystemDarkTheme() => IsDarkTheme();
+
+    public static void SetDarkBorder(Window window, bool dark)
     {
         // Make sure the handle is created before the window is shown
         var hWnd = new WindowInteropHelper(window).EnsureHandle();

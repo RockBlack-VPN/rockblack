@@ -1773,4 +1773,25 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="menuNewUpdate" xml:space="preserve">
     <value>New Update</value>
   </data>
+  <data name="RbConnected" xml:space="preserve">
+    <value>متصل</value>
+  </data>
+  <data name="RbNotConnected" xml:space="preserve">
+    <value>متصل نیست</value>
+  </data>
+  <data name="RbLogs" xml:space="preserve">
+    <value>گزارش‌ها</value>
+  </data>
+  <data name="RbActiveServer" xml:space="preserve">
+    <value>سرور فعال</value>
+  </data>
+  <data name="RbConnectTip" xml:space="preserve">
+    <value>روشن یا خاموش کردن پراکسی سیستم</value>
+  </data>
+  <data name="RbServers" xml:space="preserve">
+    <value>سرورها</value>
+  </data>
+  <data name="RbSubscriptions" xml:space="preserve">
+    <value>اشتراک‌ها</value>
+  </data>
 </root>

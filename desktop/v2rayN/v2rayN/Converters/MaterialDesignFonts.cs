@@ -20,6 +20,7 @@ public class MaterialDesignFonts
         catch
         {
         }
-        MyFont ??= new FontFamily("Microsoft YaHei");
+        // RockBlack UI: system font first (Segoe UI Variable on Windows 11), CJK fallback kept
+        MyFont ??= new FontFamily("Segoe UI Variable Text, Segoe UI, Microsoft YaHei");
     }
 }
