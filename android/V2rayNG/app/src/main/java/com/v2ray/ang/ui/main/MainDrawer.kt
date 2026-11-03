@@ -3,9 +3,11 @@ package com.v2ray.ang.ui.main
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,16 +20,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.v2ray.ang.R
 import com.v2ray.ang.ui.compose.AppDivider
+import com.v2ray.ang.ui.compose.RockBlackTheme
 import com.v2ray.ang.ui.compose.verticalScrollbar
 
 enum class MainDestination(@DrawableRes val iconRes: Int, @StringRes val labelRes: Int) {
@@ -63,53 +66,65 @@ private val drawerItems = primaryDrawerItems + listOf(
 @Composable
 fun MainDrawerContent(drawerState: DrawerState, onNavigate: (MainDestination) -> Unit) {
     val drawerScrollState = rememberScrollState()
+    val c = RockBlackTheme.colors
 
     ModalDrawerSheet(
         drawerState = drawerState,
-        modifier = Modifier.fillMaxWidth(0.75f),
-        drawerContainerColor = MaterialTheme.colorScheme.surface
+        modifier = Modifier.fillMaxWidth(0.78f),
+        drawerContainerColor = c.surface,
+        drawerShape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
     ) {
         Column(
             modifier = Modifier
                 .verticalScroll(drawerScrollState)
                 .verticalScrollbar(drawerScrollState)
         ) {
-            Surface(
+            // RockBlack header: logo + wordmark on the card surface.
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .padding(start = 24.dp, end = 16.dp, top = 28.dp, bottom = 20.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_brand_logo),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(bottom = 8.dp)
-                            .size(96.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.app_name),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-            drawerItems.forEachIndexed { index, item ->
-                if (index == primaryDrawerItems.size) AppDivider()
-                NavigationDrawerItem(
-                    label = { Text(stringResource(item.labelRes)) },
-                    selected = false,
-                    onClick = { onNavigate(item) },
-                    icon = { Icon(painterResource(item.iconRes), contentDescription = null) },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                Image(
+                    painter = painterResource(R.drawable.ic_brand_logo),
+                    contentDescription = null,
+                    modifier = Modifier.size(52.dp)
+                )
+                Spacer(Modifier.width(14.dp))
+                Text(
+                    text = stringResource(R.string.app_name),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = c.text
                 )
             }
+            AppDivider(Modifier.padding(horizontal = 16.dp))
+            Spacer(Modifier.height(8.dp))
+            val itemColors = NavigationDrawerItemDefaults.colors(
+                unselectedContainerColor = Color.Transparent,
+                selectedContainerColor = c.primarySoft,
+                unselectedIconColor = c.textMuted,
+                selectedIconColor = c.primary,
+                unselectedTextColor = c.text,
+                selectedTextColor = c.primary
+            )
+            drawerItems.forEachIndexed { index, item ->
+                if (index == primaryDrawerItems.size) {
+                    AppDivider(Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                }
+                NavigationDrawerItem(
+                    label = { Text(stringResource(item.labelRes), style = MaterialTheme.typography.bodyLarge) },
+                    selected = false,
+                    onClick = { onNavigate(item) },
+                    icon = { Icon(painterResource(item.iconRes), contentDescription = null, modifier = Modifier.size(22.dp)) },
+                    shape = MaterialTheme.shapes.small,
+                    colors = itemColors,
+                    modifier = Modifier
+                        .padding(NavigationDrawerItemDefaults.ItemPadding)
+                        .height(48.dp)
+                )
+            }
+            Spacer(Modifier.height(16.dp))
         }
     }
 }

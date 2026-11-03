@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- RockBlack: connected widget state, brand teal with a soft light ring. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <corners android:radius="23dp" />
-    <gradient
-        android:angle="135"
-        android:endColor="#EA580C"
-        android:startColor="#FB923C"
-        android:type="linear" />
+    <solid android:color="#26D6B0" />
     <stroke
         android:width="1.5dp"
-        android:color="#FFEDD5" />
+        android:color="#8FF0DA" />
 </shape>

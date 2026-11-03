@@ -410,6 +410,9 @@
     <string name="connection_test_error_status_code">کود ختا: #%d</string>
     <string name="connection_connected">منپیز هڌ. سی واجۊری کیلیک کوݩ.</string>
     <string name="connection_not_connected">منپیز نؽڌ</string>
+    <string name="status_connected">Connected</string>
+    <string name="status_no_server">No server selected</string>
+    <string name="server_test_timeout">Timeout</string>
     <string name="connection_running_task_left">آزمایشا هونی ٱنجوم ابۊن: %s</string>
 
     <string name="import_subscription_success">اشتراک وا مووفقیت و من ٱوورده وابی</string>

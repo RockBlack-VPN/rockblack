@@ -163,7 +163,7 @@ fun SettingsScreen(
             MmkvManager.decodeSettingsString(AppConfig.PREF_LANGUAGE, "auto") ?: "auto"
         )
     }
-    var uiModeNight by rememberMmkvString(AppConfig.PREF_UI_MODE_NIGHT, "0")
+    var uiModeNight by rememberMmkvString(AppConfig.PREF_UI_MODE_NIGHT, ThemeManager.DEFAULT_THEME_MODE)
     var dynamicColor by rememberMmkvBool(AppConfig.PREF_DYNAMIC_COLOR, true)
 
     var ipv6Enabled by rememberMmkvBool(AppConfig.PREF_IPV6_ENABLED, false)
@@ -271,16 +271,7 @@ fun SettingsScreen(
                         SettingsChangeManager.makeSetupGroupTab()
                     }
                 )
-                SettingsSwitchItem(
-                    title = stringResource(R.string.title_pref_dynamic_color),
-                    summary = stringResource(R.string.summary_pref_dynamic_color),
-                    checked = dynamicColor,
-                    enabled = dynamicColorSupported,
-                    onCheckedChange = {
-                        dynamicColor = it
-                        ThemeManager.setDynamicColorEnabled(it)
-                    }
-                )
+                // RockBlack: the brand palette ignores dynamic color, so the toggle is hidden.
                 SettingsListItem(
                     title = stringResource(R.string.title_language),
                     entries = languageEntries,

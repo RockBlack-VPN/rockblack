@@ -29,8 +29,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
@@ -268,6 +272,35 @@ class MainViewModel(
 
     private fun mutableServerGroupState(groupId: String): MutableStateFlow<ServerGroupUiState> =
         groupUiFlows.computeIfAbsent(groupId) { MutableStateFlow(ServerGroupUiState()) }
+
+    /**
+     * RockBlack UI: read-only name/protocol of the selected server for the status card.
+     * Uses the visible group's row when present, otherwise decodes the stored profile.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    internal val selectedServerSummary: StateFlow<SelectedServerSummary?> by lazy {
+        uiState
+            .map { Triple(it.selectedGuid, it.selectedGroupId, it.groups) }
+            .distinctUntilChanged()
+            .flatMapLatest { (guid, groupId, _) ->
+                if (guid.isNullOrEmpty()) {
+                    flowOf(null)
+                } else {
+                    mutableServerGroupState(groupId)
+                        .map { state -> state.rows.firstOrNull { it.guid == guid } }
+                        .distinctUntilChanged()
+                        .map { row ->
+                            if (row != null) {
+                                SelectedServerSummary(row.remarks, row.typeDescription)
+                            } else {
+                                withContext(ioDispatcher) { dataSource.decodeServerConfig(guid) }
+                                    ?.let { SelectedServerSummary(it.remarks, serverProtocolDescription(it)) }
+                            }
+                        }
+                }
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000), null)
+    }
 
     private fun currentServers(): List<ServersCache> =
         mutableServerGroupState(uiState.value.selectedGroupId).value.servers

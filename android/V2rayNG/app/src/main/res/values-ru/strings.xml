@@ -414,6 +414,9 @@
     <string name="connection_test_error_status_code">Код ошибки: #%d</string>
     <string name="connection_connected">Подключено.\nНажмите, чтобы проверить соединение.</string>
     <string name="connection_not_connected">Нет соединения</string>
+    <string name="status_connected">Подключено</string>
+    <string name="status_no_server">Сервер не выбран</string>
+    <string name="server_test_timeout">Тайм-аут</string>
     <string name="connection_running_task_left">Выполняется проверок: %s</string>
 
     <string name="import_subscription_success">Подписка импортирована</string>

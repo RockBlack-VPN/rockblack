@@ -158,7 +158,14 @@ android {
     }
 
     testOptions {
+        // RockBlack screenshot tests render Compose with Robolectric and need merged resources.
+        unitTests.isIncludeAndroidResources = true
         unitTests.all {
+            it.systemProperty(
+                "rockblack.screenshots.dir",
+                layout.buildDirectory.dir("outputs/screenshots").get().asFile.absolutePath
+            )
+            it.maxHeapSize = "2g"
             it.useJUnitPlatform()
             // Treat Jupiter discovery warnings as failures: JUnit 4 failed on an invalid @Test
             // method, such as one that returns a value, while Jupiter only warns and skips it.
@@ -227,5 +234,13 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
+
+    // Screenshot tests (see src/test/java/com/v2ray/ang/ui/screenshot)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.junit4)
+    testRuntimeOnly(libs.junit.vintage.engine)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }

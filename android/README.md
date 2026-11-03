@@ -34,6 +34,16 @@ All release APKs are signed with the same RockBlack production key.
   round, notification, TV-banner, drawer and store icons (generated from
   `../branding` by [`tools/generate-icons.py`](tools/generate-icons.py));
   accent color teal `#26D6B0` instead of orange.
+- RockBlack UI 2.0 ([`branding/DESIGN.md`](../branding/DESIGN.md)), visual layer only:
+  dark graphite theme by default (light theme and "follow system" remain
+  selectable; dynamic color is not applied), teal accent, radius 16 cards /
+  12 inputs / 24 sheets. Main screen: transparent top bar with the wordmark, a
+  status card with a large round connect button (same toggle action as the old
+  FAB; it collapses while the list scrolls) and the server list as rounded
+  cards (selected = primarySoft + teal accent bar, color-coded latency).
+  Restyled drawer, group tabs, subscription card, settings headers and home
+  widget. Screenshot tests: `RockBlackScreenshotTest` (Robolectric; PNGs in
+  `app/build/outputs/screenshots`, CI artifact `android-screenshots`).
 - Links (source code, issues, Telegram, privacy policy, website) point to
   RockBlack; the drawer "Promotion" entry opens <https://my.rockblack.tech>.
   About shows a "Based on v2rayNG" credit linking to upstream.

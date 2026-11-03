@@ -25,11 +25,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.dto.entities.ProfileItem
-import com.v2ray.ang.ui.compose.LocalDarkTheme
 import com.v2ray.ang.ui.compose.QRCodeDialog
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -50,7 +55,29 @@ fun MainScreen(
     val confirmRemove = uiState.confirmRemove
     val shareQRCodeBitmap = uiState.shareQRCodeBitmap
 
-    val isDarkTheme = LocalDarkTheme.current
+    val selectedServer by mainViewModel.selectedServerSummary.collectAsStateWithLifecycle()
+    val statusCard = MainStatusCardUi(
+        isRunning = isRunning,
+        statusText = displayText,
+        showStatusLine = uiState.status != MainStatus.Disconnected,
+        serverName = selectedServer?.name?.ifBlank { null },
+        protocol = selectedServer?.protocol,
+    )
+    // The status card collapses to a compact row while the server list is scrolled.
+    var statusCompact by rememberSaveable { mutableStateOf(false) }
+    val collapseConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (available.y < -COLLAPSE_THRESHOLD_PX) statusCompact = true
+                return Offset.Zero
+            }
+
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (available.y > COLLAPSE_THRESHOLD_PX) statusCompact = false
+                return Offset.Zero
+            }
+        }
+    }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var showSearch by remember { mutableStateOf(false) }
@@ -184,24 +211,26 @@ fun MainScreen(
                     }
                 )
             },
-            bottomBar = {
-                MainBottomBar(
-                    displayText = displayText,
-                    isRunning = isRunning,
-                    isDarkTheme = isDarkTheme,
-                    onAction = onAction
-                )
-            },
             floatingActionButton = {},
         ) { innerPadding ->
             val layoutDirection = LocalLayoutDirection.current
-
-            if (groups.isNotEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        start = innerPadding.calculateStartPadding(layoutDirection),
+                        top = innerPadding.calculateTopPadding(),
+                        end = innerPadding.calculateEndPadding(layoutDirection)
+                    )
+                    .nestedScroll(collapseConnection)
+            ) {
+                MainStatusCard(
+                    state = statusCard,
+                    compact = statusCompact && groups.isNotEmpty(),
+                    onToggle = { onAction(MainAction.ToggleService) },
+                    onTest = { onAction(MainAction.TestCurrentServer) }
+                )
+                if (groups.isNotEmpty()) {
                     if (groups.size > 1) {
                         GroupTabBar(
                             groups = groups,
@@ -250,9 +279,9 @@ fun MainScreen(
                             onOpenLink = { url -> onAction(MainAction.OpenSubscriptionLink(url)) },
                             contentPadding = PaddingValues(
                                 start = 0.dp,
-                                top = 0.dp,
+                                top = 4.dp,
                                 end = 0.dp,
-                                bottom = 80.dp
+                                bottom = 16.dp + innerPadding.calculateBottomPadding()
                             )
                         )
                     }
@@ -261,3 +290,5 @@ fun MainScreen(
         }
     }
 }
+
+private const val COLLAPSE_THRESHOLD_PX = 2f

@@ -44,6 +44,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -73,6 +75,7 @@ fun AppTopBar(
     onSearchClose: () -> Unit = {},
     searchPlaceholder: String? = null,
     navigationIcon: @Composable (() -> Unit)? = null,
+    titleContent: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
     Column {
@@ -84,8 +87,10 @@ fun AppTopBar(
                         onQueryChange = onSearchQueryChange,
                         placeholder = searchPlaceholder
                     )
+                } else if (titleContent != null) {
+                    titleContent()
                 } else {
-                    Text(text = title)
+                    Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             },
             navigationIcon = {
@@ -102,10 +107,12 @@ fun AppTopBar(
             },
             actions = actions,
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                // RockBlack: flat top bar blending into the screen background.
+                containerColor = MaterialTheme.colorScheme.background,
+                scrolledContainerColor = MaterialTheme.colorScheme.background,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
                 navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
         )
         AnimatedVisibility(
@@ -113,7 +120,11 @@ fun AppTopBar(
             enter = expandVertically(),
             exit = shrinkVertically()
         ) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.secondary)
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth().height(2.dp),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = Color.Transparent
+            )
         }
     }
 }
@@ -221,7 +232,7 @@ fun AppListItem(
 
 @Composable
 fun ItemDivider() {
-    AppDivider(modifier = Modifier.padding(horizontal = 12.dp))
+    AppDivider(modifier = Modifier.padding(horizontal = 16.dp))
 }
 
 @Composable
@@ -282,11 +293,17 @@ fun ReorderableCollectionItemScope.reorderableDragHandle(): Modifier {
 fun ReorderableListItem(
     scope: ReorderableCollectionItemScope,
     isDragging: Boolean,
+    modifier: Modifier = Modifier,
+    shape: Shape = RectangleShape,
+    draggingColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     content: @Composable RowScope.() -> Unit
 ) {
     val elevation by reorderableElevation(isDragging)
+    // RockBlack: rows sit on the screen background; only the dragged row gets a surface.
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
+        shape = shape,
+        color = if (isDragging) draggingColor else Color.Transparent,
         shadowElevation = elevation
     ) {
         Row(
@@ -303,13 +320,18 @@ fun ReorderableListItem(
 fun ReorderableGridItem(
     scope: ReorderableCollectionItemScope,
     isDragging: Boolean,
+    modifier: Modifier = Modifier,
+    shape: Shape = RectangleShape,
+    draggingColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     content: @Composable () -> Unit
 ) {
     val elevation by reorderableElevation(isDragging)
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .then(with(scope) { reorderableDragHandle() }),
+        shape = shape,
+        color = if (isDragging) draggingColor else Color.Transparent,
         shadowElevation = elevation
     ) {
         content()

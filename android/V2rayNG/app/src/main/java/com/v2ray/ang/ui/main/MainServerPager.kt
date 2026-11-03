@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +41,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -57,12 +60,12 @@ import com.v2ray.ang.R
 import com.v2ray.ang.dto.LocateTarget
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.dto.entities.SubscriptionUsageInfo
-import com.v2ray.ang.ui.compose.ItemDivider
 import com.v2ray.ang.ui.compose.ReorderableGridItem
 import com.v2ray.ang.ui.compose.ReorderableListItem
-import com.v2ray.ang.ui.compose.colorConfigType
-import com.v2ray.ang.ui.compose.colorPing
-import com.v2ray.ang.ui.compose.colorPingRed
+import com.v2ray.ang.ui.compose.ProtocolChip
+import com.v2ray.ang.ui.compose.RockBlackTheme
+import com.v2ray.ang.ui.compose.TabularNumbers
+import com.v2ray.ang.ui.compose.latencyColor
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
@@ -195,7 +198,8 @@ private fun ServerListPage(
             state = gridState,
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScrollbar(gridState),
+                .verticalScrollbar(gridState)
+                .padding(horizontal = 10.dp),
             contentPadding = contentPadding
         ) {
             itemsIndexed(items = rows, key = { _, item -> item.guid }) { _, row ->
@@ -214,11 +218,14 @@ private fun ServerListPage(
                     ) { isDragging ->
                         ReorderableGridItem(
                             scope = this,
-                            isDragging = isDragging
+                            isDragging = isDragging,
+                            modifier = Modifier.padding(SERVER_GRID_CARD_PADDING),
+                            shape = MaterialTheme.shapes.medium,
+                            draggingColor = Color.Transparent
                         ) { content() }
                     }
                 } else {
-                    content()
+                    Box(Modifier.padding(SERVER_GRID_CARD_PADDING)) { content() }
                 }
             }
         }
@@ -249,7 +256,10 @@ private fun ServerListPage(
                     ) { isDragging ->
                         ReorderableListItem(
                             scope = this,
-                            isDragging = isDragging
+                            isDragging = isDragging,
+                            modifier = Modifier.padding(SERVER_LIST_CARD_PADDING),
+                            shape = MaterialTheme.shapes.medium,
+                            draggingColor = Color.Transparent
                         ) {
                             ServerItemRow(
                                 row = row,
@@ -257,15 +267,15 @@ private fun ServerListPage(
                                 actions = actions
                             )
                         }
-                        ItemDivider()
                     }
                 } else {
-                    ServerItemRow(
-                        row = row,
-                        isSelected = row.guid == selectedGuid,
-                        actions = actions
-                    )
-                    ItemDivider()
+                    Box(Modifier.padding(SERVER_LIST_CARD_PADDING)) {
+                        ServerItemRow(
+                            row = row,
+                            isSelected = row.guid == selectedGuid,
+                            actions = actions
+                        )
+                    }
                 }
             }
         }
@@ -325,15 +335,12 @@ private fun ServerItemColumn(
     doubleColumnDisplay: Boolean,
     actions: ServerRowActions
 ) {
-    Column {
-        ServerListItem(
-            row = row,
-            isSelected = isSelected,
-            doubleColumnDisplay = doubleColumnDisplay,
-            actions = actions
-        )
-        ItemDivider()
-    }
+    ServerListItem(
+        row = row,
+        isSelected = isSelected,
+        doubleColumnDisplay = doubleColumnDisplay,
+        actions = actions
+    )
 }
 
 @Composable
@@ -343,8 +350,42 @@ private fun ServerListItem(
     doubleColumnDisplay: Boolean,
     actions: ServerRowActions
 ) {
+    ServerCard(
+        row = row,
+        isSelected = isSelected,
+        doubleColumnDisplay = doubleColumnDisplay,
+        onSelect = { actions.select(row.guid) },
+        onShare = { actions.share(row.guid, row.profile) },
+        onEdit = { actions.edit(row.guid, row.profile) },
+        onRemove = { actions.remove(row.guid, row.remarks) },
+        onMore = { actions.more(row.guid, row.profile) },
+    )
+}
+
+private val SERVER_LIST_CARD_PADDING = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+private val SERVER_GRID_CARD_PADDING = PaddingValues(horizontal = 6.dp, vertical = 4.dp)
+
+/**
+ * RockBlack server card: rounded surface with a 1 dp outline; the selected server gets the
+ * primarySoft fill and a 3 dp primary accent bar on the left. Latency is color-coded.
+ */
+@Composable
+internal fun ServerCard(
+    row: ServerRowUiModel,
+    isSelected: Boolean,
+    doubleColumnDisplay: Boolean,
+    onSelect: () -> Unit,
+    onShare: () -> Unit,
+    onEdit: () -> Unit,
+    onRemove: () -> Unit,
+    onMore: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val c = RockBlackTheme.colors
     val testResult = if (row.testDelayMillis == 0L) {
         ""
+    } else if (row.testDelayMillis < 0L) {
+        stringResource(R.string.server_test_timeout)
     } else {
         stringResource(R.string.server_test_delay_value, row.testDelayMillis)
     }
@@ -353,116 +394,118 @@ private fun ServerListItem(
     } else {
         null
     }
+    val shape = MaterialTheme.shapes.medium
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
+            .clip(shape)
+            .background(if (isSelected) c.primarySoft.compositeOver(c.surface) else c.surface)
+            .border(1.dp, if (isSelected) c.primary.copy(alpha = 0.45f) else c.outline, shape)
             .semantics {
                 if (selectedStateDescription != null) {
                     stateDescription = selectedStateDescription
                 }
             }
-            .clickable { actions.select(row.guid) }
+            .clickable { onSelect() }
     ) {
         Box(
             Modifier
-                .width(10.dp)
+                .width(3.dp)
                 .fillMaxHeight()
-        ) {
-            if (isSelected) {
-                Row {
-                    Spacer(Modifier.width(6.dp))
-                    Box(
-                        Modifier
-                            .width(4.dp)
-                            .fillMaxHeight()
-                            .padding(vertical = 10.dp)
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
-                }
-            }
-        }
+                .background(if (isSelected) c.primary else Color.Transparent)
+        )
 
         Column(
             Modifier
                 .weight(1f)
-                .padding(start = 8.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
+                .padding(start = 13.dp, end = 6.dp, top = 10.dp, bottom = 12.dp)
         ) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(row.remarks, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge.copy(lineBreak = LineBreak.Paragraph), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                if (doubleColumnDisplay) {
-                    IconButton(onClick = { actions.more(row.guid, row.profile) }, Modifier.size(36.dp)) {
-                        Icon(
-                            painterResource(R.drawable.ic_more_vert_24dp),
-                            stringResource(R.string.acc_more),
-                            Modifier.size(24.dp)
-                        )
-                    }
-                } else {
-                    IconButton(onClick = { actions.share(row.guid, row.profile) }, Modifier.size(36.dp)) {
-                        Icon(
-                            painterResource(R.drawable.ic_share_24dp),
-                            stringResource(R.string.title_configuration_share),
-                            Modifier.size(24.dp)
-                        )
-                    }
-                    IconButton(onClick = { actions.edit(row.guid, row.profile) }, Modifier.size(36.dp)) {
-                        Icon(
-                            painterResource(R.drawable.ic_edit_24dp),
-                            stringResource(R.string.acc_edit),
-                            Modifier.size(24.dp)
-                        )
-                    }
-                    IconButton(onClick = { actions.remove(row.guid, row.remarks) }, Modifier.size(36.dp)) {
-                        Icon(
-                            painterResource(R.drawable.ic_delete_24dp),
-                            stringResource(R.string.acc_delete),
-                            Modifier.size(24.dp)
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(6.dp))
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 if (row.subscriptionBadge.isNotBlank()) {
                     Box(
                         Modifier
-                            .size(24.dp)
+                            .size(22.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)), Alignment.Center
+                            .background(c.surface2),
+                        Alignment.Center
                     ) {
-                        Text(row.subscriptionBadge.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text(
+                            row.subscriptionBadge.uppercase(),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isSelected) c.primary else c.textMuted
+                        )
                     }
+                    Spacer(Modifier.width(8.dp))
                 }
                 Text(
-                    row.statistics,
+                    row.remarks,
                     Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyLarge.copy(lineBreak = LineBreak.Paragraph),
+                    fontWeight = FontWeight.SemiBold,
+                    color = c.text,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (doubleColumnDisplay) {
+                    CardAction(R.drawable.ic_more_vert_24dp, stringResource(R.string.acc_more), onMore)
+                } else {
+                    CardAction(R.drawable.ic_share_24dp, stringResource(R.string.title_configuration_share), onShare)
+                    CardAction(R.drawable.ic_edit_24dp, stringResource(R.string.acc_edit), onEdit)
+                    CardAction(R.drawable.ic_delete_24dp, stringResource(R.string.acc_delete), onRemove)
+                }
+            }
+            if (row.statistics.isNotBlank()) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    row.statistics,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = c.textMuted,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    row.typeDescription,
-                    modifier = Modifier.weight(1f, fill = false),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colorConfigType,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    testResult,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (row.testDelayMillis < 0L) colorPingRed else colorPing,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                Modifier.fillMaxWidth().padding(end = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(Modifier.weight(1f)) {
+                    ProtocolChip(text = row.typeDescription, highlighted = isSelected)
+                }
+                if (testResult.isNotEmpty()) {
+                    val latencyColor = c.latencyColor(row.testDelayMillis)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(latencyColor)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        testResult,
+                        style = MaterialTheme.typography.labelMedium.merge(TabularNumbers),
+                        color = latencyColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun CardAction(iconRes: Int, contentDescription: String, onClick: () -> Unit) {
+    IconButton(onClick = onClick, modifier = Modifier.size(36.dp)) {
+        Icon(
+            painterResource(iconRes),
+            contentDescription,
+            Modifier.size(20.dp),
+            tint = RockBlackTheme.colors.textMuted
+        )
     }
 }
 

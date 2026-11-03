@@ -410,6 +410,9 @@
     <string name="connection_test_error_status_code">Error code: #%d</string>
     <string name="connection_connected">Connected. Tap to check connection.</string>
     <string name="connection_not_connected">Not connected</string>
+    <string name="status_connected">Connected</string>
+    <string name="status_no_server">No server selected</string>
+    <string name="server_test_timeout">Timeout</string>
     <string name="connection_running_task_left">Tests running: %s</string>
 
     <string name="import_subscription_success">Subscription imported successfully</string>

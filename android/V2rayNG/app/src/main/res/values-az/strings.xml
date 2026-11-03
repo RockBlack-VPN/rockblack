@@ -410,6 +410,9 @@
     <string name="connection_test_error_status_code">Xəta kodu: #%d</string>
     <string name="connection_connected">Qoşuldu. Bağlantını yoxlamaq üçün toxunun.</string>
     <string name="connection_not_connected">Qoşulmayıb</string>
+    <string name="status_connected">Connected</string>
+    <string name="status_no_server">No server selected</string>
+    <string name="server_test_timeout">Timeout</string>
     <string name="connection_running_task_left">İcra olunan sınaqlar: %s</string>
 
     <string name="import_subscription_success">Abunəlik uğurla idxal edildi</string>

@@ -33,6 +33,8 @@ import com.v2ray.ang.R
 import com.v2ray.ang.dto.entities.SubscriptionUsageInfo
 import com.v2ray.ang.extension.toTrafficString
 import com.v2ray.ang.handler.SubscriptionInfoParser
+import com.v2ray.ang.ui.compose.RockBlackTheme
+import com.v2ray.ang.ui.compose.TabularNumbers
 import com.v2ray.ang.util.Utils
 
 private const val MILLIS_PER_SECOND = 1000L
@@ -96,11 +98,11 @@ internal fun SubscriptionInfoCard(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         shape = MaterialTheme.shapes.medium,
         // Almost opaque: the list scrolls underneath without showing through readably.
-        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = CARD_ALPHA),
-        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        color = RockBlackTheme.colors.surface2.copy(alpha = CARD_ALPHA),
+        border = BorderStroke(1.dp, RockBlackTheme.colors.outline),
     ) {
         Column(Modifier.padding(start = 16.dp, end = 8.dp, top = 2.dp, bottom = 10.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -155,7 +157,8 @@ internal fun SubscriptionInfoCard(
                             .clip(RoundedCornerShape(2.dp))
                             .clearAndSetSemantics {},
                         color = if (model.trafficLow) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        trackColor = RockBlackTheme.colors.outline,
+                        drawStopIndicator = {},
                     )
                 }
             }
@@ -179,7 +182,7 @@ private fun StatsRow(model: SubscriptionInfoUiModel) {
     }
     // Figures and the slash between them always read left to right, also in right-to-left languages;
     // otherwise the bidi algorithm swaps "used / total" around the slash.
-    val figuresStyle = MaterialTheme.typography.bodySmall.copy(textDirection = TextDirection.Ltr)
+    val figuresStyle = MaterialTheme.typography.bodySmall.copy(textDirection = TextDirection.Ltr).merge(TabularNumbers)
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(
             text = stringResource(R.string.sub_info_traffic, model.usedBytes.toTrafficString(), totalText),

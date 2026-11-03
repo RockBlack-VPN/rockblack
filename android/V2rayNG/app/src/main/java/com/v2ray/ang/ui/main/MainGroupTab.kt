@@ -34,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -48,11 +47,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.dto.GroupMapItem
 import com.v2ray.ang.dto.entities.ServersCache
+import com.v2ray.ang.ui.compose.RockBlackTheme
 import kotlinx.coroutines.flow.StateFlow
 
 private val TAB_BAR_PADDING = 3.dp
 private val TAB_SPACING = 2.dp
-private val TAB_HEIGHT = 30.dp
+private val TAB_HEIGHT = 32.dp
 private val SELECTED_TAB_MARGIN = 12.dp
 
 /**
@@ -72,18 +72,16 @@ fun GroupTabBar(
     modifier: Modifier = Modifier
 ) {
     val selectedIndex = selectedTabIndex.coerceIn(0, groups.lastIndex)
-    val colors = MaterialTheme.colorScheme
-    // The plain surface color equals the screen background in dark mode, so the bar needs its own tone there.
-    val dark = colors.surface.luminance() < 0.5f
+    val rb = RockBlackTheme.colors
 
+    // RockBlack: flat pill bar on the card surface with a 1 dp outline, no shadow.
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         shape = CircleShape,
-        color = if (dark) colors.surfaceContainerHigh else colors.surface,
-        border = BorderStroke(0.5.dp, colors.outlineVariant.copy(alpha = if (dark) 0.6f else 0.35f)),
-        shadowElevation = 3.dp
+        color = rb.surface,
+        border = BorderStroke(1.dp, rb.outline)
     ) {
         BoxWithConstraints {
             val barPaddingPx = with(LocalDensity.current) { TAB_BAR_PADDING.roundToPx() }
@@ -167,7 +165,7 @@ private fun GroupTabItem(
     val servers by serverFlow.collectAsStateWithLifecycle()
     // The default group (empty id) never showed a count.
     val count = if (group.id.isEmpty()) 0 else servers.size
-    val colors = MaterialTheme.colorScheme
+    val rb = RockBlackTheme.colors
     val bringIntoView = remember { BringIntoViewRequester() }
     var size by remember { mutableStateOf(IntSize.Zero) }
     val marginPx = with(LocalDensity.current) { SELECTED_TAB_MARGIN.toPx() }
@@ -188,7 +186,7 @@ private fun GroupTabItem(
             .bringIntoViewRequester(bringIntoView)
             .onSizeChanged { size = it }
             .clip(CircleShape)
-            .background(if (selected) colors.primary.copy(alpha = 0.12f) else Color.Transparent)
+            .background(if (selected) rb.primarySoft else Color.Transparent)
             .selectable(selected = selected, role = Role.Tab, onClick = onClick)
             .padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.Center,
@@ -198,7 +196,7 @@ private fun GroupTabItem(
             text = group.remarks,
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Medium,
-            color = if (selected) colors.primary else colors.onSurfaceVariant,
+            color = if (selected) rb.primary else rb.textMuted,
             maxLines = 1,
             softWrap = false,
             overflow = TextOverflow.Ellipsis
@@ -209,14 +207,14 @@ private fun GroupTabItem(
                 modifier = Modifier
                     .defaultMinSize(minWidth = 16.dp, minHeight = 16.dp)
                     .clip(CircleShape)
-                    .background(if (selected) colors.primary else colors.onSurfaceVariant.copy(alpha = 0.55f))
+                    .background(if (selected) rb.primary else rb.surface2)
                     .padding(horizontal = 4.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = count.toString(),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, lineHeight = 12.sp),
-                    color = if (selected) colors.onPrimary else colors.surface,
+                    color = if (selected) rb.onPrimary else rb.textMuted,
                     maxLines = 1
                 )
             }

@@ -220,11 +220,32 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
-      - name: Unit tests (informational)
-        if: github.event_name != 'workflow_dispatch' || !inputs.release
+      # Informational: unit tests + Robolectric screenshot tests (RockBlackScreenshotTest).
+      # Never blocks the APK build or the release.
+      - name: Unit & screenshot tests (informational)
+        id: tests
         continue-on-error: true
+        timeout-minutes: 30
         working-directory: android/V2rayNG
         run: ./gradlew --no-daemon :app:testPlaystoreDebugUnitTest
+
+      - name: Upload screenshots
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-screenshots
+          path: android/V2rayNG/app/build/outputs/screenshots/*.png
+          if-no-files-found: warn
+
+      - name: Upload test report
+        if: always() && steps.tests.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-test-report
+          path: android/V2rayNG/app/build/reports/tests/
+          if-no-files-found: ignore
 
   release:
     needs: build
