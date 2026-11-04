@@ -40,6 +40,7 @@ Platform versions follow the upstream version they are built from.
 |:--|:--|:--|:--|
 | Desktop | v2rayN app version | `desktop-vX.Y.Z` | `Desktop vX.Y.Z` |
 | Android | v2rayNG `versionName` | `android-vX.Y.Z` | `Android vX.Y.Z` |
+| iOS | `MARKETING_VERSION` in `ios/project.yml` | `ios-vX.Y.Z` | `iOS vX.Y.Z` |
 
 The permanent tag `latest` is a generated mirror of the newest asset of each
 platform; never upload to it directly.
@@ -63,6 +64,15 @@ Desktop (`desktop-vX.Y.Z`):
 - `rockblack-linux-x64.rpm`, `rockblack-linux-arm64.rpm`
 - `rockblack-linux-x64-portable.zip`, `rockblack-linux-arm64-portable.zip`
 - `SHA256SUMS`
+
+iOS (`ios-vX.Y.Z`):
+
+- `RockBlack.ipa` — signed (when the `IOS_*` signing secrets are configured), **or**
+- `RockBlack-unsigned.ipa` — unsigned build for TrollStore / re-signing
+- `SHA256SUMS`
+
+iOS bundle IDs: `tech.rockblack.app`, packet tunnel `tech.rockblack.app.tunnel`,
+app group `group.tech.rockblack.app`. Signing secrets: see [ios/README.md](../ios/README.md).
 
 ## Android signing secrets
 

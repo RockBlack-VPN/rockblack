@@ -87,6 +87,7 @@ sends no telemetry.
 |:--|:--|
 | [`desktop/`](desktop) | RockBlack Desktop — fork of [v2rayN](https://github.com/2dust/v2rayN) (.NET, Avalonia/WPF) |
 | [`android/`](android) | RockBlack Android — fork of [v2rayNG](https://github.com/2dust/v2rayNG) (Kotlin) |
+| [`ios/`](ios) | RockBlack iOS — SwiftUI app + packet tunnel on [libXray](https://github.com/XTLS/libXray) |
 | [`branding/`](branding) | Logo, icons and naming/release conventions |
 | [`scripts/`](scripts), [`tests/`](tests) | Release manifest and `latest` mirror tooling |
 | [`.github/workflows/`](.github/workflows) | Builds and releases for every platform (GitHub Actions) |

@@ -71,16 +71,8 @@ enum PingService {
         let connection = NWConnection(host: NWEndpoint.Host(endpoint.host), port: port, using: .tcp)
         let start = DispatchTime.now()
         return await withCheckedContinuation { continuation in
-            let lock = NSLock()
-            var finished = false
-            func finish(_ result: PingResult) {
-                lock.lock()
-                defer { lock.unlock() }
-                guard !finished else { return }
-                finished = true
-                connection.cancel()
-                continuation.resume(returning: result)
-            }
+            let once = Once(connection: connection, continuation: continuation)
+            let finish: @Sendable (PingResult) -> Void = { once.finish($0) }
             connection.stateUpdateHandler = { state in
                 switch state {
                 case .ready:
@@ -97,5 +89,27 @@ enum PingService {
             connection.start(queue: tcpQueue)
             tcpQueue.asyncAfter(deadline: .now() + .seconds(timeoutSeconds)) { finish(.timeout) }
         }
+    }
+}
+
+/// Resumes a ping continuation exactly once.
+private final class Once: @unchecked Sendable {
+    private let lock = NSLock()
+    private var done = false
+    private let connection: NWConnection
+    private let continuation: CheckedContinuation<PingResult, Never>
+
+    init(connection: NWConnection, continuation: CheckedContinuation<PingResult, Never>) {
+        self.connection = connection
+        self.continuation = continuation
+    }
+
+    func finish(_ result: PingResult) {
+        lock.lock()
+        defer { lock.unlock() }
+        guard !done else { return }
+        done = true
+        connection.cancel()
+        continuation.resume(returning: result)
     }
 }

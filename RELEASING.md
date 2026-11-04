@@ -38,6 +38,17 @@ Silicon / Intel DMG) and Linux (x64/ARM64 DEB, RPM, portable ZIP), creates
 `desktop-vX.Y.Z` titled `Desktop vX.Y.Z` with all assets and `SHA256SUMS`, then
 runs **Update platform download links**.
 
+## iOS
+
+1. Bump `MARKETING_VERSION` in `ios/project.yml`.
+2. Run **Actions → iOS build → Run workflow** on `main` with **release** checked.
+
+The workflow builds the IPA and creates `ios-vX.Y.Z` titled `iOS vX.Y.Z`
+with `RockBlack.ipa` (signed, when the `IOS_*` secrets are set) or
+`RockBlack-unsigned.ipa`, plus `SHA256SUMS`, then runs **Update platform
+download links** (`ios` entry in `RELEASE.json`). Signing secrets and install
+notes: [ios/README.md](ios/README.md).
+
 ## Update feed and `latest`
 
 `RELEASE.json` is the update feed. Every download URL is pinned to its

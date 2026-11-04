@@ -83,7 +83,7 @@ struct Subscription: Identifiable, Codable, Hashable {
     var isManual: Bool { url == nil }
 }
 
-enum PingResult: Equatable {
+enum PingResult: Equatable, Sendable {
     case testing
     case delay(Int)
     case timeout

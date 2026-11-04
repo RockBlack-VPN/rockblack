@@ -183,8 +183,22 @@ jobs:
       - name: Prepare project (libXray, geo data, XcodeGen)
         run: bash ios/scripts/ci-setup.sh
 
-      - name: Unit tests and screenshots
-        run: bash ios/scripts/simulator-screenshots.sh "$GITHUB_WORKSPACE/screenshots"
+      - name: Boot simulator
+        timeout-minutes: 10
+        run: bash ios/scripts/simulator-screenshots.sh boot
+
+      - name: Build for simulator
+        timeout-minutes: 25
+        run: bash ios/scripts/simulator-screenshots.sh build
+
+      - name: Screenshots
+        timeout-minutes: 10
+        run: bash ios/scripts/simulator-screenshots.sh shots "$GITHUB_WORKSPACE/screenshots"
+
+      - name: Unit tests
+        if: always()
+        timeout-minutes: 15
+        run: bash ios/scripts/simulator-screenshots.sh test "$GITHUB_WORKSPACE/screenshots"
 
       - name: Upload screenshots
         if: always()

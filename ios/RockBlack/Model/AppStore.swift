@@ -15,10 +15,14 @@ final class AppStore: ObservableObject {
 
     let vpn = VPNController()
     private var persist = true
+    private var testing = false
 
     init() {
         let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("-demo") {
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
+            persist = false  // unit-test host: no network, no NetworkExtension, no stored data
+            testing = true
+        } else if arguments.contains("-demo") {
             persist = false
             DemoData.apply(to: self, connected: arguments.contains("-demoConnected"))
         } else {
@@ -29,6 +33,7 @@ final class AppStore: ObservableObject {
     // MARK: - Lifecycle
 
     func onLaunch() async {
+        guard !testing else { return }
         await vpn.load()
         guard persist else { return }
         await refreshStale()
