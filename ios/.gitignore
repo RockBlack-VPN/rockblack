@@ -1,0 +1,10 @@
+# generated / downloaded in CI (see README.md)
+*.xcodeproj/
+Frameworks/
+Tunnel/Geo/*.dat
+build/
+DerivedData/
+*.ipa
+*.xcarchive
+*.mobileprovision
+*.p8

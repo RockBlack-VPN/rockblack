@@ -60,10 +60,41 @@ class ManifestTest(unittest.TestCase):
 
     def test_newest_release_per_platform(self):
         releases = [self.release(t, []) for t in
-                    ["android-v2.3.9", "android-v2.3.15", "desktop-v7.25.6", "latest", "desktop-v7.3.0"]]
+                    ["android-v2.3.9", "android-v2.3.15", "desktop-v7.25.6", "latest", "desktop-v7.3.0",
+                     "ios-v1.0.0", "ios-v1.2.0"]]
         newest = m.newest_releases(releases)
         self.assertEqual("android-v2.3.15", newest["android"]["tag_name"])
         self.assertEqual("desktop-v7.25.6", newest["desktop"]["tag_name"])
+        self.assertEqual("ios-v1.2.0", newest["ios"]["tag_name"])
+
+    def test_ios_signed_release_leaves_other_platforms_unchanged(self):
+        data = {"android": {"version": "2.3.16", "download": "kept"}, "desktop": {"version": "7.25.7"}}
+        original = copy.deepcopy(data)
+        urls = m.update(data, self.release("ios-v1.0.0", ["RockBlack.ipa", "RockBlack-unsigned.ipa", "SHA256SUMS"]))
+        self.assertEqual(original["android"], data["android"])
+        self.assertEqual(original["desktop"], data["desktop"])
+        self.assertEqual({"RockBlack.ipa"}, set(urls))
+        self.assertIn("/ios-v1.0.0/RockBlack.ipa", data["ios"]["download"])
+        self.assertTrue(data["ios"]["signed"])
+        self.assertEqual("RockBlack iOS 1.0.0", data["ios"]["name"])
+
+    def test_ios_unsigned_release(self):
+        data = {}
+        m.update(data, self.release("ios-v1.0.0", ["RockBlack-unsigned.ipa", "SHA256SUMS"]))
+        self.assertIn("/ios-v1.0.0/RockBlack-unsigned.ipa", data["ios"]["download"])
+        self.assertFalse(data["ios"]["signed"])
+
+    def test_ios_release_without_ipa_is_rejected(self):
+        for names in (["SHA256SUMS"], ["RockBlack.apk"], []):
+            data = {}
+            with self.subTest(names=names), self.assertRaises(ValueError):
+                m.update(data, self.release("ios-v1.0.0", names))
+            self.assertEqual({}, data)
+
+    def test_ios_cannot_downgrade(self):
+        data = {"ios": {"version": "1.2.0"}}
+        self.assertEqual({}, m.update(data, self.release("ios-v1.1.0", ["RockBlack.ipa"])))
+        self.assertEqual("1.2.0", data["ios"]["version"])
 
 
 if __name__ == "__main__":

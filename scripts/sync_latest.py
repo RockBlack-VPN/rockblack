@@ -6,9 +6,10 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from update_manifest import BRAND, REPO, required_assets
+from update_manifest import BRAND, LABELS, REPO, required_assets
 
 LATEST_TITLE = f"{BRAND} — Latest downloads"
+PLATFORMS = ("desktop", "android", "ios")
 
 
 def gh(*args):
@@ -18,7 +19,7 @@ def gh(*args):
 def plan(manifest, read_release):
     """Validate the releases RELEASE.json points at. Platforms not released yet are skipped."""
     result = []
-    for platform in ("desktop", "android"):
+    for platform in PLATFORMS:
         version = manifest.get(platform, {}).get("version")
         if not version:
             continue
@@ -28,8 +29,8 @@ def plan(manifest, read_release):
         release = read_release(tag)
         if release.get("draft") or release.get("prerelease") or release["tag_name"] != tag:
             raise ValueError(f"Not a published stable release: {tag}")
-        names = required_assets(platform)
         assets = {a["name"]: a for a in release["assets"] if a.get("size", 0) > 0}
+        names = required_assets(platform, assets.keys())
         if not names <= assets.keys():
             raise ValueError(f"Incomplete release {tag}: {sorted(names - assets.keys())}")
         result.append((tag, {name: assets[name] for name in sorted(names)}))
@@ -54,14 +55,14 @@ def verify(path, asset):
 
 def notes_text(manifest):
     parts = []
-    for platform, label in (("desktop", "Desktop"), ("android", "Android")):
+    for platform in PLATFORMS:
         version = manifest.get(platform, {}).get("version")
         if version:
-            parts.append(f"{label} **{version}**")
+            parts.append(f"{LABELS[platform]} **{version}**")
     return (
         "Latest stable downloads: " + ", ".join(parts) + ".\n\n"
         "Permanent download tag; files are updated independently by platform. "
-        "For version history and Obtainium use `desktop-v*` / `android-v*` releases.\n"
+        "For version history and Obtainium use `desktop-v*` / `android-v*` / `ios-v*` releases.\n"
     )
 
 

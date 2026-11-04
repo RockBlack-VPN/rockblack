@@ -1,0 +1,275 @@
+name: iOS build
+
+on:
+  push:
+    branches: [main, ios-app]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-build.yml'
+  pull_request:
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-build.yml'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Publish GitHub release ios-v<MARKETING_VERSION> (from main only)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+env:
+  # XTLS/libXray release (CalVer) whose libxray-apple-cgo.zip is used; see ios/scripts/fetch-libxray.sh.
+  LIBXRAY_TAG: 'v26.10.31'
+  APP_ID: 'tech.rockblack.app'
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      signed: ${{ steps.signing.outputs.signed }}
+      ipa: ${{ steps.package.outputs.ipa }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Restore cached LibXray.xcframework
+        id: cache-libxray
+        uses: actions/cache@v6
+        with:
+          path: ios/Frameworks
+          key: libxray-ios-${{ env.LIBXRAY_TAG }}-${{ hashFiles('ios/scripts/fetch-libxray.sh') }}
+
+      - name: Prepare project (libXray, geo data, XcodeGen)
+        run: bash ios/scripts/ci-setup.sh
+
+      - name: Read version
+        id: meta
+        run: |
+          set -euo pipefail
+          VERSION=$(sed -n 's/^ *MARKETING_VERSION: *"\{0,1\}\([0-9.]*\)"\{0,1\}.*/\1/p' ios/project.yml | head -n 1)
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::MARKETING_VERSION '$VERSION' in ios/project.yml is not X.Y.Z"; exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "build=${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "RockBlack iOS $VERSION (build ${{ github.run_number }})"
+
+      - name: Check signing secrets
+        id: signing
+        env:
+          IOS_CERT_P12_BASE64: ${{ secrets.IOS_CERT_P12_BASE64 }}
+          IOS_CERT_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
+          IOS_PROVISION_APP_BASE64: ${{ secrets.IOS_PROVISION_APP_BASE64 }}
+          IOS_PROVISION_TUNNEL_BASE64: ${{ secrets.IOS_PROVISION_TUNNEL_BASE64 }}
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          if [ -n "$IOS_CERT_P12_BASE64" ] && [ -n "$IOS_CERT_PASSWORD" ] && [ -n "$IOS_PROVISION_APP_BASE64" ] \
+             && [ -n "$IOS_PROVISION_TUNNEL_BASE64" ] && [ -n "$IOS_TEAM_ID" ]; then
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+            echo "Apple signing secrets available: building a signed IPA."
+          else
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::IOS_* signing secrets are not set; building RockBlack-unsigned.ipa (TrollStore / re-signing)."
+          fi
+
+      - name: Build unsigned archive
+        if: steps.signing.outputs.signed != 'true'
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project ios/RockBlack.xcodeproj -scheme RockBlack -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/RockBlack.xcarchive" \
+            CURRENT_PROJECT_VERSION=${{ steps.meta.outputs.build }} \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | { if command -v xcbeautify >/dev/null; then xcbeautify --renderer github-actions; else cat; fi; }
+
+      - name: Package unsigned IPA
+        if: steps.signing.outputs.signed != 'true'
+        run: bash ios/scripts/package-unsigned.sh "$RUNNER_TEMP/RockBlack.xcarchive" "$GITHUB_WORKSPACE/dist"
+
+      - name: Build signed IPA
+        id: signed
+        if: steps.signing.outputs.signed == 'true'
+        env:
+          IOS_CERT_P12_BASE64: ${{ secrets.IOS_CERT_P12_BASE64 }}
+          IOS_CERT_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
+          IOS_PROVISION_APP_BASE64: ${{ secrets.IOS_PROVISION_APP_BASE64 }}
+          IOS_PROVISION_TUNNEL_BASE64: ${{ secrets.IOS_PROVISION_TUNNEL_BASE64 }}
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+          IOS_EXPORT_METHOD: ${{ secrets.IOS_EXPORT_METHOD }}
+          BUILD_NUMBER: ${{ steps.meta.outputs.build }}
+          OUT: ${{ github.workspace }}/dist
+        run: bash ios/scripts/build-signed.sh
+
+      - name: Verify IPA
+        id: package
+        env:
+          SIGNED: ${{ steps.signing.outputs.signed }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          IPA=$([ "$SIGNED" = "true" ] && echo RockBlack.ipa || echo RockBlack-unsigned.ipa)
+          cd dist
+          test -s "$IPA"
+          unzip -q -o "$IPA" -d "$RUNNER_TEMP/ipa-check"
+          APP="$RUNNER_TEMP/ipa-check/Payload/RockBlack.app"
+          ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist")
+          V=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Info.plist")
+          EXT=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/PlugIns/RockBlackTunnel.appex/Info.plist")
+          echo "app=$ID version=$V extension=$EXT"
+          [ "$ID" = "$APP_ID" ] || { echo "::error::Unexpected bundle id $ID"; exit 1; }
+          [ "$EXT" = "$APP_ID.tunnel" ] || { echo "::error::Unexpected extension id $EXT"; exit 1; }
+          [ "$V" = "$VERSION" ] || { echo "::error::IPA version $V differs from project.yml $VERSION"; exit 1; }
+          ls -la "$APP/PlugIns/RockBlackTunnel.appex"
+          for f in geosite.dat geoip.dat; do test -s "$APP/PlugIns/RockBlackTunnel.appex/$f"; done
+          for l in en ru de; do test -d "$APP/$l.lproj"; done
+          if ls -d "$APP"/*.lproj | grep -vE '/(en|ru|de|Base)\.lproj$'; then
+            echo "::error::Unexpected localizations in the app bundle"; exit 1
+          fi
+          shasum -a 256 "$IPA" > SHA256SUMS
+          cat SHA256SUMS
+          echo "ipa=$IPA" >> "$GITHUB_OUTPUT"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.package.outputs.ipa }}
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Upload to TestFlight
+        if: steps.signing.outputs.signed == 'true' && steps.signed.outputs.method == 'app-store-connect'
+        continue-on-error: true
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          if [ -z "$ASC_KEY_ID" ] || [ -z "$ASC_ISSUER_ID" ] || [ -z "$ASC_PRIVATE_KEY" ]; then
+            echo "::notice::App Store Connect API key secrets not set; skipping TestFlight upload."
+            exit 0
+          fi
+          mkdir -p ~/.appstoreconnect/private_keys
+          printf '%s' "$ASC_PRIVATE_KEY" > ~/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8
+          xcrun altool --upload-app --type ios --file dist/RockBlack.ipa \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+
+  # Informational: unit tests on the simulator + screenshots of the main
+  # screen with demo data. Never blocks the IPA build or the release.
+  screenshots:
+    runs-on: macos-15
+    timeout-minutes: 60
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Restore cached LibXray.xcframework
+        uses: actions/cache@v6
+        with:
+          path: ios/Frameworks
+          key: libxray-ios-${{ env.LIBXRAY_TAG }}-${{ hashFiles('ios/scripts/fetch-libxray.sh') }}
+
+      - name: Prepare project (libXray, geo data, XcodeGen)
+        run: bash ios/scripts/ci-setup.sh
+
+      - name: Unit tests and screenshots
+        run: bash ios/scripts/simulator-screenshots.sh "$GITHUB_WORKSPACE/screenshots"
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-screenshots
+          path: screenshots/*.png
+          if-no-files-found: warn
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-test-results
+          path: screenshots/tests.xcresult
+          if-no-files-found: ignore
+
+  release:
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.release
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.publish.outputs.tag }}
+    steps:
+      - name: Require main branch
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Releases are only published from main (got $GITHUB_REF)."
+            exit 1
+          fi
+
+      - name: Download IPA artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.build.outputs.ipa }}
+          path: dist
+
+      - name: Create release
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+          IPA: ${{ needs.build.outputs.ipa }}
+          SIGNED: ${{ needs.build.outputs.signed }}
+        run: |
+          set -euo pipefail
+          TAG="ios-v$VERSION"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release $TAG already exists. Bump MARKETING_VERSION in ios/project.yml before releasing."
+            exit 1
+          fi
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG already exists."
+            exit 1
+          fi
+          (cd dist && sha256sum -c SHA256SUMS)
+          if [ "$SIGNED" = "true" ]; then
+            INSTALL="- \`RockBlack.ipa\` — signed build (install on registered devices / via your distribution channel)"
+          else
+            INSTALL="- \`RockBlack-unsigned.ipa\` — unsigned build: install with TrollStore, or re-sign with your own Apple Developer account (AltStore, Sideloadly, esign). The Network Extension needs a paid developer account when re-signing."
+          fi
+          cat > notes.md <<EOF
+          RockBlack for iOS $VERSION (Xray-core via [libXray](https://github.com/XTLS/libXray) $LIBXRAY_TAG).
+
+          $INSTALL
+          - \`SHA256SUMS\` — checksums
+
+          Bundle ID: \`$APP_ID\` · iOS 16 or later.
+          EOF
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "iOS v$VERSION" \
+            --latest=false \
+            --notes-file notes.md \
+            "dist/$IPA" \
+            dist/SHA256SUMS
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+  manifest:
+    needs: [build, release]
+    if: github.event_name == 'workflow_dispatch' && inputs.release
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-manifest.yml
+    with:
+      tag: ios-v${{ needs.build.outputs.version }}
+    secrets: inherit

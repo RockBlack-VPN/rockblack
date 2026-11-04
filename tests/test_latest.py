@@ -29,6 +29,23 @@ class LatestTest(unittest.TestCase):
         self.assertEqual(len(result[0][1]), 11)
         self.assertEqual(set(result[1][1]), {"RockBlack.apk"})
 
+    def test_ios_channel_is_added_when_released(self):
+        manifest, releases = self.fixture()
+        manifest["ios"] = {"version": "1.0.0"}
+        releases["ios-v1.0.0"] = {"tag_name": "ios-v1.0.0",
+                                  "assets": [{"name": n, "size": 3} for n in ("RockBlack-unsigned.ipa", "SHA256SUMS")]}
+        result = plan(manifest, releases.__getitem__)
+        self.assertEqual([tag for tag, _ in result], ["desktop-v7.25.6", "android-v2.3.15", "ios-v1.0.0"])
+        self.assertEqual(set(result[2][1]), {"RockBlack-unsigned.ipa"})
+        self.assertIn("iOS **1.0.0**", notes_text(manifest))
+
+    def test_incomplete_ios_release_is_rejected(self):
+        manifest, releases = self.fixture()
+        manifest["ios"] = {"version": "1.0.0"}
+        releases["ios-v1.0.0"] = {"tag_name": "ios-v1.0.0", "assets": [{"name": "SHA256SUMS", "size": 3}]}
+        with self.assertRaises(ValueError):
+            plan(manifest, releases.__getitem__)
+
     def test_unreleased_platform_is_skipped(self):
         manifest, releases = self.fixture()
         manifest["desktop"]["version"] = None
