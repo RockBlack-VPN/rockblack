@@ -102,3 +102,12 @@
 "Xray core" = "Xray-Kern";
 "Xray outbound" = "Xray-Outbound";
 "Your subscription expires in %lld days" = "Ihr Abo läuft in %lld Tagen ab";
+"Unsupported routing profile" = "Nicht unterstütztes Routing-Profil";
+"Routing profile imported: %@" = "Routing-Profil importiert: %@";
+"Routing profile imported: %@ (%lld rules skipped)" = "Routing-Profil importiert: %@ (%lld Regeln übersprungen)";
+"Imported" = "Importiert";
+"Profiles from subscriptions or happ://routing links. Swipe left to delete." = "Profile aus Abos oder happ://routing-Links. Zum Löschen nach links wischen.";
+"Everything else through the proxy" = "Alles andere über den Proxy";
+"Everything else direct" = "Alles andere direkt";
+"Rules: %lld" = "Regeln: %lld";
+"Skipped: %lld" = "Übersprungen: %lld";

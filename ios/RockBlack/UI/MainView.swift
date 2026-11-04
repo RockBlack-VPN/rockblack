@@ -85,7 +85,7 @@ struct MainView: View {
             Button { showRouting = true } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.triangle.branch")
-                    Text(String(format: L("Routing: %@"), RoutingSheet.title(store.routing)))
+                    Text(String(format: L("Routing: %@"), store.routingTitle)).lineLimit(1)
                     Image(systemName: "chevron.down").font(.system(size: 11, weight: .bold))
                 }
                 .font(.subheadline.weight(.medium))

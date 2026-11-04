@@ -102,3 +102,12 @@
 "Xray core" = "Ядро Xray";
 "Xray outbound" = "Xray outbound";
 "Your subscription expires in %lld days" = "Подписка истекает через %lld дн.";
+"Unsupported routing profile" = "Неподдерживаемый профиль маршрутизации";
+"Routing profile imported: %@" = "Профиль маршрутизации импортирован: %@";
+"Routing profile imported: %@ (%lld rules skipped)" = "Профиль маршрутизации импортирован: %@ (пропущено правил: %lld)";
+"Imported" = "Импортированные";
+"Profiles from subscriptions or happ://routing links. Swipe left to delete." = "Профили из подписок или ссылок happ://routing. Смахните влево, чтобы удалить.";
+"Everything else through the proxy" = "Остальное через прокси";
+"Everything else direct" = "Остальное напрямую";
+"Rules: %lld" = "Правил: %lld";
+"Skipped: %lld" = "Пропущено: %lld";

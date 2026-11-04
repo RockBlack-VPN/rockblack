@@ -8,6 +8,9 @@ final class AppStore: ObservableObject {
     @Published var subscriptions: [Subscription] = []
     @Published var selectedServerID: UUID?
     @Published var routing: RoutingProfile = .russia
+    /// Imported (Happ format) routing profiles; `customRoutingID` overrides `routing` when set.
+    @Published var customRoutings: [CustomRouting] = []
+    @Published var customRoutingID: UUID?
     @Published var pings: [UUID: PingResult] = [:]
     @Published var pingingGroups: Set<UUID> = []
     @Published var refreshingGroups: Set<UUID> = []
@@ -88,6 +91,9 @@ final class AppStore: ObservableObject {
         if let url = URL(string: text), ["http", "https"].contains(url.scheme?.lowercased() ?? ""), !text.contains("\n") {
             return await addSubscription(url)
         }
+        if HappRouting.parseLink(text) != nil {
+            return await importRouting(text, activate: false, interactive: true)
+        }
         if text.lowercased().hasPrefix("rockblack://") || text.lowercased().hasPrefix("happ://add/") {
             if let inner = Self.deepLinkPayload(text) { return await add(inner) }
         }
@@ -157,6 +163,9 @@ final class AppStore: ObservableObject {
             if let title = result.title, !title.isEmpty { current.name = title }
             if let hours = result.updateHours, hours > 0 { current.autoUpdateHours = hours }
             upsert(current)
+            if let link = result.routingLink {
+                await importRouting(link, activate: false, interactive: false)
+            }
             if let selectedName, selectedServer == nil,
                let match = current.servers.first(where: { $0.name == selectedName }) {
                 selectedServerID = match.id
@@ -227,10 +236,96 @@ final class AppStore: ObservableObject {
     }
 
     func setRouting(_ profile: RoutingProfile) {
-        guard routing != profile else { return }
+        guard routing != profile || customRoutingID != nil else { return }
         routing = profile
+        customRoutingID = nil
         save()
         Task { await applyIfConnected() }
+    }
+
+    var activeCustomRouting: CustomRouting? {
+        guard let id = customRoutingID else { return nil }
+        return customRoutings.first { $0.id == id }
+    }
+
+    var routingTitle: String {
+        activeCustomRouting?.name ?? RoutingSheet.title(routing)
+    }
+
+    func setCustomRouting(_ id: UUID) {
+        guard customRoutingID != id else { return }
+        customRoutingID = id
+        save()
+        Task { await applyIfConnected() }
+    }
+
+    func deleteCustomRouting(_ id: UUID) {
+        customRoutings.removeAll { $0.id == id }
+        if customRoutingID == id {
+            customRoutingID = nil
+            Task { await applyIfConnected() }
+        }
+        save()
+    }
+
+    /// Imports a `happ://routing/add|onadd/{base64}` profile. A profile with the same
+    /// name is replaced; `onadd` (or `activate`) selects it on first import, and an
+    /// already active profile stays active with the new rules.
+    @discardableResult
+    func importRouting(_ link: String, activate: Bool, interactive: Bool) async -> Bool {
+        guard let parsed = HappRouting.profile(fromLink: link),
+              let checked = await Self.validated(parsed.profile) else {
+            if interactive { message = L("Unsupported routing profile") }
+            return false
+        }
+        var profile = checked
+        let previous = customRoutings.first { $0.name == profile.name }
+        if let previous { profile.id = previous.id }
+        let changed = previous.map { $0 != profile } ?? true
+        if let index = customRoutings.firstIndex(where: { $0.id == profile.id }) {
+            customRoutings[index] = profile
+        } else {
+            customRoutings.append(profile)
+        }
+        let wasActive = customRoutingID == profile.id
+        if (parsed.activate || activate) && (previous == nil || interactive) {
+            customRoutingID = profile.id
+        }
+        save()
+        if interactive {
+            message = profile.skipped.isEmpty
+                ? String(format: L("Routing profile imported: %@"), profile.name)
+                : String(format: L("Routing profile imported: %@ (%lld rules skipped)"), profile.name, profile.skipped.count)
+        }
+        if (wasActive && changed) || (!wasActive && customRoutingID == profile.id) {
+            await applyIfConnected()
+        }
+        return true
+    }
+
+    /// Lets Xray-core build the profile against the geo files bundled in the tunnel.
+    /// Regular expressions Xray rejects are dropped; a profile that still fails is refused.
+    nonisolated static func validated(_ profile: CustomRouting) async -> CustomRouting? {
+        await Task.detached(priority: .userInitiated) { () -> CustomRouting? in
+            guard let geo = Bundle.main.builtInPlugInsURL?.appendingPathComponent("RockBlackTunnel.appex").path,
+                  FileManager.default.fileExists(atPath: geo + "/geoip.dat") else { return profile }
+            func builds(_ candidate: CustomRouting) -> Bool {
+                var config = XrayConfig.build(outbound: nil, custom: candidate)
+                config["inbounds"] = [[String: Any]]()
+                config["env"] = ["xray.location.asset": geo]
+                return XrayCore.invoke("testXray", payload: ["xrayJson": JSONText.encode(config) ?? ""]).success
+            }
+            if builds(profile) { return profile }
+            var reduced = profile
+            var removed: [String] = []
+            for keyPath in [\CustomRouting.blockSites, \CustomRouting.proxySites, \CustomRouting.directSites] {
+                let list = reduced[keyPath: keyPath]
+                removed += list.filter { $0.lowercased().hasPrefix("regexp:") }
+                reduced[keyPath: keyPath] = list.filter { !$0.lowercased().hasPrefix("regexp:") }
+            }
+            reduced.skipped = Array(Set(reduced.skipped + removed)).sorted()
+            return builds(reduced) ? reduced : nil
+        }.value
     }
 
     func selectFastest(in id: UUID) {
@@ -244,6 +339,10 @@ final class AppStore: ObservableObject {
 
     func currentConfig() -> String? {
         let outbound = selectedServer?.outboundObject
+        if let custom = activeCustomRouting {
+            guard outbound != nil || !custom.globalProxy else { return nil }
+            return JSONText.encode(XrayConfig.build(outbound: outbound, custom: custom))
+        }
         if outbound == nil && routing != .direct { return nil }
         return JSONText.encode(XrayConfig.build(outbound: outbound, profile: routing))
     }
@@ -296,11 +395,14 @@ final class AppStore: ObservableObject {
         subscriptions = snapshot.subscriptions
         selectedServerID = snapshot.selectedServerID
         routing = snapshot.routing
+        customRoutings = snapshot.customRoutings ?? []
+        customRoutingID = snapshot.customRoutingID.flatMap { id in customRoutings.contains { $0.id == id } ? id : nil }
     }
 
     func save() {
         guard persist else { return }
-        let snapshot = StoreSnapshot(subscriptions: subscriptions, selectedServerID: selectedServerID, routing: routing)
+        let snapshot = StoreSnapshot(subscriptions: subscriptions, selectedServerID: selectedServerID, routing: routing,
+                                     customRoutings: customRoutings, customRoutingID: customRoutingID)
         if let data = try? JSONEncoder().encode(snapshot) {
             try? data.write(to: AppGroup.storeURL, options: .atomic)
         }

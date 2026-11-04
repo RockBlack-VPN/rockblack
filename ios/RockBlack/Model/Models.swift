@@ -94,4 +94,6 @@ struct StoreSnapshot: Codable {
     var subscriptions: [Subscription]
     var selectedServerID: UUID?
     var routing: RoutingProfile
+    var customRoutings: [CustomRouting]?
+    var customRoutingID: UUID?
 }

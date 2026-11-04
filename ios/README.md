@@ -43,6 +43,17 @@ RockBlack.app (SwiftUI)                       RockBlackTunnel.appex (NEPacketTun
 * **Routing profiles:** Global, Russia (default), Block ads only, Direct.
   Changing the server or the profile while connected reloads Xray inside the
   running tunnel (provider message), falling back to a reconnect.
+* **Imported routing profiles (Happ format):** `happ://routing/add/{base64}`
+  (store) and `happ://routing/onadd/{base64}` (store + activate) from a
+  subscription `routing` header, a `routing: happ://…` body line, a deep link
+  (`happ://` / `rockblack://routing/…`) or pasted text. Mapping as on Android:
+  BlockSites/BlockIp → block, private ranges direct, ProxySites/ProxyIp → proxy,
+  DirectSites/DirectIp → direct, final rule from `GlobalProxy`, `DomainStrategy`
+  kept. Entries the bundled geo files or Xray-core cannot serve (other
+  geosite/geoip categories, `ext:`, invalid IPs/regexps) are skipped and counted,
+  and the profile is checked with Xray-core (`testXray`) before it is stored, so
+  the tunnel always starts. Imported profiles appear in the routing sheet
+  (swipe to delete). Note: iOS gives the `happ://` scheme to only one installed app.
 * **On-demand** is always off.
 
 Supported links: `vless://`, `vmess://` (AEAD and legacy v2rayN JSON),

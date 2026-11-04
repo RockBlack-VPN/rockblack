@@ -27,25 +27,40 @@ struct RoutingSheet: View {
             List {
                 Section {
                     ForEach(RoutingProfile.allCases) { profile in
-                        Button {
+                        row(title: Self.title(profile), details: Self.details(profile),
+                            selected: store.customRoutingID == nil && store.routing == profile) {
                             store.setRouting(profile)
                             dismiss()
-                        } label: {
-                            HStack(alignment: .top, spacing: 12) {
-                                Image(systemName: store.routing == profile ? "checkmark.circle.fill" : "circle")
-                                    .foregroundColor(store.routing == profile ? Palette.primary : Palette.textMuted)
-                                    .font(.system(size: 20))
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(Self.title(profile)).font(.body.weight(.semibold)).foregroundColor(Palette.text)
-                                    Text(Self.details(profile)).font(.footnote).foregroundColor(Palette.textMuted)
-                                }
-                            }
-                            .padding(.vertical, 4)
                         }
-                        .listRowBackground(Palette.surface)
                     }
                 } footer: {
                     Text("Changing the profile while connected reconnects automatically.")
+                }
+
+                if !store.customRoutings.isEmpty {
+                    Section {
+                        ForEach(store.customRoutings) { custom in
+                            row(title: custom.name, details: Self.details(custom),
+                                selected: store.customRoutingID == custom.id) {
+                                store.setCustomRouting(custom.id)
+                                dismiss()
+                            }
+                            .swipeActions {
+                                Button(role: .destructive) { store.deleteCustomRouting(custom.id) } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                            .contextMenu {
+                                Button(role: .destructive) { store.deleteCustomRouting(custom.id) } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                    } header: {
+                        Text("Imported")
+                    } footer: {
+                        Text("Profiles from subscriptions or happ://routing links. Swipe left to delete.")
+                    }
                 }
             }
             .scrollContentBackground(.hidden)
@@ -56,5 +71,30 @@ struct RoutingSheet: View {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
         }
+    }
+
+    static func details(_ custom: CustomRouting) -> String {
+        var text = custom.globalProxy ? L("Everything else through the proxy") : L("Everything else direct")
+        text += " · " + String(format: L("Rules: %lld"), custom.ruleCount)
+        if !custom.skipped.isEmpty {
+            text += " · " + String(format: L("Skipped: %lld"), custom.skipped.count)
+        }
+        return text
+    }
+
+    private func row(title: String, details: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(selected ? Palette.primary : Palette.textMuted)
+                    .font(.system(size: 20))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title).font(.body.weight(.semibold)).foregroundColor(Palette.text)
+                    Text(details).font(.footnote).foregroundColor(Palette.textMuted)
+                }
+            }
+            .padding(.vertical, 4)
+        }
+        .listRowBackground(Palette.surface)
     }
 }

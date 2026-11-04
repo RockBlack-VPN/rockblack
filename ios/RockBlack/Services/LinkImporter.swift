@@ -25,7 +25,8 @@ enum LinkImporter {
             return []
         }
         var result: [Server] = []
-        for line in lines where line.contains("://") && !line.hasPrefix("#") && !line.hasPrefix("//") {
+        for line in lines where line.contains("://") && !line.hasPrefix("#") && !line.hasPrefix("//")
+            && !line.lowercased().hasPrefix("routing:") && !line.lowercased().hasPrefix(HappRouting.prefix) {
             if let server = server(fromLink: line) { result.append(server) }
         }
         return result

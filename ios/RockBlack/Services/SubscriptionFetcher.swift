@@ -7,6 +7,8 @@ enum SubscriptionFetcher {
         var info: SubscriptionInfo
         var title: String?
         var updateHours: Int?
+        /// Happ routing profile link (`routing` header or `routing: happ://...` body line).
+        var routingLink: String?
     }
 
     enum FetchError: LocalizedError {
@@ -60,8 +62,9 @@ enum SubscriptionFetcher {
         info.webPageURL = value("profile-web-page-url")
         info.announce = value("announce")
         let hours = value("profile-update-interval").flatMap { Int($0.trimmingCharacters(in: .whitespaces)) }
+        let routing = HappRouting.findLink(header("routing")) ?? HappRouting.findLink(body)
         return Result(servers: LinkImporter.servers(from: body), info: info,
-                      title: value("profile-title"), updateHours: hours)
+                      title: value("profile-title"), updateHours: hours, routingLink: routing)
     }
 
     /// `upload=1; download=2; total=3; expire=1700000000`

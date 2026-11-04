@@ -25,47 +25,81 @@ enum XrayConfig {
 
     static func build(outbound: [String: Any]?, profile: RoutingProfile) -> [String: Any] {
         let useProxy = profile != .direct && outbound != nil
-        var outbounds: [[String: Any]] = []
-        if useProxy, var proxy = outbound {
-            proxy["tag"] = proxyTag
-            outbounds.append(proxy)
-        }
-        outbounds.append(["tag": directTag, "protocol": "freedom", "settings": [String: Any]()])
-        outbounds.append(["tag": blockTag, "protocol": "blackhole", "settings": [String: Any]()])
-        outbounds.append(["tag": dnsTag, "protocol": "dns", "settings": [String: Any]()])
-
-        let fallback = useProxy ? proxyTag : directTag
-        var rules: [[String: Any]] = [
-            ["type": "field", "inboundTag": [tunTag], "port": "53", "outboundTag": dnsTag],
-            ["type": "field", "ip": ["geoip:private"], "outboundTag": directTag],
-        ]
+        var rules: [[String: Any]] = [rule(ip: ["geoip:private"], to: directTag)]
         switch profile {
         case .russia:
-            rules.append(["type": "field", "domain": adDomains, "outboundTag": blockTag])
-            rules.append(["type": "field", "domain": russianDomains, "outboundTag": directTag])
-            rules.append(["type": "field", "ip": ["geoip:ru"], "outboundTag": directTag])
+            rules.append(rule(domain: adDomains, to: blockTag))
+            rules.append(rule(domain: russianDomains, to: directTag))
+            rules.append(rule(ip: ["geoip:ru"], to: directTag))
         case .adBlock:
-            rules.append(["type": "field", "domain": adDomains, "outboundTag": blockTag])
+            rules.append(rule(domain: adDomains, to: blockTag))
         case .global, .direct:
             break
         }
-        rules.append(["type": "field", "network": "tcp,udp", "outboundTag": fallback])
-
         var servers: [Any]
         switch profile {
         case .russia:
-            servers = [["address": "77.88.8.8", "domains": russianDomains, "skipFallback": true] as [String: Any],
-                       "1.1.1.1", "8.8.8.8"]
+            servers = [domesticServer(russianDomains), "1.1.1.1", "8.8.8.8"]
         case .direct:
             servers = ["77.88.8.8", "1.1.1.1"]
         case .global, .adBlock:
             servers = ["1.1.1.1", "8.8.8.8"]
         }
         if !useProxy { servers = ["77.88.8.8", "1.1.1.1"] }
+        return assemble(outbound: useProxy ? outbound : nil, rules: rules,
+                        final: useProxy ? proxyTag : directTag, dnsServers: servers, domainStrategy: "IPIfNonMatch")
+    }
 
+    /// Imported (Happ format) profile: block → private direct → proxy → direct → final.
+    /// Only entries the bundled geo files and Xray-core support reach this point
+    /// (see `CustomRouting.sanitized`).
+    static func build(outbound: [String: Any]?, custom: CustomRouting) -> [String: Any] {
+        let useProxy = outbound != nil
+        let proxyOrDirect = useProxy ? proxyTag : directTag
+        var rules: [[String: Any]] = []
+        if !custom.blockSites.isEmpty { rules.append(rule(domain: custom.blockSites, to: blockTag)) }
+        if !custom.blockIp.isEmpty { rules.append(rule(ip: custom.blockIp, to: blockTag)) }
+        rules.append(rule(ip: ["geoip:private"], to: directTag))
+        if !custom.proxySites.isEmpty { rules.append(rule(domain: custom.proxySites, to: proxyOrDirect)) }
+        if !custom.proxyIp.isEmpty { rules.append(rule(ip: custom.proxyIp, to: proxyOrDirect)) }
+        if !custom.directSites.isEmpty { rules.append(rule(domain: custom.directSites, to: directTag)) }
+        if !custom.directIp.isEmpty { rules.append(rule(ip: custom.directIp, to: directTag)) }
+        let final = custom.globalProxy && useProxy ? proxyTag : directTag
+        var servers: [Any] = final == proxyTag ? ["1.1.1.1", "8.8.8.8"] : ["77.88.8.8", "1.1.1.1"]
+        if final == proxyTag, !custom.directSites.isEmpty {
+            servers.insert(domesticServer(custom.directSites), at: 0)
+        }
+        return assemble(outbound: useProxy ? outbound : nil, rules: rules, final: final, dnsServers: servers,
+                        domainStrategy: custom.domainStrategy ?? "IPIfNonMatch")
+    }
+
+    private static func rule(domain: [String]? = nil, ip: [String]? = nil, to tag: String) -> [String: Any] {
+        var rule: [String: Any] = ["type": "field", "outboundTag": tag]
+        if let domain { rule["domain"] = domain }
+        if let ip { rule["ip"] = ip }
+        return rule
+    }
+
+    private static func domesticServer(_ domains: [String]) -> [String: Any] {
+        ["address": "77.88.8.8", "domains": domains, "skipFallback": true]
+    }
+
+    private static func assemble(outbound: [String: Any]?, rules: [[String: Any]], final: String,
+                                 dnsServers: [Any], domainStrategy: String) -> [String: Any] {
+        var outbounds: [[String: Any]] = []
+        if var proxy = outbound {
+            proxy["tag"] = proxyTag
+            outbounds.append(proxy)
+        }
+        outbounds.append(["tag": directTag, "protocol": "freedom", "settings": [String: Any]()])
+        outbounds.append(["tag": blockTag, "protocol": "blackhole", "settings": [String: Any]()])
+        outbounds.append(["tag": dnsTag, "protocol": "dns", "settings": [String: Any]()])
+        var allRules: [[String: Any]] = [["type": "field", "inboundTag": [tunTag], "port": "53", "outboundTag": dnsTag]]
+        allRules += rules
+        allRules.append(["type": "field", "network": "tcp,udp", "outboundTag": final])
         return [
             "log": ["loglevel": "warning"],
-            "dns": ["servers": servers, "queryStrategy": "UseIPv4"],
+            "dns": ["servers": dnsServers, "queryStrategy": "UseIPv4"],
             "inbounds": [[
                 "tag": tunTag,
                 "port": 0,
@@ -74,7 +108,7 @@ enum XrayConfig {
                 "sniffing": ["enabled": true, "destOverride": ["http", "tls", "quic"], "routeOnly": true],
             ] as [String: Any]],
             "outbounds": outbounds,
-            "routing": ["domainStrategy": "IPIfNonMatch", "rules": rules],
+            "routing": ["domainStrategy": domainStrategy, "rules": allRules],
         ]
     }
 
