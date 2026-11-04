@@ -14,6 +14,12 @@ internal data class ServerRowUiModel(
     val typeDescription: String,
     val testDelayMillis: Long,
     val subscriptionBadge: String,
+    /** UI 3.0 row: flag emoji (leading emoji or derived from the name), null for the globe icon. */
+    val flag: String? = ServerFlags.parse(remarks).flag,
+    /** UI 3.0 row title: the name without its leading flag emoji. */
+    val displayName: String = ServerFlags.parse(remarks).name,
+    /** UI 3.0 row subtitle, e.g. "VLESS · Reality". */
+    val subtitle: String = ServerFlags.protocolSubtitle(profile),
 )
 
 internal data class ServerGroupUiState(

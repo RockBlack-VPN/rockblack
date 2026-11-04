@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_widget_name">Umschalten</string>
+    <string name="app_tile_name">Umschalten</string>
+    <string name="app_tile_first_use">Füge zuerst in der App ein Profil hinzu, bevor du diese Funktion verwendest.</string>
+    <string name="navigation_drawer_open">Navigationsmenü öffnen</string>
+    <string name="navigation_drawer_close">Navigationsmenü schließen</string>
+    <string name="migration_success">Datenmigration erfolgreich!</string>
+    <string name="action_stop_service">Dienst beenden</string>
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="migration_fail">Datenmigration fehlgeschlagen!</string>
+    <string name="pull_down_to_refresh">Zum Aktualisieren nach unten ziehen!</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_service">RockBlack-Dienst</string>
+    <string name="notification_channel_subscription_updates">Abonnement-Aktualisierungen</string>
+    <string name="notification_channel_connection_checks">Verbindungsprüfungen</string>
+    <string name="notification_action_stop_v2ray">Beenden</string>
+    <string name="toast_permission_denied">Berechtigung verweigert</string>
+    <string name="toast_permission_denied_notification">Benachrichtigungsberechtigung verweigert</string>
+    <string name="notification_action_more">Für mehr tippen</string>
+    <string name="toast_services_start">Dienst wird gestartet</string>
+    <string name="toast_services_stop">Dienst wird beendet</string>
+    <string name="toast_services_success">Dienst erfolgreich gestartet</string>
+    <string name="toast_services_failure">Dienst konnte nicht gestartet werden</string>
+
+    <!--ServerActivity-->
+    <string name="title_server">Konfiguration</string>
+    <string name="menu_item_add_config">Konfiguration hinzufügen</string>
+    <string name="menu_item_save_config">Konfiguration speichern</string>
+    <string name="menu_item_edit_config">Konfiguration bearbeiten</string>
+    <string name="menu_item_del_config">Konfiguration löschen</string>
+    <string name="menu_item_import_config_qrcode">Aus QR-Code importieren</string>
+    <string name="menu_item_import_config_clipboard">Aus Zwischenablage importieren</string>
+    <string name="menu_item_import_config_local">Aus lokaler Datei importieren</string>
+    <string name="menu_item_import_config_policy_group">[Richtliniengruppe] hinzufügen</string>
+    <string name="menu_item_import_config_proxy_chain">[Proxy-Kette] hinzufügen</string>
+    <string name="menu_item_import_config_manually_vmess">[VMess] hinzufügen</string>
+    <string name="menu_item_import_config_manually_vless">[VLESS] hinzufügen</string>
+    <string name="menu_item_import_config_manually_ss">[Shadowsocks] hinzufügen</string>
+    <string name="menu_item_import_config_manually_socks">[SOCKS] hinzufügen</string>
+    <string name="menu_item_import_config_manually_http">[HTTP] hinzufügen</string>
+    <string name="menu_item_import_config_manually_trojan">[Trojan] hinzufügen</string>
+    <string name="menu_item_import_config_manually_wireguard">[WireGuard] hinzufügen</string>
+    <string name="menu_item_import_config_manually_hysteria2">[Hysteria2] hinzufügen</string>
+    <string name="confirm_delete_visible_profiles">Möchtest du wirklich alle aktuell angezeigten Profile löschen?</string>
+    <string name="confirm_delete_duplicate_profiles">Möchtest du wirklich alle doppelten Profile in der aktuellen Ansicht löschen?</string>
+    <string name="confirm_delete_invalid_profiles">Bitte teste die Profile zuerst. Möchtest du wirklich alle ungültigen Profile in der aktuellen Ansicht löschen?</string>
+    <string name="confirm_delete_profile">Möchtest du dieses Profil wirklich löschen?</string>
+    <string name="confirm_delete_policy_group">Möchtest du diese Richtliniengruppe wirklich löschen?</string>
+    <string name="confirm_delete_proxy_chain_member">Möchtest du dieses Kettenglied wirklich löschen?</string>
+    <string name="confirm_delete_routing_rule">Möchtest du diese Routing-Regel wirklich löschen?</string>
+    <string name="confirm_delete_subscription_group">Möchtest du diese Abonnementgruppe wirklich löschen?</string>
+    <string name="confirm_delete_asset_file">Möchtest du diese Asset-Datei wirklich löschen?</string>
+    <string name="confirm_delete_asset_source">Möchtest du diese Asset-Quelle wirklich löschen?</string>
+    <string name="server_lab_remarks">Bezeichnung</string>
+    <string name="server_lab_address">Adresse</string>
+    <string name="server_lab_port">Port</string>
+    <string name="server_lab_id">ID</string>
+    <string name="server_lab_alterid">alterId</string>
+    <string name="server_lab_security">Verschlüsselung</string>
+    <string name="server_lab_network">Netzwerk</string>
+    <string name="server_lab_more_function">Transport</string>
+    <string name="server_lab_head_type">Header-Typ</string>
+    <string name="server_lab_mode_type">gRPC-Modus</string>
+    <string name="server_lab_request_host">Host</string>
+    <string name="server_lab_request_host_http">HTTP-Host</string>
+    <string name="server_lab_request_host_ws">WS-Host</string>
+    <string name="server_lab_request_host_httpupgrade">HTTPUpgrade-Host</string>
+    <string name="server_lab_request_host_xhttp">XHTTP-Host</string>
+    <string name="server_lab_request_host_h2">H2-Host</string>
+    <string name="server_lab_request_host_quic">QUIC-Verschlüsselung</string>
+    <string name="server_lab_request_host_grpc">gRPC-Authority</string>
+    <string name="server_lab_path">Pfad</string>
+    <string name="server_lab_path_ws">WS-Pfad</string>
+    <string name="server_lab_path_httpupgrade">HTTPUpgrade-Pfad</string>
+    <string name="server_lab_path_xhttp">XHTTP-Pfad</string>
+    <string name="server_lab_path_h2">H2-Pfad</string>
+    <string name="server_lab_path_quic">QUIC-Schlüssel</string>
+    <string name="server_lab_path_kcp">KCP-Seed</string>
+    <string name="server_lab_path_grpc">gRPC-serviceName</string>
+    <string name="server_lab_stream_fingerprint">Fingerprint</string>
+    <string name="server_lab_allow_insecure">allowInsecure</string>
+    <string name="server_lab_address3">Adresse</string>
+    <string name="server_lab_port3">Port</string>
+    <string name="server_lab_id3">Passwort</string>
+    <string name="server_lab_security3">Verschlüsselung</string>
+    <string name="server_lab_id4">Passwort (optional)</string>
+    <string name="server_lab_security4">Benutzer (optional)</string>
+    <string name="server_lab_encryption">Verschlüsselung (encryption)</string>
+    <string name="server_lab_flow">Flow</string>
+    <string name="server_lab_public_key">PublicKey</string>
+    <string name="server_lab_preshared_key">PreSharedKey (optional)</string>
+    <string name="server_lab_short_id">ShortId</string>
+    <string name="server_lab_secret_key">SecretKey</string>
+    <string name="server_lab_reserved">Reserved (optional, durch Kommas getrennt)</string>
+    <string name="server_lab_local_address">Lokale Adresse (optional IPv4/IPv6, durch Kommas getrennt)</string>
+    <string name="server_lab_local_mtu">MTU (optional, Standard 1420)</string>
+    <string name="server_lab_remote_dns">Remote-DNS (optional, IPv4/IPv6 durch Kommas getrennt)</string>
+    <string name="server_lab_remote_dns_hint">Wenn leer, wird %1$s verwendet. IPv6-Adressen werden nur verwendet, wenn IPv6 aktiviert ist.</string>
+    <string name="server_lab_kcp_mtu">mKCP-MTU (optional, Standard 1350)</string>
+    <string name="server_lab_kcp_tti">mKCP-TTI (optional, Standard 50 ms)</string>
+    <string name="toast_success">Erfolgreich</string>
+    <string name="toast_failure">Fehlgeschlagen</string>
+    <string name="toast_none_data">Keine Daten verfügbar</string>
+    <string name="toast_incorrect_protocol">Falsches Protokoll</string>
+    <string name="toast_decoding_failed">Dekodierung fehlgeschlagen</string>
+    <string name="title_file_chooser">Konfiguration auswählen</string>
+    <string name="toast_require_file_manager">Bitte installiere einen Dateimanager.</string>
+    <string name="server_customize_config">Benutzerdefinierte Konfiguration</string>
+    <string name="toast_config_file_invalid">Ungültige Konfiguration</string>
+    <string name="server_lab_content">Inhalt</string>
+    <string name="toast_none_data_clipboard">Die Zwischenablage enthält keine Daten</string>
+    <string name="toast_invalid_url">Ungültige URL</string>
+    <string name="toast_insecure_url_protocol">Verwende keine unsichere HTTP-Abonnement-URL</string>
+    <string name="server_lab_need_inbound">Stelle sicher, dass der Inbound-Port mit den Einstellungen übereinstimmt</string>
+    <string name="toast_malformed_json">Ungültige Konfiguration.</string>
+    <string name="server_lab_request_host6">Host (SNI) (optional)</string>
+    <string name="toast_action_not_allowed">Aktion nicht erlaubt</string>
+    <string name="server_obfs_password">Obfs-Passwort</string>
+    <string name="server_lab_port_hop">Port-Hopping (überschreibt den Port)</string>
+    <string name="server_lab_port_hop_interval">Port-Hopping-Intervall (Sekunden)</string>
+    <string name="server_lab_bandwidth_down">Download-Bandbreite (Einheiten: k/m/g/t)</string>
+    <string name="server_lab_bandwidth_up">Upload-Bandbreite (Einheiten: k/m/g/t)</string>
+    <string name="server_lab_xhttp_mode">XHTTP-Modus</string>
+    <string name="server_lab_xhttp_extra">XHTTP Extra als JSON, Format: { XHTTPObject }</string>
+    <string name="server_lab_final_mask">finalMask als JSON, Format: { FinalMaskObject }</string>
+    <string name="server_lab_verify_peer_cert_by_name">Peer-Zertifikat anhand des Namens prüfen</string>
+    <string name="server_lab_pinned_ca256">Zertifikats-Fingerprint (SHA-256)</string>
+    <string name="server_lab_browser_dialer">Browser Dialer aktivieren</string>
+    <string name="server_lab_browser_dialer_tip">Unterstützt nur XHTTP (packet-up) und WS als Outbound; TLS-Einstellungen werden ggf. ignoriert oder stehen im Konflikt</string>
+    <string name="toast_allow_insecure_deprecated">Der aktuelle Knoten verwendet eine unverschlüsselte Verbindung. Deine Kommunikation kann von Netzwerkeinrichtungen, die von autoritären Regierungen kontrolliert werden, direkt eingesehen werden.\nAus Sicherheitsgründen können solche Knoten mit Xray-Core ab Version 26.2.6 nicht verbunden werden.\nBei einem selbst betriebenen Knoten aktiviere bitte eine Verschlüsselung wie TLS oder hinterlege das Zertifikat per pinnedCA256.\nBei einem Knoten eines Anbieters wende dich bitte an den Anbieter, damit er die technische Umstellung vornimmt. Lehnt der Anbieter ab, empfehlen wir, zu einem Anbieter zu wechseln, der mehr Wert auf die Sicherheit seiner Nutzer legt.\nWeitere Informationen: https://github.com/2dust/v2rayN/discussions/9460</string>
+    <string name="pinned_ca256_action_fetch">Zertifikats-Fingerprint abrufen</string>
+    <string name="toast_fetch_cert_sha256_success">Zertifikats-Fingerprint erfolgreich abgerufen</string>
+    <string name="toast_fetch_cert_sha256_failed">Zertifikats-Fingerprint konnte nicht abgerufen werden</string>
+
+    <!-- UserAssetActivity -->
+    <string name="toast_asset_copy_failed">Kopieren der Datei fehlgeschlagen, bitte verwende einen Dateimanager</string>
+    <string name="menu_item_add_asset">Asset hinzufügen</string>
+    <string name="menu_item_add_file">Dateien hinzufügen</string>
+    <string name="menu_item_add_url">URL hinzufügen</string>
+    <string name="menu_item_scan_qrcode">QR-Code scannen</string>
+    <string name="menu_item_download_file">Dateien herunterladen</string>
+    <string name="title_user_asset_add_url">Asset-URL hinzufügen</string>
+    <string name="msg_file_not_found">Datei nicht gefunden</string>
+    <string name="msg_remark_is_duplicate">Dieser Name existiert bereits</string>
+    <string name="asset_geo_files_sources">Quelle der Geo-Dateien (optional)</string>
+
+    <!-- PerAppProxyActivity -->
+    <string name="msg_dialog_progress">Wird geladen</string>
+    <string name="menu_item_search">Suchen</string>
+    <string name="menu_item_select_all">Alle auswählen</string>
+    <string name="menu_item_invert_selection">Auswahl umkehren</string>
+    <string name="msg_enter_keywords">Suchbegriffe eingeben</string>
+    <string name="switch_bypass_apps_mode">Umgehungsmodus</string>
+    <string name="menu_item_select_proxy_app">Apps für den Proxy automatisch auswählen</string>
+    <string name="msg_downloading_content">Inhalt wird heruntergeladen</string>
+    <string name="menu_item_export_proxy_app">In Zwischenablage exportieren</string>
+    <string name="menu_item_import_proxy_app">Aus Zwischenablage importieren</string>
+    <string name="per_app_proxy_settings">App-spezifische Einstellungen</string>
+    <string name="per_app_proxy_settings_enable">App-spezifischen Proxy aktivieren</string>
+    <string name="app_picker_unknown_app">Unbekannte App (UID nicht erkannt)</string>
+
+    <!-- Preferences -->
+    <string name="title_settings">Einstellungen</string>
+    <string name="title_advanced">Erweiterte Einstellungen</string>
+    <string name="title_core_settings">Core-Einstellungen</string>
+    <string name="title_vpn_settings">VPN-Einstellungen</string>
+    <string name="title_pref_per_app_proxy">App-spezifischer Proxy</string>
+    <string name="summary_pref_per_app_proxy">Normal: Ausgewählte Apps nutzen den Proxy, nicht ausgewählte verbinden sich direkt;\nUmgehungsmodus: Ausgewählte Apps verbinden sich direkt, nicht ausgewählte nutzen den Proxy.\nDie automatische Auswahl der Apps, die den Proxy nutzen sollen, findest du im Menü.</string>
+    <string name="title_pref_is_booted">Nach dem Gerätestart verbinden</string>
+    <string name="summary_pref_is_booted">Nach dem Start des Geräts automatisch mit dem ausgewählten Server verbinden. Android kann Starts im Hintergrund einschränken.</string>
+    <string name="title_system_vpn_settings">System-VPN-Einstellungen</string>
+    <string name="summary_system_vpn_settings">Öffnet die VPN-Einstellungen von Android, um „Durchgehend aktives VPN“ zu konfigurieren, sofern das Gerät dies unterstützt.</string>
+    <string name="toast_system_vpn_settings_unavailable">System-VPN-Einstellungen sind nicht verfügbar.</string>
+
+
+    <string name="subscription_updater_job_tips">Die Aufgabe läuft im Hintergrund, der Fortschritt wird in der Benachrichtigung angezeigt.</string>
+    <string name="title_pref_auto_test_after_update_subscription">Nach Abonnement-Aktualisierung automatisch testen</string>
+    <string name="summary_pref_auto_test_after_update_subscription">Automatische Tests dauern lange. Wenn aktiviert, läuft die Aufgabe im Hintergrund, andernfalls auf der aktuellen Seite.</string>
+    <string name="title_pref_auto_remove_invalid_after_test">Ungültige Konfigurationen nach dem Test automatisch löschen</string>
+    <string name="summary_pref_auto_remove_invalid_after_test">Testergebnisse sind möglicherweise ungenau; gelöschte Konfigurationen können nicht wiederhergestellt werden.</string>
+    <string name="title_pref_auto_sort_after_test">Nach dem Test automatisch sortieren</string>
+    <string name="summary_pref_auto_sort_after_test">Testergebnisse sind möglicherweise ungenau.</string>
+
+    <string name="title_mux_settings">Mux-Einstellungen</string>
+    <string name="title_pref_mux_enabled">Mux aktivieren</string>
+    <string name="summary_pref_mux_enabled">Schneller, kann aber zu instabilen Verbindungen führen\nUnten kannst du festlegen, wie TCP, UDP und QUIC behandelt werden</string>
+    <string name="title_pref_mux_concurrency">TCP-Verbindungen (Bereich -1 bis 1024)</string>
+    <string name="title_pref_mux_xudp_concurrency">XUDP-Verbindungen (Bereich -1 bis 1024)</string>
+    <string name="title_pref_mux_xudp_quic">Behandlung von QUIC im Mux-Tunnel</string>
+    <string-array name="mux_xudp_quic_entries">
+        <item>Ablehnen</item>
+        <item>Erlauben</item>
+        <item>Überspringen</item>
+    </string-array>
+
+    <string name="title_pref_speed_enabled">Geschwindigkeitsanzeige aktivieren</string>
+    <string name="summary_pref_speed_enabled">Zeigt die aktuelle Geschwindigkeit in der Benachrichtigung an.\nDas Symbol zeigt, ob Proxy- oder Direktverkehr überwiegt.</string>
+
+    <string name="title_pref_sniffing_enabled">Sniffing aktivieren</string>
+    <string name="summary_pref_sniffing_enabled">Zieldomains aus dem Datenverkehr erkennen (standardmäßig aktiviert).</string>
+    <string name="title_pref_route_only_enabled">routeOnly aktivieren</string>
+    <string name="summary_pref_route_only_enabled">Den erkannten Domainnamen nur für das Routing verwenden und die IP-Adresse als Zieladresse beibehalten.</string>
+
+    <string name="title_pref_local_dns_enabled">Lokales DNS aktivieren</string>
+    <string name="summary_pref_local_dns_enabled">DNS wird vom DNS-Modul des Cores verarbeitet (empfohlen, wenn das Routing lokale und inländische Adressen umgehen soll)</string>
+
+    <string name="title_pref_fake_dns_enabled">FakeDNS aktivieren</string>
+    <string name="summary_pref_fake_dns_enabled">FakeDNS liefert synthetische IP-Adressen für Domainabfragen (schneller, funktioniert aber evtl. nicht mit allen Apps).</string>
+
+    <string name="title_pref_ipv6_enabled">IPv6 aktivieren</string>
+    <string name="summary_pref_ipv6_enabled">IPv6-Adresse und -Routen zur VPN-Schnittstelle hinzufügen</string>
+
+    <string name="title_pref_prefer_ipv6">IPv6 bevorzugen</string>
+    <string name="summary_pref_prefer_ipv6">IPv6-Adressen bei der Auflösung von Domainnamen bevorzugen</string>
+
+    <string name="title_pref_remote_dns">Remote-DNS (UDP/TCP/HTTPS/QUIC, optional)</string>
+
+    <string name="title_pref_vpn_dns">VPN-DNS (nur IPv4/IPv6)</string>
+    <string name="title_pref_vpn_bypass_lan">LAN im VPN-Modus umgehen</string>
+
+    <string name="title_pref_vpn_interface_address">Adresse der VPN-Schnittstelle</string>
+
+    <string name="title_pref_vpn_mtu">VPN-MTU (Standard 1500)</string>
+
+
+    <string name="title_pref_domestic_dns">Direkt-DNS (optional)</string>
+
+    <string name="title_pref_dns_hosts">DNS-Host-Zuordnungen (Format: Domain:Adresse,…)</string>
+    <string name="summary_pref_dns_hosts">Domain:Adresse,…</string>
+
+    <string name="title_pref_delay_test_url">URL für den Latenztest</string>
+    <string name="title_pref_real_ping_concurrency">Gleichzeitige Latenztests</string>
+
+    <string name="title_pref_ip_api_url">URL zur Prüfung der aktuellen Verbindung</string>
+
+    <string name="title_pref_proxy_sharing_enabled">Verbindungen aus dem LAN erlauben</string>
+    <string name="summary_pref_proxy_sharing_enabled">Andere Geräte können sich über deine IP-Adresse mit dem lokalen Proxy verbinden. Aktiviere dies nur in vertrauenswürdigen Netzwerken, um unbefugte Verbindungen zu vermeiden</string>
+    <string name="toast_warning_pref_proxysharing_short">Verbindungen aus dem LAN sind erlaubt. Stelle sicher, dass du dich in einem vertrauenswürdigen Netzwerk befindest</string>
+
+    <string name="title_pref_socks_port">Port des lokalen Proxys</string>
+    <string name="title_pref_enable_local_proxy">Lokalen Proxy aktivieren</string>
+    <string name="summary_pref_enable_local_proxy">Wenn deaktiviert, ist kein SOCKS-Proxy verfügbar, sodass Abonnement-Aktualisierungen und ähnliche Aktionen den Proxy nicht nutzen können</string>
+    <string name="summary_pref_socks_enable_udp">Die SOCKS5-Authentifizierung ist bei Verwendung von UDP nicht vollständig sicher.</string>
+    <string name="summary_pref_socks_port">Port des lokalen Proxys</string>
+    <string name="title_pref_dynamic_socks_port">Dynamischen lokalen Proxy-Port aktivieren</string>
+    <string name="summary_pref_dynamic_socks_port">Für jeden Inbound einen zufälligen lokalen Proxy-Port verwenden</string>
+    <string name="title_pref_socks_username">Benutzername des lokalen Proxys (optional)</string>
+    <string name="summary_pref_socks_username">Benutzername</string>
+    <string name="title_pref_socks_password">Passwort des lokalen Proxys (optional)</string>
+    <string name="summary_pref_socks_password">Passwort</string>
+
+    <string name="title_pref_local_dns_port">Lokaler DNS-Port</string>
+    <string name="summary_pref_local_dns_port">Lokaler DNS-Port</string>
+
+    <string name="title_pref_confirm_remove">Löschen von Konfigurationen bestätigen</string>
+    <string name="summary_pref_confirm_remove">Ob das Löschen einer Konfiguration eine zusätzliche Bestätigung erfordert</string>
+
+
+    <string name="title_pref_append_http_proxy">HTTP-Proxy zum VPN hinzufügen</string>
+    <string name="summary_pref_append_http_proxy">Erlaubt Browsern und unterstützten Apps, den HTTP-Proxy direkt statt der virtuellen Netzwerkschnittstelle zu nutzen (Android 10+).</string>
+
+    <string name="title_pref_double_column_display">Zweispaltiges Layout verwenden</string>
+    <string name="summary_pref_double_column_display">Die Profilliste in zwei Spalten anzeigen, damit mehr Inhalt auf den Bildschirm passt.</string>
+
+    <string name="title_pref_group_all_display">Tab „Alle“ anzeigen</string>
+    <string name="summary_pref_group_all_display">Profile aller Abonnementgruppen in einem Tab zusammenfassen.</string>
+
+    <!-- AboutActivity -->
+    <string name="title_pref_feedback">Feedback</string>
+    <string name="summary_pref_feedback">Verbesserungen vorschlagen oder Fehler auf GitHub melden</string>
+    <string name="summary_pref_tg_group">Der Telegram-Gruppe beitreten</string>
+    <string name="toast_tg_app_not_found">Telegram-App nicht gefunden</string>
+    <string name="title_privacy_policy">Datenschutzerklärung</string>
+    <string name="title_qr_code">QR-Code</string>
+    <string name="title_about">Über</string>
+    <string name="title_source_code">Quellcode</string>
+    <string name="title_oss_license">Open-Source-Lizenzen</string>
+    <string name="title_translators">Übersetzer</string>
+    <string name="title_tg_channel">Telegram-Kanal</string>
+    <string name="title_website">Website</string>
+    <string name="title_upstream_credit">Basiert auf v2rayNG von 2dust (GPL-3.0)</string>
+
+    <string name="title_pref_promotion">Werbung</string>
+
+    <string name="title_pref_auto_update_subscription">Abonnements automatisch aktualisieren</string>
+    <string name="summary_pref_auto_update_subscription">Aktualisiert deine Abonnements in festgelegten Abständen automatisch im Hintergrund. Je nach Gerät funktioniert diese Funktion möglicherweise nicht immer</string>
+    <string name="title_pref_auto_update_interval">Intervall der automatischen Aktualisierung (Minuten; mindestens 15)</string>
+
+    <string name="title_core_loglevel">Protokollstufe</string>
+    <string name="title_outbound_domain_resolve_method">Domainauflösung für Outbounds</string>
+    <string name="title_mode">Modus</string>
+    <string name="title_mode_help">Für weitere Hilfe hier tippen</string>
+    <string name="title_language">Sprache</string>
+    <string name="title_ui_settings">Oberfläche</string>
+    <string name="title_pref_ui_mode_night">Design</string>
+    <string name="title_pref_dynamic_color">Dynamische Farben aktivieren</string>
+    <string name="summary_pref_dynamic_color">Funktioniert nur auf Geräten mit Android 12+</string>
+    <string name="title_pref_use_hev_tunnel">Hev TUN verwenden</string>
+    <string name="summary_pref_use_hev_tunnel">Wenn aktiviert, verwendet TUN hev-socks5-tunnel, andernfalls Xray-Core.</string>
+    <string name="title_pref_hev_tunnel_loglevel">Protokollstufe von Hev TUN</string>
+    <string name="title_pref_hev_tunnel_rw_timeout">Lese-/Schreib-Timeout von Hev TUN (Sekunden; Standard TCP/UDP: 300/60)</string>
+    <string name="title_mode_settings">Moduseinstellungen</string>
+    <string name="title_root_mode_enabled">Root-Modus aktivieren (für Root-Nutzer)</string>
+    <string name="summary_root_mode_enabled">Nutzt Root-Rechte für transparentes Proxying auf niedriger Ebene. Der Root-Modus verarbeitet den Netzwerkverkehr direkt, statt den VPN-Dienst von Android zu nutzen. Der Standardmodus, das App-spezifische Routing und VPN-bezogene Einstellungen gelten nicht, solange der Root-Modus aktiv ist.</string>
+    <string name="toast_root_required">Für diese Funktion sind Root-Rechte erforderlich</string>
+    <string name="title_root_lan_sharing">VPN mit LAN- / Tethering-Geräten teilen (für Root-Nutzer)</string>
+    <string name="summary_root_lan_sharing">Leitet den Datenverkehr von WLAN-Hotspot- und USB-Tethering-Geräten durch das VPN.</string>
+
+    <string name="logcat_copy">Kopieren</string>
+    <string name="logcat_clear">Leeren</string>
+    <string name="logcat_share">Protokoll teilen</string>
+    <string name="title_service_restart">Dienst neu starten</string>
+    <string name="title_del_all_config">Konfigurationen löschen</string>
+    <string name="title_del_duplicate_config">Doppelte Konfigurationen löschen</string>
+    <string name="title_del_invalid_config">Ungültige Konfigurationen löschen</string>
+    <string name="title_export_all">Konfigurationen in Zwischenablage exportieren</string>
+    <string name="title_sub_setting">Abonnements</string>
+    <string name="sub_setting_remarks">Bezeichnung</string>
+    <string name="sub_setting_url">URL (optional)</string>
+    <string name="sub_setting_request_headers">Anfrage-Header (JSON-Format)</string>
+    <string name="sub_setting_filter">Bezeichnungsfilter (regulärer Ausdruck)</string>
+    <string name="sub_setting_enable">Aktualisierung aktivieren</string>
+    <string name="sub_auto_update">Automatische Aktualisierung aktivieren</string>
+    <string name="sub_allow_insecure_url">Unsichere HTTP-Adresse erlauben</string>
+    <string name="sub_setting_pre_profile">Eingangs-Proxy</string>
+    <string name="sub_setting_next_profile">Ausgangs-Proxy</string>
+    <string name="sub_setting_pre_profile_tip">Stelle sicher, dass die Bezeichnung der Konfiguration existiert und eindeutig ist</string>
+    <string name="sub_setting_entry_proxy_tip">Der ausgewählte Proxy wird jedem Profil dieses Abonnements als Eingangsglied der Proxy-Kette vorangestellt.</string>
+    <string name="sub_setting_exit_proxy_tip">Der ausgewählte Proxy wird jedem Profil dieses Abonnements als Ausgangsglied der Proxy-Kette angehängt.</string>
+    <string name="toast_invalid_update_interval">Ungültiges Aktualisierungsintervall. Das Minimum beträgt 15 Minuten.</string>
+    <string name="title_sub_update">Abonnement aktualisieren</string>
+    <string name="title_ping_all_server">TCP-Latenz testen (TCPing)</string>
+    <string name="title_real_ping_all_server">Echte Latenz testen</string>
+    <string name="title_user_asset_setting">Asset-Dateien</string>
+    <string name="title_sort_by_test_results">Nach Testergebnis sortieren</string>
+    <string name="title_filter_config">Konfigurationen filtern</string>
+    <string name="filter_config_all">Alle</string>
+    <string name="summary_scan_qrcode">Tippe auf den Bildschirm, um die Kamera zu öffnen und zu scannen</string>
+    <string name="title_del_duplicate_config_count">%d doppelte Konfigurationen löschen</string>
+    <string name="title_del_config_count">%d Konfigurationen löschen</string>
+    <string name="title_import_config_count">%d Konfigurationen importieren</string>
+    <string name="title_export_config_count">%d Konfigurationen exportieren</string>
+    <plurals name="title_update_config_count">
+        <item quantity="one">%1$d Konfiguration aktualisiert</item>
+        <item quantity="other">%1$d Konfigurationen aktualisiert</item>
+    </plurals>
+    <plurals name="title_update_asset_count">
+        <item quantity="one">%1$d Asset-Datei aktualisiert</item>
+        <item quantity="other">%1$d Asset-Dateien aktualisiert</item>
+    </plurals>
+    <string name="title_update_subscription_result">%1$d Konfigurationen aktualisiert (%2$d erfolgreich, %3$d fehlgeschlagen, %4$d übersprungen)</string>
+    <string name="title_update_subscription_no_subscription">Keine Abonnements</string>
+    <string name="toast_server_not_found_in_group">Ausgewählter Server wurde in der aktuellen Gruppe nicht gefunden</string>
+    <string name="title_locate_selected_config">Ausgewählte Konfiguration finden</string>
+
+    <string name="tasker_start_service">Dienst starten</string>
+    <string name="tasker_setting_confirm">Bestätigen</string>
+
+    <!-- RoutingSettingActivity -->
+    <string name="routing_settings_domain_strategy">Domain-Strategie</string>
+    <string name="routing_settings_title">Routing-Einstellungen</string>
+    <string name="routing_settings_tips">Eine Regel greift nur, wenn alle konfigurierten Bedingungen erfüllt sind (UND). Regeln werden von oben nach unten geprüft; die erste passende Regel wird angewendet.</string>
+    <string name="routing_settings_comma_tip">Mehrere Einträge durch Kommas (,) trennen.</string>
+    <string name="routing_settings_save">Speichern</string>
+    <string name="routing_settings_delete">Leeren</string>
+    <string name="routing_settings_rule_title">Routing-Regel</string>
+    <string name="routing_settings_add_rule">Regel hinzufügen</string>
+    <string name="routing_settings_import_predefined_rulesets">Vordefinierte Regelsätze importieren</string>
+    <string name="routing_settings_import_rulesets_tip">Vorhandene Regelsätze werden gelöscht. Fortfahren?</string>
+    <string name="routing_settings_import_rulesets_from_clipboard">Regelsatz aus Zwischenablage importieren</string>
+    <string name="routing_settings_import_rulesets_from_qrcode">Regelsatz aus QR-Code importieren</string>
+    <string name="routing_settings_export_rulesets_to_clipboard">Regelsatz in Zwischenablage exportieren</string>
+    <string name="routing_settings_locked">Gesperrt; diese Regel beim Import von Vorlagen beibehalten</string>
+    <string name="routing_settings_process">Prozess (Paketname – nur mit Xray TUN, aktiviertem routeOnly und Android 10+)</string>
+    <string name="routing_settings_process_select">Paketnamen auswählen</string>
+    <string name="routing_settings_outbound_tag_hint">proxy / direct / block / &lt;%1$s&gt;</string>
+
+    <string name="connection_test_pending">Verbindung prüfen</string>
+    <string name="connection_test_testing">Wird getestet…</string>
+    <string name="connection_test_testing_count">%d Konfigurationen werden getestet…</string>
+    <string name="connection_test_available">Verbindung erfolgreich in %1$s</string>
+    <string name="server_test_delay_value">%1$d ms</string>
+    <string name="connection_test_error">Verbindungstest fehlgeschlagen: %s</string>
+    <string name="connection_test_fail">Kein Internet verfügbar</string>
+    <string name="connection_test_error_status_code">Fehlercode: #%d</string>
+    <string name="connection_connected">Verbunden. Tippen, um die Verbindung zu prüfen.</string>
+    <string name="connection_not_connected">Nicht verbunden</string>
+    <string name="status_connected">Verbunden</string>
+    <string name="status_no_server">Kein Server ausgewählt</string>
+    <string name="server_test_timeout">Zeitüberschreitung</string>
+    <string name="connection_running_task_left">Laufende Tests: %s</string>
+
+    <string name="import_subscription_success">Abonnement erfolgreich importiert</string>
+    <string name="import_subscription_failure">Import des Abonnements fehlgeschlagen</string>
+    <string name="title_fragment_settings">Fragment-Einstellungen</string>
+    <string name="title_pref_fragment_packets">Fragment-Pakete</string>
+    <string name="title_pref_fragment_length">Fragment-Länge (min–max)</string>
+    <string name="title_pref_fragment_interval">Fragment-Intervall (min–max)</string>
+    <string name="title_pref_fragment_enabled">Fragment aktivieren</string>
+    <string name="title_pref_fragment_maxsplit">Maximale Fragment-Aufteilung</string>
+    <string name="title_observatory_settings">Observatory-Einstellungen</string>
+    <string name="title_pref_observatory_least_ping_interval">leastPing-Intervall</string>
+    <string name="title_pref_observatory_least_load_interval">leastLoad-Intervall</string>
+    <string name="title_pref_observatory_least_load_method">leastLoad-HTTP-Methode</string>
+    <string name="title_pref_observatory_least_load_sampling">leastLoad-Stichproben</string>
+    <string name="title_pref_observatory_least_load_timeout">leastLoad-Timeout</string>
+    <string name="toast_invalid_observatory_duration">Ungültige Dauer. Verwende einen Wert wie 3m oder 30s.</string>
+    <string name="toast_invalid_observatory_sampling">Ungültige Stichprobenzahl. Verwende eine positive Zahl.</string>
+
+    <string name="update_check_for_update">Nach Updates suchen</string>
+    <string name="update_already_latest_version">Du verwendest bereits die neueste Version</string>
+    <string name="update_new_version_found">Neue Version gefunden: %s</string>
+    <string name="update_now">Jetzt aktualisieren</string>
+    <string name="update_check_pre_release">Vorabversionen berücksichtigen</string>
+    <string name="update_checking_for_update">Suche nach Updates…</string>
+
+    <string name="title_policy_group_type">Typ der Richtliniengruppe</string>
+    <string name="title_policy_group_subscription_id">Aus Abonnementgruppe</string>
+    <string name="title_policy_group_subscription_filter">Bezeichnungsfilter (Regex)</string>
+    <string name="title_policy_group_test_outbounds">Outbounds testen</string>
+    <string name="title_policy_group_fallback">Fallback-Outbound (optional)</string>
+
+    <string name="server_proxy_chain_members">Glieder der Proxy-Kette</string>
+    <string name="server_proxy_chain_pick_members">Hier tippen, um ein Glied auszuwählen</string>
+    <string name="server_proxy_chain_member_unselected">Glied auswählen</string>
+    <string name="server_proxy_chain_members_unselected">Bitte wähle für jede Zeile der Kette ein Glied aus</string>
+    <string name="server_proxy_chain_members_insufficient">Nicht genügend Glieder</string>
+    <string name="server_proxy_chain_members_invalid">Ungültige Kettenglieder: %1$s</string>
+
+    <!-- BackupActivity -->
+    <string name="title_configuration_backup_restore">Sichern &amp; Wiederherstellen</string>
+    <string name="title_configuration_backup">Konfiguration sichern</string>
+    <string name="title_configuration_restore">Konfiguration wiederherstellen</string>
+    <string name="title_profile_storage_cleanup">Profilspeicher reparieren</string>
+    <string name="summary_profile_storage_cleanup">Nicht verwendete Profildaten entfernen</string>
+    <string name="message_profile_storage_cleanup">Profildaten löschen, die von keiner Gruppe mehr verwendet werden? Ausgewählte Profile und Daten, die nicht sicher zugeordnet werden können, bleiben erhalten.</string>
+    <string name="toast_profile_storage_cleanup">Nicht verwendete Profile entfernt: %1$d</string>
+    <string name="toast_profile_storage_cleanup_skipped">Der Profilspeicher konnte nicht sicher zugeordnet werden. Es wurde nichts entfernt.</string>
+    <string name="title_configuration_share">Konfiguration teilen</string>
+    <string name="title_webdav_config_setting">WebDAV-Einstellungen</string>
+    <string name="title_webdav_config_setting_unknown">Bitte konfiguriere zuerst WebDAV.</string>
+    <string name="title_webdav_url">URL des WebDAV-Servers</string>
+    <string name="title_webdav_user">Benutzername</string>
+    <string name="title_webdav_pass">Passwort</string>
+    <string name="title_webdav_remote_path">Remote-Verzeichnis (optional)</string>
+
+    <string name="share_method_qrcode">QR-Code</string>
+    <string name="share_method_clipboard">Profil-Link kopieren</string>
+    <string name="share_method_full_content">Vollständige Konfiguration kopieren</string>
+    <string name="action_edit">Bearbeiten</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_close">Schließen</string>
+
+    <string name="share_subscription_qrcode">QR-Code</string>
+    <string name="share_subscription_clipboard">In Zwischenablage exportieren</string>
+
+    <string-array name="mode_entries">
+        <item>VPN</item>
+        <item>Nur Proxy</item>
+    </string-array>
+
+    <string-array name="browser_dialer_mode">
+        <item>Deaktiviert</item>
+        <item>OkHttp</item>
+        <item>WebView</item>
+    </string-array>
+
+    <string-array name="ui_mode_night">
+        <item>Systemeinstellung</item>
+        <item>Hell</item>
+        <item>Dunkel</item>
+    </string-array>
+
+
+    <string-array name="vpn_bypass_lan">
+        <item>Wie Konfiguration</item>
+        <item>Umgehen</item>
+        <item>Nicht umgehen</item>
+    </string-array>
+
+    <string-array name="outbound_domain_resolve_method">
+        <item>Nicht auflösen</item>
+        <item>Auflösen und zu DNS-Hosts hinzufügen</item>
+        <item>Auflösen und Domain ersetzen</item>
+    </string-array>
+
+    <string-array name="policy_group_type">
+        <item>Geringste Latenz</item>
+        <item>Geringste Last</item>
+        <item>Zufällig</item>
+        <item>Round Robin</item>
+    </string-array>
+
+    <string name="backup_location_local">Lokal</string>
+
+    <string name="acc_refresh">Protokoll aktualisieren</string>
+    <string name="toast_permission_denied_for">Berechtigung „%1$s“ verweigert</string>
+    <string name="acc_add_subscription">Abonnement hinzufügen</string>
+    <string name="toast_malformed_json_detail">Ungültige Konfiguration: %1$s</string>
+    <string name="acc_add_asset">Asset-Quelle hinzufügen</string>
+    <string name="acc_download_file">Asset-Dateien herunterladen</string>
+    <string name="acc_qr_code">QR-Code</string>
+    <string name="acc_copy_log">Protokoll kopieren</string>
+    <string name="acc_clear_log">Protokoll leeren</string>
+    <string name="acc_add_rule">Routing-Regel hinzufügen</string>
+    <string name="acc_start">Dienst starten</string>
+    <string name="acc_stop">Dienst beenden</string>
+    <string name="acc_back">Zurück</string>
+    <string name="acc_search">Suchen</string>
+    <string name="acc_add">Konfiguration hinzufügen</string>
+    <string name="acc_more">Weitere Optionen</string>
+    <string name="acc_selected_server">Ausgewählt</string>
+    <string name="acc_share_subscription">Abonnement-Link teilen</string>
+    <string name="acc_share_log">Protokoll teilen</string>
+    <string name="acc_remove">Glied der Proxy-Kette entfernen</string>
+    <string name="acc_add_member">Glied der Proxy-Kette hinzufügen</string>
+    <string name="acc_start_scanner">QR-Scanner starten</string>
+    <string name="acc_stop_scanner">QR-Scanner beenden</string>
+    <string name="acc_turn_torch_on">Taschenlampe einschalten</string>
+    <string name="acc_turn_torch_off">Taschenlampe ausschalten</string>
+    <string name="acc_select_image">Bild zum Scannen auswählen</string>
+    <string name="acc_locked">Diese Regel bleibt beim Import von Vorlagen erhalten</string>
+    <string name="acc_open_menu">Navigationsmenü öffnen</string>
+    <string name="acc_edit">Bearbeiten</string>
+    <string name="acc_delete">Löschen</string>
+    <string name="acc_save">Speichern</string>
+    <string name="acc_update_subscriptions">Abonnements aktualisieren</string>
+    <string name="acc_per_app_proxy_information">Informationen zum App-spezifischen Proxy</string>
+    <string name="permission_camera">Kamera</string>
+    <string name="permission_notification">Benachrichtigungen</string>
+    <string name="permission_local_network">Lokales Netzwerk</string>
+    <string name="subscription_update_updating">Abonnement wird aktualisiert: %1$s</string>
+    <string name="subscription_update_progress">%2$s wird getestet: %1$s</string>
+    <string name="tasker_blurb_start">%1$s starten</string>
+    <string name="tasker_blurb_stop">%1$s beenden</string>
+    <string name="connection_test_empty_message">keine Details verfügbar</string>
+    <string name="value_unknown">unbekannt</string>
+    <string name="sub_info_open_support">Support-Link öffnen</string>
+    <string name="sub_info_open_page">Abonnementseite öffnen</string>
+    <string name="sub_info_unlimited">Unbegrenzt</string>
+
+</resources>

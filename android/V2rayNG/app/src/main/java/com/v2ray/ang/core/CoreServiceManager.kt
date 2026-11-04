@@ -178,6 +178,8 @@ object CoreServiceManager {
         }
 
         if (!isReload) {
+            // RockBlack: session start for the connected timer on the main screen.
+            com.v2ray.ang.handler.RockBlackPrefs.markConnected()
             MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_START_SUCCESS, "")
         }
         NotificationManager.startSpeedNotification()

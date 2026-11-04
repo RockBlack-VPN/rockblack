@@ -18,6 +18,9 @@ import com.v2ray.ang.extension.delay
 import com.v2ray.ang.extension.isComplexType
 import com.v2ray.ang.extension.matchesPattern
 import com.v2ray.ang.extension.moveItem
+import com.v2ray.ang.handler.RockBlackPrefs
+import com.v2ray.ang.handler.RoutingProfileManager
+import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.handler.SubscriptionInfoParser
 import com.v2ray.ang.ui.base.BaseViewModel
 import com.v2ray.ang.util.LogUtil
@@ -32,6 +35,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -119,6 +123,7 @@ class MainViewModel(
     // ---------- Service events ----------
     init {
         collectServiceEvents()
+        loadRockBlackUiState()
         setupGroupTab()
     }
 
@@ -208,18 +213,26 @@ class MainViewModel(
         val updates = cacheMutex.withLock {
             val drained = pendingTestResults.toMap()
             pendingTestResults.clear()
-            groupDataCache[request.groupId]?.let { cached ->
-                groupDataCache[request.groupId] = applyTestDelayResults(cached, drained)
+            // RockBlack: a server can appear in several cards (e.g. the "All" group), so every
+            // cached group receives the results.
+            groupDataCache.keys.toList().forEach { groupId ->
+                groupDataCache[groupId]?.let { cached ->
+                    groupDataCache[groupId] = applyTestDelayResults(cached, drained)
+                }
             }
             drained
         }
         if (updates.isEmpty()) return
         if (testRequests.bulk?.id != request.id) return
-        mutableServerGroupState(request.groupId).update { current ->
-            current.copy(
-                servers = applyTestDelayResults(current.servers, updates),
-                rows = applyTestDelayResultsToRows(current.rows, updates),
-            )
+        _uiState.update { it.copy(pingingGuids = it.pingingGuids - updates.keys) }
+        groupUiFlows.values.forEach { flow ->
+            flow.update { current ->
+                if (current.servers.none { it.guid in updates }) current
+                else current.copy(
+                    servers = applyTestDelayResults(current.servers, updates),
+                    rows = applyTestDelayResultsToRows(current.rows, updates),
+                )
+            }
         }
     }
 
@@ -326,6 +339,14 @@ class MainViewModel(
             is MainAction.Search -> filterConfig(action.query)
             is MainAction.ImportBatchConfig -> importBatchConfig(action.configText)
             MainAction.LocateHandled -> consumeLocateTarget()
+            is MainAction.PingGroup -> pingGroup(action.groupId)
+            is MainAction.PingServer -> pingServer(action.guid)
+            is MainAction.ToggleGroupCollapsed -> toggleGroupCollapsed(action.groupId)
+            is MainAction.SetGroupSort -> setGroupSort(action.groupId, action.sort)
+            is MainAction.DeleteSubscription -> deleteSubscription(action.groupId)
+            is MainAction.DeleteGroupServers -> deleteGroupServers(action.groupId)
+            is MainAction.DeleteRoutingProfile -> deleteRoutingProfile(action.profileId)
+            is MainAction.SelectRoutingProfile -> selectRoutingProfile(action.profileId)
             is MainAction.ShareQRCode -> {
                 val bitmap = dataSource.share2QRCode(action.guid)
                 _uiState.update { it.copy(shareQRCodeBitmap = bitmap) }
@@ -346,7 +367,11 @@ class MainViewModel(
             is MainAction.EditServer,
             is MainAction.ShareClipboard,
             is MainAction.ShareFullContent,
-            is MainAction.OpenSubscriptionLink -> {
+            is MainAction.OpenSubscriptionLink,
+            is MainAction.SelectFastest,
+            is MainAction.EditSubscription,
+            MainAction.OpenRoutingEditor,
+            is MainAction.SetVpnMode -> {
                 // Handled by Activity via its onAction lambda
             }
         }
@@ -372,9 +397,12 @@ class MainViewModel(
         _uiState.update {
             it.copy(
                 confirmRemove = dataSource.getConfirmRemove(),
-                doubleColumnDisplay = dataSource.getDoubleColumnDisplay()
+                doubleColumnDisplay = dataSource.getDoubleColumnDisplay(),
+                pingDisplayIcon = RockBlackPrefs.pingDisplay() == RockBlackPrefs.PING_DISPLAY_ICON,
+                vpnMode = SettingsManager.isVpnMode(),
             )
         }
+        refreshRoutingProfiles()
     }
 
     // ---------- Group & server loading ----------
@@ -495,6 +523,9 @@ class MainViewModel(
                         usageInfo = it.subscription.usageInfo?.let { info ->
                             SubscriptionInfoParser.withWebPageFallback(info, it.subscription.url)
                         },
+                        lastUpdated = it.subscription.lastUpdated,
+                        autoUpdateMinutes = it.subscription.updateInterval.takeIf { _ -> it.subscription.autoUpdate },
+                        hasUrl = it.subscription.url.isNotBlank(),
                     )
                 }
                 val selectedGroup = resolveSelectedGroup(groups)
@@ -511,6 +542,7 @@ class MainViewModel(
                     )
                 }
                 groups.forEach { mutableServerGroupState(it.id) }
+                refreshGroupSorts(groups)
 
                 if (groups.isEmpty()) {
                     cacheMutex.withLock { groupDataCache.clear() }
@@ -535,6 +567,7 @@ class MainViewModel(
                         updateGroupUi(groupId, servers)
                     }
                 }
+                maybePingOnLaunch()
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
@@ -862,6 +895,8 @@ class MainViewModel(
         _uiState.update {
             it.copy(
                 isTesting = testRequests.isTesting,
+                pingingGroupId = testRequests.bulk?.groupId,
+                pingingGuids = if (testRequests.bulk == null) emptySet() else it.pingingGuids,
                 status = if (testRequests.isTesting) MainStatus.Testing
                 else if (it.isRunning) MainStatus.Connected else MainStatus.Disconnected
             )
@@ -961,12 +996,194 @@ class MainViewModel(
         _uiState.update { it.copy(locateTarget = null) }
     }
 
+    // ---------- RockBlack UI 3.0 ----------
+
+    /** Every group's rows keyed by group id, for the single scrolling list of cards. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    internal val allGroupStates: StateFlow<Map<String, ServerGroupUiState>> by lazy {
+        uiState
+            .map { state -> state.groups.map { it.id } }
+            .distinctUntilChanged()
+            .flatMapLatest { ids ->
+                if (ids.isEmpty()) {
+                    flowOf(emptyMap())
+                } else {
+                    combine(ids.map { id -> mutableServerGroupState(id).map { id to it } }) { pairs ->
+                        pairs.toMap()
+                    }
+                }
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000), emptyMap())
+    }
+
+    private fun loadRockBlackUiState() {
+        val collapsed = RockBlackPrefs.collapsedGroups()
+        _uiState.update {
+            it.copy(
+                collapsedGroups = collapsed,
+                pingDisplayIcon = RockBlackPrefs.pingDisplay() == RockBlackPrefs.PING_DISPLAY_ICON,
+                vpnMode = SettingsManager.isVpnMode(),
+            )
+        }
+        refreshRoutingProfiles()
+    }
+
+    private fun refreshGroupSorts(groups: List<GroupMapItem>) {
+        val sorts = groups.associate { it.id to RockBlackPrefs.groupSort(it.id) }
+        _uiState.update { it.copy(groupSorts = sorts) }
+    }
+
+    fun refreshRoutingProfiles() {
+        val profiles = RoutingProfileManager.Preset.entries.map { RoutingProfileUi(it.id) } +
+                RoutingProfileManager.customProfiles().map {
+                    RoutingProfileUi(RoutingProfileManager.IMPORTED_PREFIX + it.id, it.name, imported = true)
+                } + RoutingProfileUi(RoutingProfileManager.PROFILE_CUSTOM)
+        _uiState.update {
+            it.copy(routingProfileId = RoutingProfileManager.activeProfileId(), routingProfiles = profiles)
+        }
+    }
+
+    private fun selectRoutingProfile(profileId: String) {
+        if (profileId != RoutingProfileManager.PROFILE_CUSTOM) {
+            RoutingProfileManager.applyProfile(profileId)
+        }
+        refreshRoutingProfiles()
+    }
+
+    private fun deleteRoutingProfile(profileId: String) {
+        if (!profileId.startsWith(RoutingProfileManager.IMPORTED_PREFIX)) return
+        RoutingProfileManager.deleteCustomProfile(profileId.removePrefix(RoutingProfileManager.IMPORTED_PREFIX))
+        refreshRoutingProfiles()
+    }
+
+    private var connectingTimeoutJob: Job? = null
+
+    fun setConnecting(connecting: Boolean) {
+        _uiState.update { it.copy(isConnecting = connecting) }
+        connectingTimeoutJob?.cancel()
+        if (connecting) {
+            connectingTimeoutJob = viewModelScope.launch {
+                delay(CONNECTING_TIMEOUT_MS)
+                _uiState.update { it.copy(isConnecting = false) }
+            }
+        }
+    }
+
+    private fun toggleGroupCollapsed(groupId: String) {
+        val current = uiState.value.collapsedGroups
+        val next = if (groupId in current) current - groupId else current + groupId
+        RockBlackPrefs.setCollapsedGroups(next)
+        _uiState.update { it.copy(collapsedGroups = next) }
+    }
+
+    private fun setGroupSort(groupId: String, sort: String) {
+        RockBlackPrefs.setGroupSort(groupId, sort)
+        _uiState.update { it.copy(groupSorts = it.groupSorts + (groupId to sort)) }
+    }
+
+    /** Fastest tested server of [groupId], or null when no server has a ping result. */
+    fun fastestServer(groupId: String): String? =
+        mutableServerGroupState(groupId).value.rows
+            .filter { it.testDelayMillis > 0L }
+            .minByOrNull { it.testDelayMillis }
+            ?.guid
+
+    private fun pingOnlyTcp(): Boolean = RockBlackPrefs.pingMethod() == RockBlackPrefs.PING_METHOD_TCP
+
+    private fun resetDelays(guids: Set<String>) {
+        groupUiFlows.values.forEach { flow ->
+            flow.update { current ->
+                if (current.servers.none { it.guid in guids }) current
+                else current.copy(
+                    servers = current.servers.map { if (it.guid in guids) it.copy(testDelayMillis = 0L) else it },
+                    rows = current.rows.map { if (it.guid in guids) it.copy(testDelayMillis = 0L) else it },
+                )
+            }
+        }
+    }
+
+    /** Pings every server of [groupId] ([PING_ALL_GROUPS]: every server) in parallel. */
+    fun pingGroup(groupId: String) {
+        val allGroups = groupId == PING_ALL_GROUPS
+        val serverGuids = if (allGroups) {
+            groupUiFlows.values.flatMap { flow -> flow.value.servers.map { it.guid } }.distinct()
+        } else {
+            mutableServerGroupState(groupId).value.servers.map { it.guid }
+        }
+        startPing(groupId, serverGuids, if (allGroups) "" else groupId)
+    }
+
+    /** Pings one server (row action). */
+    fun pingServer(guid: String) = startPing(SINGLE_SERVER_GROUP, listOf(guid), "")
+
+    private fun startPing(requestGroup: String, serverGuids: List<String>, subscriptionId: String) {
+        cancelAllPing()
+        if (serverGuids.isEmpty()) return
+        val resetGuids = serverGuids.toHashSet()
+        resetDelays(resetGuids)
+        val request = testRequests.beginBulk(requestGroup)
+        val message = TestServiceMessage(
+            key = AppConfig.MSG_MEASURE_CONFIG_START,
+            subscriptionId = subscriptionId,
+            serverGuids = serverGuids,
+            onlyTcp = pingOnlyTcp(),
+        )
+        _uiState.update { it.copy(isTesting = true, pingingGroupId = requestGroup, pingingGuids = resetGuids) }
+        bulkTestJob = viewModelScope.launch {
+            withContext(ioDispatcher) {
+                dataSource.clearAllTestDelayResults(serverGuids)
+                cacheMutex.withLock {
+                    groupDataCache.keys.toList().forEach { id ->
+                        groupDataCache[id] = groupDataCache[id].orEmpty().map {
+                            if (it.guid in resetGuids) it.copy(testDelayMillis = 0L) else it
+                        }
+                    }
+                }
+            }
+            dataSource.sendMsg2TestService(message, request.id)
+        }
+    }
+
+    private var launchPingDone = false
+
+    private fun maybePingOnLaunch() {
+        if (launchPingDone || !RockBlackPrefs.pingOnLaunch()) return
+        launchPingDone = true
+        viewModelScope.launch {
+            // Wait until every group is loaded, then test them all at once.
+            preloadJob?.join()
+            pingGroup(PING_ALL_GROUPS)
+        }
+    }
+
+    private fun deleteSubscription(groupId: String) {
+        viewModelScope.launch(ioDispatcher) {
+            dataSource.removeSubscription(groupId)
+            cacheMutex.withLock { groupDataCache.clear() }
+            setupGroupTab(forceRefresh = true).join()
+            refreshSelectedGuid()
+        }
+    }
+
+    private fun deleteGroupServers(groupId: String) {
+        viewModelScope.launch(ioDispatcher) {
+            val selected = uiState.value.selectedGuid
+            mutableServerGroupState(groupId).value.servers
+                .map { it.guid }
+                .filter { it != selected }
+                .forEach { dataSource.removeServer(it) }
+            cacheMutex.withLock { groupDataCache.clear() }
+            setupGroupTab(forceRefresh = true).join()
+        }
+    }
+
     // ---------- Running state ----------
     private fun updateRunningState(running: Boolean, clearTestingText: Boolean = true) {
         if (!running || clearTestingText) testRequests.invalidateCurrent()
         _uiState.update { state ->
             state.copy(
                 isRunning = running,
+                isConnecting = if (running || clearTestingText) false else state.isConnecting,
                 isTesting = testRequests.isTesting,
                 status = if (!clearTestingText && state.isRunning == running) state.status
                 else if (running) MainStatus.Connected else MainStatus.Disconnected
@@ -998,5 +1215,7 @@ class MainViewModel(
 
     private companion object {
         const val TEST_RESULT_FLUSH_INTERVAL_MS = 500L
+        const val CONNECTING_TIMEOUT_MS = 20_000L
+        const val SINGLE_SERVER_GROUP = "\u0000single"
     }
 }

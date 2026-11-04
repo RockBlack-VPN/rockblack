@@ -39,6 +39,7 @@ import com.v2ray.ang.handler.AppLocaleManager
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.MmkvManager.rememberMmkvBool
 import com.v2ray.ang.handler.MmkvManager.rememberMmkvString
+import com.v2ray.ang.handler.RockBlackPrefs
 import com.v2ray.ang.handler.SettingsChangeManager
 import com.v2ray.ang.root.RootManager
 import com.v2ray.ang.ui.base.BaseComponentActivity
@@ -112,6 +113,10 @@ fun SettingsScreen(
     var fragmentSettingsExpanded by rememberSaveable { mutableStateOf(false) }
     var observatorySettingsExpanded by rememberSaveable { mutableStateOf(false) }
     var advancedSettingsExpanded by rememberSaveable { mutableStateOf(true) }
+    var pingSettingsExpanded by rememberSaveable { mutableStateOf(true) }
+    var pingMethod by rememberMmkvString(RockBlackPrefs.PREF_PING_METHOD, RockBlackPrefs.PING_METHOD_PROXY_GET)
+    var pingDisplay by rememberMmkvString(RockBlackPrefs.PREF_PING_DISPLAY, RockBlackPrefs.PING_DISPLAY_TIME)
+    var pingOnLaunch by rememberMmkvBool(RockBlackPrefs.PREF_PING_ON_LAUNCH, false)
     var modeSettingsExpanded by rememberSaveable { mutableStateOf(true) }
 
     var localDns by rememberMmkvBool(AppConfig.PREF_LOCAL_DNS_ENABLED, false)
@@ -623,6 +628,46 @@ fun SettingsScreen(
                 )
             }
 
+            // RockBlack UI 3.0: Settings → Ping (DESIGN.md "Ping").
+            CollapsiblePreferenceGroupHeader(
+                title = stringResource(R.string.rb_ping_settings),
+                expanded = pingSettingsExpanded,
+                onExpandedChange = { pingSettingsExpanded = it }
+            )
+            if (pingSettingsExpanded) {
+                SettingsListItem(
+                    title = stringResource(R.string.rb_ping_method),
+                    entries = listOf(
+                        stringResource(R.string.rb_ping_method_proxy_get),
+                        stringResource(R.string.rb_ping_method_tcp)
+                    ),
+                    values = listOf(RockBlackPrefs.PING_METHOD_PROXY_GET, RockBlackPrefs.PING_METHOD_TCP),
+                    selectedValue = pingMethod,
+                    onSelected = { pingMethod = it }
+                )
+                SettingsListItem(
+                    title = stringResource(R.string.rb_ping_display),
+                    entries = listOf(
+                        stringResource(R.string.rb_ping_display_time),
+                        stringResource(R.string.rb_ping_display_icon)
+                    ),
+                    values = listOf(RockBlackPrefs.PING_DISPLAY_TIME, RockBlackPrefs.PING_DISPLAY_ICON),
+                    selectedValue = pingDisplay,
+                    onSelected = { pingDisplay = it }
+                )
+                SettingsSwitchItem(
+                    title = stringResource(R.string.rb_ping_on_launch),
+                    summary = stringResource(R.string.rb_ping_on_launch_summary),
+                    checked = pingOnLaunch,
+                    onCheckedChange = { pingOnLaunch = it }
+                )
+                SettingsEditItem(
+                    title = stringResource(R.string.rb_ping_test_url),
+                    value = delayTestUrl,
+                    onValueChanged = { delayTestUrl = it }
+                )
+            }
+
             CollapsiblePreferenceGroupHeader(
                 title = stringResource(R.string.title_advanced),
                 expanded = advancedSettingsExpanded,
@@ -642,11 +687,7 @@ fun SettingsScreen(
                         onClick = onSystemVpnSettingsClicked
                     )
                 }
-                SettingsEditItem(
-                    title = stringResource(R.string.title_pref_delay_test_url),
-                    value = delayTestUrl,
-                    onValueChanged = { delayTestUrl = it }
-                )
+
                 SettingsEditItem(
                     title = stringResource(R.string.title_pref_real_ping_concurrency),
                     value = realPingConcurrency,

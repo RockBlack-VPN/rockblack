@@ -26,8 +26,32 @@ data class MainUiState(
     val locateTarget: LocateTarget? = null,
     val confirmRemove: Boolean = false,
     val doubleColumnDisplay: Boolean = false,
-    val shareQRCodeBitmap: android.graphics.Bitmap? = null
+    val shareQRCodeBitmap: android.graphics.Bitmap? = null,
+    // ---------- RockBlack UI 3.0 ----------
+    /** Start requested, waiting for the service to report success or failure. */
+    val isConnecting: Boolean = false,
+    /** Group whose servers are being pinged ([PING_ALL_GROUPS] for every group), null when idle. */
+    val pingingGroupId: String? = null,
+    /** Servers of a single-server ping that has not reported yet. */
+    val pingingGuids: Set<String> = emptySet(),
+    val collapsedGroups: Set<String> = emptySet(),
+    /** Display order per group id (RockBlackPrefs.SORT_*). */
+    val groupSorts: Map<String, String> = emptyMap(),
+    val pingDisplayIcon: Boolean = false,
+    val routingProfileId: String = "",
+    val routingProfiles: List<RoutingProfileUi> = emptyList(),
+    val vpnMode: Boolean = true,
 )
+
+/** Entry of the routing profile sheet. */
+data class RoutingProfileUi(
+    val id: String,
+    /** Display name for imported profiles; built-in names are resolved from resources. */
+    val name: String? = null,
+    val imported: Boolean = false,
+)
+
+const val PING_ALL_GROUPS = "\u0000all"
 
 /**
  * All possible user interaction intents
@@ -69,4 +93,18 @@ sealed interface MainAction {
     data class ImportBatchConfig(val configText: String) : MainAction
 
     data object LocateHandled : MainAction
+
+    // ---------- RockBlack UI 3.0 ----------
+    data class PingGroup(val groupId: String) : MainAction
+    data class PingServer(val guid: String) : MainAction
+    data class ToggleGroupCollapsed(val groupId: String) : MainAction
+    data class SetGroupSort(val groupId: String, val sort: String) : MainAction
+    data class SelectFastest(val groupId: String) : MainAction
+    data class EditSubscription(val groupId: String) : MainAction
+    data class DeleteSubscription(val groupId: String) : MainAction
+    data class DeleteGroupServers(val groupId: String) : MainAction
+    data class SelectRoutingProfile(val profileId: String) : MainAction
+    data class DeleteRoutingProfile(val profileId: String) : MainAction
+    data object OpenRoutingEditor : MainAction
+    data class SetVpnMode(val vpn: Boolean) : MainAction
 }

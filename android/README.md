@@ -34,15 +34,28 @@ All release APKs are signed with the same RockBlack production key.
   round, notification, TV-banner, drawer and store icons (generated from
   `../branding` by [`tools/generate-icons.py`](tools/generate-icons.py));
   accent color teal `#26D6B0` instead of orange.
-- RockBlack UI 2.0 ([`branding/DESIGN.md`](../branding/DESIGN.md)), visual layer only:
-  dark graphite theme by default (light theme and "follow system" remain
-  selectable; dynamic color is not applied), teal accent, radius 16 cards /
-  12 inputs / 24 sheets. Main screen: transparent top bar with the wordmark, a
-  status card with a large round connect button (same toggle action as the old
-  FAB; it collapses while the list scrolls) and the server list as rounded
-  cards (selected = primarySoft + teal accent bar, color-coded latency).
-  Restyled drawer, group tabs, subscription card, settings headers and home
-  widget. Screenshot tests: `RockBlackScreenshotTest` (Robolectric; PNGs in
+- RockBlack UI 3.0 ([`branding/DESIGN.md`](../branding/DESIGN.md)): dark
+  graphite theme by default (light theme and "follow system" remain selectable;
+  dynamic color is not applied), teal accent. One main screen in the style of
+  Happ: settings (opens the drawer with every upstream destination and tools)
+  and "+" (upstream import menu) in the top bar, a power button with rings,
+  glow and connecting pulse, session timer and live speed, routing and mode
+  chips, then one scrolling list of collapsible subscription cards (header with
+  update / ping-all / menu, traffic + expiry info bar, panel announcement,
+  expiry ≤ 3 days banner, server rows with flag, protocol and colored ping;
+  the chevron opens edit / QR / copy / ping / delete). Servers without a
+  subscription are in the "Server-List" card. Tapping a row selects it and
+  reconnects a running tunnel. Settings → Ping: method (real delay via proxy or
+  TCP), display (time or icon), ping on launch, test URL.
+- Routing profiles (`RoutingProfileManager`): Russia (default — Russian
+  domains/IPs direct via `geosite:category-ru`, `geoip:ru`, `.ru/.su/.рф`, ads
+  blocked), Global, Block ads only, Direct, plus the upstream rule editor
+  ("Custom") and profiles imported from a subscription
+  (`routing: happ://routing/add|onadd/{base64}` header or body line, or a
+  `happ://routing/...` link). The China/Iran presets and the AliDNS domestic
+  DNS default are gone (domestic DNS `77.88.8.8`). Changing the profile while
+  connected reconnects.
+- Screenshot tests: `RockBlackScreenshotTest` (Robolectric; PNGs in
   `app/build/outputs/screenshots`, CI artifact `android-screenshots`).
 - Links (source code, issues, Telegram, privacy policy, website) point to
   RockBlack; the drawer "Promotion" entry opens <https://my.rockblack.tech>.

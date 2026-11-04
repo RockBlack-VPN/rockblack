@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.LocaleManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.ConfigurationCompat
+import androidx.core.os.LocaleListCompat
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.enums.Language
 
@@ -21,6 +22,11 @@ object AppLocaleManager {
      * Migrates the existing MMKV language preference and restores it before the first activity.
      */
     fun initialize(context: Context) {
+        // Values of removed languages (zh-rCN, fa, vi, ...) are normalised to "auto".
+        val storedCode = MmkvManager.decodeSettingsString(AppConfig.PREF_LANGUAGE)
+        if (storedCode != null && Language.entries.none { it.code == storedCode }) {
+            MmkvManager.encodeSettings(AppConfig.PREF_LANGUAGE, Language.AUTO.code)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Api33.prepareMigration(context)
         } else {
@@ -74,7 +80,12 @@ object AppLocaleManager {
                 AppCompatDelegate.setApplicationLocales(legacyLanguage.toLocaleList())
             }
         } else {
-            syncLegacyPreference(storedLocales.get(0)?.toLanguageTag())
+            val tag = storedLocales.get(0)?.toLanguageTag()
+            if (!Language.isSupportedTag(tag)) {
+                // A locale removed from RockBlack (e.g. zh-CN from an older build): follow system.
+                AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
+            }
+            syncLegacyPreference(tag)
         }
     }
 
@@ -97,11 +108,18 @@ object AppLocaleManager {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private object Api33 {
         fun prepareMigration(context: Context) {
+            val localeManager = context.getSystemService(LocaleManager::class.java)
+            val currentTag = localeManager.applicationLocales.get(0)?.toLanguageTag()
+            if (!Language.isSupportedTag(currentTag)) {
+                // A locale removed from RockBlack (e.g. zh-CN from an older build): follow system.
+                localeManager.applicationLocales = android.os.LocaleList.getEmptyLocaleList()
+                syncLegacyPreference(null)
+            }
+
             if (MmkvManager.decodeSettingsBool(AppConfig.PREF_APP_LOCALE_MIGRATED, false)) {
                 return
             }
 
-            val localeManager = context.getSystemService(LocaleManager::class.java)
             val applicationLocales = localeManager.applicationLocales
             if (!applicationLocales.isEmpty) {
                 syncLegacyPreference(applicationLocales.get(0)?.toLanguageTag())

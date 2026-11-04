@@ -45,13 +45,16 @@ import com.v2ray.ang.ui.server.ServerVlessActivity
 import com.v2ray.ang.ui.server.ServerVmessActivity
 import com.v2ray.ang.ui.server.ServerWireguardActivity
 import com.v2ray.ang.ui.settings.SettingsActivity
+import com.v2ray.ang.ui.subscription.SubEditActivity
 import com.v2ray.ang.ui.subscription.SubSettingActivity
 import com.v2ray.ang.ui.userasset.UserAssetActivity
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 class MainActivity : HelperBaseComponentActivity() {
 
@@ -118,6 +121,17 @@ class MainActivity : HelperBaseComponentActivity() {
                     is MainAction.ShareClipboard -> shareToClipboard(action.guid)
                     is MainAction.ShareFullContent -> shareFullContentAsync(action.guid)
                     is MainAction.OpenSubscriptionLink -> openSubscriptionLink(action.url)
+                    is MainAction.SelectFastest -> selectFastest(action.groupId)
+                    is MainAction.EditSubscription -> settingsActivityLauncher.launch(
+                        Intent(this, SubEditActivity::class.java).putExtra("subId", action.groupId)
+                    )
+                    MainAction.OpenRoutingEditor -> navigateTo(MainDestination.Routing)
+                    is MainAction.SetVpnMode -> setVpnMode(action.vpn)
+                    is MainAction.SelectRoutingProfile -> {
+                        mainViewModel.onAction(action)
+                        // Changing the profile while connected reconnects automatically.
+                        if (mainViewModel.uiState.value.isRunning) LauncherManager.restartService(this)
+                    }
                     else -> mainViewModel.onAction(action)
                 }
             },
@@ -172,6 +186,35 @@ class MainActivity : HelperBaseComponentActivity() {
         }
     }
 
+    private fun selectFastest(groupId: String) {
+        val guid = mainViewModel.fastestServer(groupId)
+        if (guid == null) {
+            toast(R.string.rb_select_fastest_none)
+        } else {
+            setSelectServer(guid)
+        }
+    }
+
+    private fun setVpnMode(vpn: Boolean) {
+        val wasRunning = mainViewModel.uiState.value.isRunning
+        MmkvManager.encodeSettings(AppConfig.PREF_MODE, if (vpn) AppConfig.VPN else PROXY_ONLY_MODE)
+        mainViewModel.refreshUiSettings()
+        if (!wasRunning) return
+        // The run mode selects a different service, so stop the current one and start the new
+        // one once it reported the stop (same permission-aware start as the power button).
+        LauncherManager.stopService(this)
+        lifecycleScope.launch {
+            val stopped = withTimeoutOrNull(MODE_SWITCH_TIMEOUT_MS) {
+                mainViewModel.uiState.first { !it.isRunning }
+            }
+            if (stopped != null) {
+                requestServiceStart()
+            } else {
+                toast(R.string.rb_mode_change_disconnect)
+            }
+        }
+    }
+
     private fun requestServiceStart() {
         if (!SettingsManager.isVpnMode()) {
             startV2Ray()
@@ -196,6 +239,7 @@ class MainActivity : HelperBaseComponentActivity() {
         ) {
             checkAndRequestPermission(PermissionType.ACCESS_LOCAL_NETWORK) {}
         }
+        mainViewModel.setConnecting(true)
         LauncherManager.startService(this)
     }
 
@@ -280,6 +324,18 @@ class MainActivity : HelperBaseComponentActivity() {
             mainViewModel.updateSelectedGuid(guid)
             LauncherManager.restartService(this)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Routing profiles may have been imported (subscription update, happ:// link) meanwhile.
+        mainViewModel.refreshRoutingProfiles()
+    }
+
+    private companion object {
+        /** Second entry of R.array.mode_value. */
+        const val PROXY_ONLY_MODE = "Proxy only"
+        const val MODE_SWITCH_TIMEOUT_MS = 10_000L
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {

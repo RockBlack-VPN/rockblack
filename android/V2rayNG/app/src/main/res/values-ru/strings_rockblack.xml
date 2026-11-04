@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Main screen: connection -->
+    <string name="rb_state_not_connected">Не подключено</string>
+    <string name="rb_state_connecting">Подключение…</string>
+    <string name="rb_state_connected">Подключено</string>
+    <string name="rb_tap_to_test">Нажмите, чтобы проверить соединение</string>
+    <string name="rb_open_settings">Открыть настройки</string>
+
+    <!-- Main screen: chips -->
+    <string name="rb_routing_chip">Маршрутизация: %1$s</string>
+    <string name="rb_mode_vpn">VPN</string>
+    <string name="rb_mode_proxy">Прокси</string>
+    <string name="rb_mode_change_disconnect">Отключитесь, чтобы сменить режим</string>
+
+    <!-- Routing profiles -->
+    <string name="rb_routing_title">Маршрутизация</string>
+    <string name="rb_routing_global">Глобальный</string>
+    <string name="rb_routing_global_desc">Весь трафик через прокси, локальная сеть напрямую</string>
+    <string name="rb_routing_russia">Россия</string>
+    <string name="rb_routing_russia_desc">Российские сайты и IP напрямую, реклама блокируется</string>
+    <string name="rb_routing_block_ads">Только блокировка рекламы</string>
+    <string name="rb_routing_block_ads_desc">Весь трафик через прокси, реклама блокируется</string>
+    <string name="rb_routing_direct">Напрямую</string>
+    <string name="rb_routing_direct_desc">Без прокси: весь трафик напрямую (для проверки)</string>
+    <string name="rb_routing_custom">Свой</string>
+    <string name="rb_routing_custom_desc">Правила из редактора маршрутизации</string>
+    <string name="rb_routing_imported_desc">Импортирован из подписки</string>
+    <string name="rb_routing_edit_rules">Изменить правила</string>
+    <string name="rb_routing_delete_profile">Удалить профиль</string>
+    <string name="rb_routing_imported">Профиль маршрутизации «%1$s» добавлен</string>
+
+    <!-- Subscription cards -->
+    <string name="rb_server_list">Список серверов</string>
+    <string name="rb_auto_update_hours">авто %1$d ч</string>
+    <string name="rb_expires">До: %1$s</string>
+    <plurals name="rb_sub_expires_in_days">
+        <item quantity="one">Подписка истекает через %d день</item>
+        <item quantity="few">Подписка истекает через %d дня</item>
+        <item quantity="many">Подписка истекает через %d дней</item>
+        <item quantity="other">Подписка истекает через %d дня</item>
+    </plurals>
+    <string name="rb_sub_expires_today">Подписка истекает сегодня</string>
+    <string name="rb_sub_expired">Срок подписки истёк</string>
+    <string name="rb_renew">Продлить</string>
+    <string name="rb_expand_group">Развернуть</string>
+    <string name="rb_collapse_group">Свернуть</string>
+    <string name="rb_group_update">Обновить подписку</string>
+    <string name="rb_group_ping">Проверить пинг</string>
+    <string name="rb_sort_ping">Сортировать по пингу</string>
+    <string name="rb_sort_name">Сортировать по имени</string>
+    <string name="rb_sort_default">Как в подписке</string>
+    <string name="rb_select_fastest">Выбрать самый быстрый</string>
+    <string name="rb_select_fastest_none">Сначала проверьте пинг</string>
+    <string name="rb_edit_subscription">Изменить подписку</string>
+    <string name="rb_delete_subscription">Удалить подписку</string>
+    <string name="rb_delete_subscription_confirm">Удалить подписку и все её серверы?</string>
+    <string name="rb_delete_group_servers">Удалить все серверы</string>
+    <string name="rb_no_servers">Серверов пока нет. Нажмите +, чтобы добавить ссылку на подписку или сервер.</string>
+    <string name="rb_subscription_info">Информация о подписке</string>
+
+    <!-- Server rows -->
+    <string name="rb_ping_na">н/д</string>
+    <string name="rb_ping_timeout">Таймаут</string>
+    <string name="rb_ping_ms">%1$d мс</string>
+    <string name="rb_server_actions">Действия с сервером</string>
+    <string name="rb_server_ping">Проверить пинг</string>
+
+    <!-- Drawer -->
+    <string name="rb_tools">Инструменты</string>
+
+    <!-- Settings → Ping -->
+    <string name="rb_ping_settings">Пинг</string>
+    <string name="rb_ping_method">Метод проверки</string>
+    <string name="rb_ping_method_proxy_get">Через прокси (GET)</string>
+    <string name="rb_ping_method_tcp">TCP</string>
+    <string name="rb_ping_display">Отображение пинга</string>
+    <string name="rb_ping_display_time">Время (42 мс)</string>
+    <string name="rb_ping_display_icon">Значок состояния</string>
+    <string name="rb_ping_on_launch">Пинг при запуске</string>
+    <string name="rb_ping_on_launch_summary">Проверять все серверы при открытии приложения</string>
+    <string name="rb_ping_test_url">Адрес для проверки</string>
+</resources>

@@ -22,6 +22,8 @@ data class SubscriptionUsageInfo(
     val supportUrl: String? = null,
     /** Validated `Profile-Web-Page-Url` header. */
     val webPageUrl: String? = null,
+    /** Decoded `Announce` header (panel message shown in the subscription card). */
+    val announce: String? = null,
 ) {
     /** Bytes consumed so far (upload + download). */
     val used: Long get() = upload + download

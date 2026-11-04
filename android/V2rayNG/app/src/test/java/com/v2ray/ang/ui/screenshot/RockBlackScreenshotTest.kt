@@ -3,10 +3,8 @@ package com.v2ray.ang.ui.screenshot
 import android.app.Application
 import android.graphics.Bitmap
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,21 +17,29 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
+import com.v2ray.ang.AppConfig
+import com.v2ray.ang.dto.GroupMapItem
 import com.v2ray.ang.dto.entities.ProfileItem
+import com.v2ray.ang.dto.entities.SubscriptionUsageInfo
 import com.v2ray.ang.enums.EConfigType
+import com.v2ray.ang.handler.RockBlackPrefs
+import com.v2ray.ang.handler.RoutingProfileManager
 import com.v2ray.ang.ui.compose.AppTopBar
 import com.v2ray.ang.ui.compose.CollapsiblePreferenceGroupHeader
-import com.v2ray.ang.ui.compose.PreferenceGroupHeader
 import com.v2ray.ang.ui.compose.RockBlackTheme
+import com.v2ray.ang.ui.compose.SettingsEditItem
 import com.v2ray.ang.ui.compose.SettingsListItem
-import com.v2ray.ang.ui.compose.SettingsMenuItem
 import com.v2ray.ang.ui.compose.SettingsSwitchItem
+import com.v2ray.ang.ui.main.GroupCardActions
+import com.v2ray.ang.ui.main.GroupCardUi
 import com.v2ray.ang.ui.main.MainDrawerContent
-import com.v2ray.ang.ui.main.MainStatusCard
-import com.v2ray.ang.ui.main.MainStatusCardUi
-import com.v2ray.ang.ui.main.MainTopBar
-import com.v2ray.ang.ui.main.ServerCard
+import com.v2ray.ang.ui.main.MainScreenContent
+import com.v2ray.ang.ui.main.PowerSectionUi
+import com.v2ray.ang.ui.main.PowerState
+import com.v2ray.ang.ui.main.RoutingProfileList
+import com.v2ray.ang.ui.main.RoutingProfileUi
 import com.v2ray.ang.ui.main.ServerRowUiModel
+import com.v2ray.ang.ui.main.buildGroupCard
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,9 +49,9 @@ import org.robolectric.annotation.GraphicsMode
 import java.io.File
 
 /**
- * Renders the RockBlack main-screen building blocks to PNG files (dark and light) so the
- * redesign can be reviewed without a device. Output: build/outputs/screenshots/ (uploaded by
- * CI as the "android-screenshots" artifact). These tests only record images, they do not diff.
+ * Renders the RockBlack UI 3.0 main screen (DESIGN.md) to PNG files so the design can be
+ * reviewed without a device. Output: build/outputs/screenshots/ (uploaded by CI as the
+ * "android-screenshots" artifact). These tests only record images, they do not diff.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -58,32 +64,70 @@ class RockBlackScreenshotTest {
     private val outDir: File =
         File(System.getProperty("rockblack.screenshots.dir") ?: "build/outputs/screenshots").apply { mkdirs() }
 
+    private val now = 1_793_800_000_000L // fixed clock (Nov 2026)
+    private val day = 86_400_000L
+
     private fun row(
         guid: String,
         name: String,
         type: EConfigType,
-        protocol: String,
-        address: String,
         delay: Long,
-        badge: String = "",
-    ) = ServerRowUiModel(
-        guid = guid,
-        profile = ProfileItem(configType = type, remarks = name),
-        remarks = name,
-        statistics = address,
-        typeDescription = protocol,
-        testDelayMillis = delay,
-        subscriptionBadge = badge,
+        network: String? = null,
+        security: String? = null,
+    ): ServerRowUiModel {
+        val profile = ProfileItem(configType = type, remarks = name).apply {
+            this.network = network
+            this.security = security
+        }
+        return ServerRowUiModel(
+            guid = guid,
+            profile = profile,
+            remarks = name,
+            statistics = "",
+            typeDescription = type.name,
+            testDelayMillis = delay,
+            subscriptionBadge = "",
+        )
+    }
+
+    private fun subscriptionRows(withPing: Boolean) = listOf(
+        row("1", "🇩🇪 Germany", EConfigType.VLESS, if (withPing) 42 else 0, "tcp", "reality"),
+        row("2", "Netherlands · Amsterdam", EConfigType.VLESS, if (withPing) 386 else 0, "xhttp", "reality"),
+        row("3", "🇱🇻 Latvia", EConfigType.TROJAN, if (withPing) -1 else 0, "tcp", "tls"),
+        row("4", "Moldova", EConfigType.VMESS, if (withPing) 1255 else 0, "ws", "tls"),
+        row("5", "Finland FI-02", EConfigType.HYSTERIA2, if (withPing) 97 else 0, null, "tls"),
     )
 
-    private val rows = listOf(
-        row("1", "Amsterdam · NL-01", EConfigType.VLESS, "VLESS / xhttp / reality", "nl1.example.net : 443", 86, "R"),
-        row("2", "Frankfurt · DE-02", EConfigType.VLESS, "VLESS / reality", "de2.example.net : 443", 142, "R"),
-        row("3", "Helsinki · FI-01", EConfigType.TROJAN, "TROJAN / tls", "fi1.example.net : 443", 412, "R"),
-        row("4", "Tokyo · JP-01", EConfigType.SHADOWSOCKS, "SHADOWSOCKS", "jp1.example.net : 8388", 920),
-        row("5", "New York · US-03", EConfigType.HYSTERIA2, "HYSTERIA2 / tls", "us3.example.net : 8443", -1),
-        row("6", "Warsaw · PL-01", EConfigType.VMESS, "VMESS / ws / tls", "pl1.example.net : 443", 0),
+    private val manualRows = listOf(
+        row("m1", "🇺🇸 USA - Seattle", EConfigType.VMESS, 0, "ws", "tls"),
+        row("m2", "Home router", EConfigType.SHADOWSOCKS, 0),
     )
+
+    private fun cards(withPing: Boolean, expiresInDays: Long = 300, announce: String? = null, collapsedManual: Boolean = false): List<GroupCardUi> {
+        val subscription = GroupMapItem(
+            id = "sub",
+            remarks = "RockBlack",
+            usageInfo = SubscriptionUsageInfo(
+                upload = 400_000_000,
+                download = 2_900_000_000,
+                total = 50_000_000_000,
+                expire = (now + expiresInDays * day) / 1000,
+                title = "My subscription",
+                supportUrl = "https://t.me/rockblack_vpn",
+                webPageUrl = "https://my.rockblack.tech",
+                announce = announce,
+            ),
+            lastUpdated = now - 3 * 3_600_000L,
+            autoUpdateMinutes = 720,
+            hasUrl = true,
+        )
+        val manual = GroupMapItem(id = AppConfig.DEFAULT_SUBSCRIPTION_ID, remarks = "Default")
+        val auto = { h: Int -> "auto $h h" }
+        return listOf(
+            buildGroupCard(subscription, subscriptionRows(withPing), false, "Server-List", false, false, RockBlackPrefs.SORT_DEFAULT, now, auto),
+            buildGroupCard(manual, manualRows, true, "Server-List", collapsedManual, false, RockBlackPrefs.SORT_DEFAULT, now, auto),
+        )
+    }
 
     private fun capture(name: String, content: @Composable () -> Unit) {
         composeRule.setContent(content)
@@ -93,107 +137,114 @@ class RockBlackScreenshotTest {
     }
 
     @Composable
-    private fun MainScreenMock(dark: Boolean, running: Boolean, compact: Boolean) {
+    private fun Main(
+        dark: Boolean,
+        power: PowerSectionUi,
+        cards: List<GroupCardUi>,
+        routing: String = "Russia",
+        pingIcons: Boolean = false,
+    ) {
         RockBlackTheme(darkTheme = dark) {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .background(RockBlackTheme.colors.bg)
-            ) {
-                MainTopBar(
-                    isLoading = false,
-                    showSearch = false,
-                    searchQuery = "",
-                    onSearchQueryChange = {},
-                    onSearchClose = {},
-                    onSearchToggle = {},
-                    onMenuClick = {},
-                    onAction = {},
-                    onMoreMenuAction = {}
-                )
-                MainStatusCard(
-                    state = MainStatusCardUi(
-                        isRunning = running,
-                        statusText = if (running) "Connection succeeded in 86 ms\n(NL) 203.0.113.24" else "Not connected",
-                        showStatusLine = running,
-                        serverName = rows[0].remarks,
-                        protocol = rows[0].typeDescription,
-                    ),
-                    compact = compact,
-                    onToggle = {},
-                    onTest = {}
-                )
-                Column(
-                    Modifier.padding(PaddingValues(top = 4.dp)),
-                    verticalArrangement = Arrangement.spacedBy(0.dp)
-                ) {
-                    rows.forEach { r ->
-                        Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                            ServerCard(
-                                row = r,
-                                isSelected = r.guid == "1",
-                                doubleColumnDisplay = false,
-                                onSelect = {}, onShare = {}, onEdit = {}, onRemove = {}, onMore = {}
-                            )
-                        }
-                    }
-                }
-            }
+            MainScreenContent(
+                power = power,
+                routingLabel = routing,
+                vpnMode = true,
+                cards = cards,
+                selectedGuid = "1",
+                pingingGuids = emptySet(),
+                pingDisplayIcon = pingIcons,
+                isLoading = false,
+                showSearch = false,
+                searchQuery = "",
+                onSearchQueryChange = {},
+                onSearchClose = {},
+                onSettingsClick = {},
+                onAction = {},
+                onToggle = {},
+                onTest = {},
+                onRoutingClick = {},
+                onModeSelected = {},
+                cardActions = GroupCardActions(),
+                applyWindowInsets = false,
+            )
         }
     }
 
+    private val connected = PowerSectionUi(
+        state = PowerState.Connected,
+        timer = "00:16:28",
+        downSpeed = 1_250_000,
+        upSpeed = 143_000,
+    )
+
     @Test
-    fun mainScreen_dark_connected() = capture("main_dark_connected") {
-        MainScreenMock(dark = true, running = true, compact = false)
+    fun main_dark_disconnected() = capture("main_dark_disconnected") {
+        Main(dark = true, power = PowerSectionUi(PowerState.Disconnected), cards = cards(withPing = false))
     }
 
     @Test
-    fun mainScreen_dark_disconnected() = capture("main_dark_disconnected") {
-        MainScreenMock(dark = true, running = false, compact = false)
+    fun main_dark_connected() = capture("main_dark_connected") {
+        Main(dark = true, power = connected, cards = cards(withPing = true))
     }
 
     @Test
-    fun mainScreen_dark_compact() = capture("main_dark_compact_connected") {
-        MainScreenMock(dark = true, running = true, compact = true)
+    fun main_dark_connecting() = capture("main_dark_connecting") {
+        Main(dark = true, power = PowerSectionUi(PowerState.Connecting), cards = cards(withPing = true), pingIcons = true)
     }
 
     @Test
-    fun mainScreen_light_connected() = capture("main_light_connected") {
-        MainScreenMock(dark = false, running = true, compact = false)
+    fun main_dark_expiry_banner() = capture("main_dark_expiry_banner") {
+        Main(
+            dark = true,
+            power = connected,
+            cards = cards(withPing = true, expiresInDays = 3, announce = "Maintenance on Sunday 03:00–04:00 MSK"),
+        )
     }
 
     @Test
-    fun mainScreen_light_disconnected() = capture("main_light_disconnected") {
-        MainScreenMock(dark = false, running = false, compact = false)
+    @Config(qualifiers = "w393dp-h1300dp-xhdpi")
+    fun main_dark_full_list() = capture("main_dark_full_list") {
+        Main(dark = true, power = connected, cards = cards(withPing = true))
     }
 
-    private fun serverCards(name: String, dark: Boolean) = capture(name) {
+    @Test
+    fun main_light_connected() = capture("main_light_connected") {
+        Main(dark = false, power = connected, cards = cards(withPing = true))
+    }
+
+    @Test
+    fun main_light_disconnected() = capture("main_light_disconnected") {
+        Main(dark = false, power = PowerSectionUi(PowerState.Disconnected), cards = cards(withPing = false, expiresInDays = -1))
+    }
+
+    private val routingProfiles = RoutingProfileManager.Preset.entries.map { RoutingProfileUi(it.id) } +
+            RoutingProfileUi(RoutingProfileManager.IMPORTED_PREFIX + "x", "Panel profile", imported = true) +
+            RoutingProfileUi(RoutingProfileManager.PROFILE_CUSTOM)
+
+    private fun routingSheet(name: String, dark: Boolean) = capture(name) {
         RockBlackTheme(darkTheme = dark) {
-            Column(
+            Box(
                 Modifier
                     .fillMaxWidth()
-                    .background(RockBlackTheme.colors.bg)
-                    .padding(vertical = 8.dp)
+                    .background(RockBlackTheme.colors.surface)
+                    .padding(top = 16.dp)
             ) {
-                rows.take(5).forEachIndexed { i, r ->
-                    Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                        ServerCard(
-                            row = r,
-                            isSelected = i == 1,
-                            doubleColumnDisplay = i == 4,
-                            onSelect = {}, onShare = {}, onEdit = {}, onRemove = {}, onMore = {}
-                        )
-                    }
-                }
+                RoutingProfileList(
+                    profiles = routingProfiles,
+                    activeId = RoutingProfileManager.Preset.RUSSIA.id,
+                    onSelect = {},
+                    onDelete = {},
+                    onEditRules = {},
+                )
             }
         }
     }
 
     @Test
-    fun serverCards_dark() = serverCards("server_cards_dark", dark = true)
+    fun routing_sheet_dark() = routingSheet("routing_sheet_dark", dark = true)
 
     @Test
-    fun serverCards_light() = serverCards("server_cards_light", dark = false)
+    fun routing_sheet_light() = routingSheet("routing_sheet_light", dark = false)
 
     private fun drawer(name: String, dark: Boolean) = capture(name) {
         RockBlackTheme(darkTheme = dark) {
@@ -204,11 +255,18 @@ class RockBlackScreenshotTest {
             ) {
                 MainDrawerContent(
                     drawerState = rememberDrawerState(DrawerValue.Open),
-                    onNavigate = {}
+                    onNavigate = {},
+                    onTool = {},
                 )
             }
         }
     }
+
+    @Test
+    fun drawer_dark() = drawer("drawer_dark", dark = true)
+
+    @Test
+    fun drawer_light() = drawer("drawer_light", dark = false)
 
     private fun settings(name: String, dark: Boolean) = capture(name) {
         RockBlackTheme(darkTheme = dark) {
@@ -218,29 +276,29 @@ class RockBlackScreenshotTest {
                     .background(RockBlackTheme.colors.bg)
             ) {
                 AppTopBar(title = "Settings", onBackClick = {})
-                CollapsiblePreferenceGroupHeader(title = "UI settings", expanded = true, onExpandedChange = {})
+                CollapsiblePreferenceGroupHeader(title = "Ping", expanded = true, onExpandedChange = {})
+                SettingsListItem(
+                    title = "Ping method",
+                    entries = listOf("Via proxy (GET)", "TCP"),
+                    values = listOf("proxy_get", "tcp"),
+                    selectedValue = "proxy_get",
+                    onSelected = {}
+                )
+                SettingsListItem(
+                    title = "Ping display",
+                    entries = listOf("Time (42 ms)", "Status icon"),
+                    values = listOf("time", "icon"),
+                    selectedValue = "time",
+                    onSelected = {}
+                )
                 SettingsSwitchItem(
-                    title = "Enable speed display",
-                    summary = "Show current speed in the notification",
+                    title = "Ping on launch",
+                    summary = "Test all servers when the app opens",
                     checked = true,
                     onCheckedChange = {}
                 )
-                SettingsSwitchItem(
-                    title = "Confirm before deleting",
-                    summary = "Ask before removing a config",
-                    checked = false,
-                    onCheckedChange = {}
-                )
-                SettingsListItem(
-                    title = "Theme",
-                    entries = listOf("Follow system", "Light", "Dark"),
-                    values = listOf("0", "1", "2"),
-                    selectedValue = "2",
-                    onSelected = {}
-                )
-                CollapsiblePreferenceGroupHeader(title = "VPN settings", expanded = false, onExpandedChange = {})
-                PreferenceGroupHeader(title = "About")
-                SettingsMenuItem(title = "Source code", subtitle = "github.com/RockBlack-VPN/rockblack", onClick = {})
+                SettingsEditItem(title = "Test URL", value = "https://www.gstatic.com/generate_204", onValueChanged = {})
+                CollapsiblePreferenceGroupHeader(title = "UI settings", expanded = false, onExpandedChange = {})
             }
         }
     }
@@ -250,10 +308,4 @@ class RockBlackScreenshotTest {
 
     @Test
     fun settings_light() = settings("settings_light", dark = false)
-
-    @Test
-    fun drawer_dark() = drawer("drawer_dark", dark = true)
-
-    @Test
-    fun drawer_light() = drawer("drawer_light", dark = false)
 }

@@ -1,0 +1,9 @@
+<p>RockBlack — VPN/прокси-клиент для Android на базе <a href="https://github.com/XTLS/Xray-core">Xray core</a>.</p>
+
+<p>Это модифицированная версия <a href="https://github.com/2dust/v2rayNG">v2rayNG</a> от 2dust, распространяемая по лицензии GPL-3.0.</p>
+
+<ul>
+<li>Сайт: <a href="https://my.rockblack.tech">my.rockblack.tech</a></li>
+<li>Исходный код и релизы: <a href="https://github.com/RockBlack-VPN/rockblack">github.com/RockBlack-VPN/rockblack</a></li>
+<li>Сообщить об ошибке: <a href="https://github.com/RockBlack-VPN/rockblack/issues">issues</a></li>
+</ul>

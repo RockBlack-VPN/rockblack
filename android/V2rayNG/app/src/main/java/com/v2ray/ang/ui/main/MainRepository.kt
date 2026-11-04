@@ -165,6 +165,8 @@ class MainRepository(
 
     override fun removeServer(guid: String) = MmkvManager.removeServer(guid)
 
+    override fun removeSubscription(subId: String) = SettingsManager.removeSubscriptionWithDefault(subId)
+
     override fun removeAllServer(): Int = MmkvManager.removeAllServer()
 
     override fun removeInvalidServerByGuid(guid: String): Int =

@@ -9,7 +9,9 @@ import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.toast
 import com.v2ray.ang.extension.toastError
+import com.v2ray.ang.core.LauncherManager
 import com.v2ray.ang.handler.AngConfigManager
+import com.v2ray.ang.handler.RoutingProfileManager
 import com.v2ray.ang.ui.base.BaseComponentActivity
 import com.v2ray.ang.ui.main.MainActivity
 import com.v2ray.ang.util.LogUtil
@@ -42,6 +44,18 @@ class UrlSchemeActivity : BaseComponentActivity() {
                             val uri: Uri? = intent.data
                             val shareUrl = uri?.getQueryParameter("url").orEmpty()
                             parseUri(shareUrl, uri?.fragment)
+                        }
+
+                        // RockBlack: happ://routing/(add|onadd)/{base64} routing profiles.
+                        "routing" -> {
+                            val profile = RoutingProfileManager.importHappLink(data.toString()) {
+                                LauncherManager.restartService(applicationContext)
+                            }
+                            if (profile != null) {
+                                toast(getString(R.string.rb_routing_imported, profile.name))
+                            } else {
+                                toastError(R.string.toast_failure)
+                            }
                         }
 
                         else -> {

@@ -137,18 +137,9 @@ android {
 
     androidResources {
         generateLocaleConfig = true
-        localeFilters += listOf(
-            "en",
-            "zh-rCN",
-            "zh-rTW",
-            "vi",
-            "ru",
-            "fa",
-            "ar",
-            "az",
-            "bn",
-            "bqi-rIR"
-        )
+        // RockBlack ships English (default), Russian and German only. The filter also strips
+        // other-language strings bundled by libraries (AppCompat, Material, CameraX, ...).
+        localeFilters += listOf("en", "ru", "de")
     }
 
     packaging {

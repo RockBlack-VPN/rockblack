@@ -496,11 +496,6 @@
         <item>Dark</item>
     </string-array>
 
-    <string name="routing_preset_china_whitelist">China Whitelist</string>
-    <string name="routing_preset_china_blacklist">China Blacklist</string>
-    <string name="routing_preset_global">Global</string>
-    <string name="routing_preset_iran_whitelist">Iran Whitelist</string>
-    <string name="routing_preset_russia_whitelist">Russia Whitelist</string>
 
     <string-array name="vpn_bypass_lan">
         <item>Follow config</item>

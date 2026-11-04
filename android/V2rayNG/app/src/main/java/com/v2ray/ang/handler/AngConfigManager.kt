@@ -4,7 +4,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.text.TextUtils
 import com.v2ray.ang.AppConfig
+import com.v2ray.ang.AngApplication
 import com.v2ray.ang.core.CoreConfigManager
+import com.v2ray.ang.core.LauncherManager
 import com.v2ray.ang.dto.SubscriptionUpdateResult
 import com.v2ray.ang.dto.UrlContentRequest
 import com.v2ray.ang.dto.entities.ProfileItem
@@ -492,13 +494,20 @@ object AngConfigManager {
 
             // Account info (traffic, expiry, support link) the panel sends in the response headers.
             var usageInfo: SubscriptionUsageInfo? = null
+            var routingHeader: String? = null
             val captureUsageInfo: (Headers) -> Unit = { headers ->
                 usageInfo = SubscriptionInfoParser.parse(
                     userInfo = headers["Subscription-Userinfo"],
                     profileTitle = headers["Profile-Title"],
                     supportUrl = headers["Support-Url"],
                     webPageUrl = headers["Profile-Web-Page-Url"],
-                )
+                )?.let { info ->
+                    // RockBlack: optional panel announcement shown in the subscription card.
+                    info.copy(announce = SubscriptionInfoParser.decodeAnnounce(headers["Announce"]))
+                } ?: SubscriptionInfoParser.decodeAnnounce(headers["Announce"])?.let {
+                    SubscriptionUsageInfo(announce = it)
+                }
+                routingHeader = headers["Routing"]
             }
 
             var configText = try {
@@ -544,6 +553,16 @@ object AngConfigManager {
                 // Replaced on every successful update so the box disappears if the panel stops sending the headers.
                 it.subscription.usageInfo = usageInfo
                 MmkvManager.encodeSubscription(it.guid, it.subscription)
+                // RockBlack: Happ routing profile published by the panel (header or body line).
+                val routingLink = RoutingProfileManager.findHappLink(routingHeader)
+                    ?: RoutingProfileManager.findHappLink(configText)
+                    ?: RoutingProfileManager.findHappLink(Utils.decode(configText))
+                if (routingLink != null) {
+                    // restartService is a no-op when the tunnel is not running.
+                    RoutingProfileManager.importHappLink(routingLink) {
+                        LauncherManager.restartService(AngApplication.application)
+                    }
+                }
                 LogUtil.i(AppConfig.TAG, "Subscription updated: ${it.subscription.remarks}, $count configs")
                 return SubscriptionUpdateResult(
                     configCount = count,

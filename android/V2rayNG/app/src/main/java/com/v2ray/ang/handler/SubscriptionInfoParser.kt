@@ -21,6 +21,7 @@ import java.util.Locale
 object SubscriptionInfoParser {
     private const val BASE64_PREFIX = "base64:"
     private const val MAX_TITLE_LENGTH = 100
+    private const val MAX_ANNOUNCE_LENGTH = 300
     private const val MAX_URL_LENGTH = 2048
 
     /** Values at or above this are epoch milliseconds, not seconds (year 5138 in seconds). */
@@ -104,7 +105,14 @@ object SubscriptionInfoParser {
     private fun normalizeExpire(value: Long): Long =
         if (value >= MILLIS_THRESHOLD) value / 1000 else value
 
-    private fun decodeTitle(raw: String?, decodeBase64: (String) -> String): String? {
+    /** Decodes the optional `Announce` header (plain, URL-encoded or `base64:` text). */
+    fun decodeAnnounce(raw: String?, decodeBase64: (String) -> String = Utils::decode): String? =
+        decodeText(raw, decodeBase64, MAX_ANNOUNCE_LENGTH)
+
+    private fun decodeTitle(raw: String?, decodeBase64: (String) -> String): String? =
+        decodeText(raw, decodeBase64, MAX_TITLE_LENGTH)
+
+    private fun decodeText(raw: String?, decodeBase64: (String) -> String, maxLength: Int): String? {
         val value = raw?.trim().orEmpty()
         if (value.isEmpty()) return null
         val decoded = when {
@@ -116,6 +124,6 @@ object SubscriptionInfoParser {
 
             else -> value
         }
-        return decoded.trim().take(MAX_TITLE_LENGTH).ifEmpty { null }
+        return decoded.trim().take(maxLength).ifEmpty { null }
     }
 }

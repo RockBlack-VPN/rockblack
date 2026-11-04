@@ -1,0 +1,9 @@
+<p>RockBlack ist ein VPN-/Proxy-Client für Android auf Basis von <a href="https://github.com/XTLS/Xray-core">Xray core</a>.</p>
+
+<p>Es handelt sich um eine modifizierte Version von <a href="https://github.com/2dust/v2rayNG">v2rayNG</a> von 2dust, veröffentlicht unter der Lizenz GPL-3.0.</p>
+
+<ul>
+<li>Website: <a href="https://my.rockblack.tech">my.rockblack.tech</a></li>
+<li>Quellcode und Releases: <a href="https://github.com/RockBlack-VPN/rockblack">github.com/RockBlack-VPN/rockblack</a></li>
+<li>Fehler melden: <a href="https://github.com/RockBlack-VPN/rockblack/issues">Issues</a></li>
+</ul>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RockBlack UI 3.0 strings (branding/DESIGN.md). Keep values-ru and values-de in sync. -->
+<resources>
+    <!-- Main screen: connection -->
+    <string name="rb_state_not_connected">Not connected</string>
+    <string name="rb_state_connecting">Connecting…</string>
+    <string name="rb_state_connected">Connected</string>
+    <string name="rb_tap_to_test">Tap to check the connection</string>
+    <string name="rb_open_settings">Open settings</string>
+
+    <!-- Main screen: chips -->
+    <string name="rb_routing_chip">Routing: %1$s</string>
+    <string name="rb_mode_vpn">VPN</string>
+    <string name="rb_mode_proxy">Proxy</string>
+    <string name="rb_mode_change_disconnect">Disconnect to change the mode</string>
+
+    <!-- Routing profiles -->
+    <string name="rb_routing_title">Routing</string>
+    <string name="rb_routing_global">Global</string>
+    <string name="rb_routing_global_desc">Everything through the proxy, local network direct</string>
+    <string name="rb_routing_russia">Russia</string>
+    <string name="rb_routing_russia_desc">Russian sites and IPs direct, ads blocked</string>
+    <string name="rb_routing_block_ads">Block ads only</string>
+    <string name="rb_routing_block_ads_desc">Everything through the proxy, ads blocked</string>
+    <string name="rb_routing_direct">Direct</string>
+    <string name="rb_routing_direct_desc">No proxy: all traffic goes direct (for testing)</string>
+    <string name="rb_routing_custom">Custom</string>
+    <string name="rb_routing_custom_desc">Rules edited in the routing editor</string>
+    <string name="rb_routing_imported_desc">Imported from a subscription</string>
+    <string name="rb_routing_edit_rules">Edit rules</string>
+    <string name="rb_routing_delete_profile">Delete profile</string>
+    <string name="rb_routing_imported">Routing profile “%1$s” added</string>
+
+    <!-- Subscription cards -->
+    <string name="rb_server_list">Server-List</string>
+    <string name="rb_auto_update_hours">auto %1$d h</string>
+    <string name="rb_expires">Exp: %1$s</string>
+    <plurals name="rb_sub_expires_in_days">
+        <item quantity="one">Your subscription expires in %d day</item>
+        <item quantity="other">Your subscription expires in %d days</item>
+    </plurals>
+    <string name="rb_sub_expires_today">Your subscription expires today</string>
+    <string name="rb_sub_expired">Subscription has expired</string>
+    <string name="rb_renew">Renew</string>
+    <string name="rb_expand_group">Expand</string>
+    <string name="rb_collapse_group">Collapse</string>
+    <string name="rb_group_update">Update subscription</string>
+    <string name="rb_group_ping">Test ping</string>
+    <string name="rb_sort_ping">Sort by ping</string>
+    <string name="rb_sort_name">Sort by name</string>
+    <string name="rb_sort_default">As delivered</string>
+    <string name="rb_select_fastest">Select fastest</string>
+    <string name="rb_select_fastest_none">Test the ping first</string>
+    <string name="rb_edit_subscription">Edit subscription</string>
+    <string name="rb_delete_subscription">Delete subscription</string>
+    <string name="rb_delete_subscription_confirm">Delete the subscription and all its servers?</string>
+    <string name="rb_delete_group_servers">Delete all servers</string>
+    <string name="rb_no_servers">No servers yet. Tap + to add a subscription link or a server.</string>
+    <string name="rb_subscription_info">Subscription information</string>
+
+    <!-- Server rows -->
+    <string name="rb_ping_na">n/a</string>
+    <string name="rb_ping_timeout">Timeout</string>
+    <string name="rb_ping_ms">%1$d ms</string>
+    <string name="rb_server_actions">Server actions</string>
+    <string name="rb_server_ping">Test ping</string>
+
+    <!-- Drawer -->
+    <string name="rb_tools">Tools</string>
+
+    <!-- Settings → Ping -->
+    <string name="rb_ping_settings">Ping</string>
+    <string name="rb_ping_method">Ping method</string>
+    <string name="rb_ping_method_proxy_get">Via proxy (GET)</string>
+    <string name="rb_ping_method_tcp">TCP</string>
+    <string name="rb_ping_display">Ping display</string>
+    <string name="rb_ping_display_time">Time (42 ms)</string>
+    <string name="rb_ping_display_icon">Status icon</string>
+    <string name="rb_ping_on_launch">Ping on launch</string>
+    <string name="rb_ping_on_launch_summary">Test all servers when the app opens</string>
+    <string name="rb_ping_test_url">Test URL</string>
+</resources>

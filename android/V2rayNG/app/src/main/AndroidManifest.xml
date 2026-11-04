@@ -201,6 +201,16 @@
                 <data android:host="install-config" />
                 <data android:host="install-sub" />
             </intent-filter>
+            <!-- RockBlack: Happ-compatible routing profile links happ://routing/(add|onadd)/{base64} -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="happ" />
+                <data android:host="routing" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".ui.checkupdate.CheckUpdateActivity"

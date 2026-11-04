@@ -21,6 +21,9 @@ object SettingsChangeManager {
         AppConfig.PREF_UI_MODE_NIGHT,
         AppConfig.PREF_DYNAMIC_COLOR,
         AppConfig.PREF_IS_BOOTED,
+        RockBlackPrefs.PREF_PING_METHOD,
+        RockBlackPrefs.PREF_PING_DISPLAY,
+        RockBlackPrefs.PREF_PING_ON_LAUNCH,
     )
 
     /**

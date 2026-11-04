@@ -34,6 +34,8 @@ import kotlin.random.Random
 
 object SettingsManager {
 
+    private const val LEGACY_DNS_DIRECT = "223.5.5.5"
+
     @Volatile
     private var runtimeSocksPort: Int? = null
 
@@ -50,10 +52,13 @@ object SettingsManager {
      * @param context The application context.
      */
     private fun initRoutingRulesets(context: Context) {
+        // RockBlack: the default routing profile is "Russia" (RoutingProfileManager) instead of
+        // the upstream China whitelist. Untouched upstream defaults are migrated once.
         val exist = MmkvManager.decodeRoutingRulesets()
         if (exist.isNullOrEmpty()) {
-            val rulesetList = getPresetRoutingRulesets(context)
-            MmkvManager.encodeRoutingRulesets(rulesetList)
+            RoutingProfileManager.applyProfile(RoutingProfileManager.DEFAULT_PRESET.id)
+        } else {
+            RoutingProfileManager.ensureDefaultProfile()
         }
     }
 
@@ -462,6 +467,10 @@ object SettingsManager {
         ensureDefaultValue(AppConfig.PREF_VPN_MTU, AppConfig.VPN_MTU.toString())
         ensureDefaultValue(AppConfig.PREF_SOCKS_PORT, AppConfig.PORT_SOCKS)
         ensureDefaultValue(AppConfig.PREF_REMOTE_DNS, AppConfig.DNS_PROXY)
+        // RockBlack: the upstream default domestic DNS (AliDNS 223.5.5.5) becomes Yandex DNS.
+        if (MmkvManager.decodeSettingsString(AppConfig.PREF_DOMESTIC_DNS) == LEGACY_DNS_DIRECT) {
+            MmkvManager.encodeSettings(AppConfig.PREF_DOMESTIC_DNS, AppConfig.DNS_DIRECT)
+        }
         ensureDefaultValue(AppConfig.PREF_DOMESTIC_DNS, AppConfig.DNS_DIRECT)
         ensureDefaultValue(AppConfig.PREF_DELAY_TEST_URL, AppConfig.DELAY_TEST_URL)
         ensureDefaultValue(AppConfig.PREF_IP_API_URL, AppConfig.IP_API_URL)

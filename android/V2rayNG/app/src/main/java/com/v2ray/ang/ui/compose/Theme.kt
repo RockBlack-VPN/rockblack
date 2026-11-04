@@ -56,14 +56,19 @@ data class RockBlackPalette(
     val danger: Color,
     val warning: Color,
     val graphite: Color = Color(0xFF5F6062),
+    /** UI 3.0 main-screen background gradient (top → bottom). */
+    val bgTop: Color = bg,
+    val bgBottom: Color = bg,
+    /** UI 3.0 card fill on top of the gradient (surface @ 92 % in dark). */
+    val cardSurface: Color = surface,
 )
 
 val DarkPalette = RockBlackPalette(
     isDark = true,
     bg = Color(0xFF0F1011),
-    surface = Color(0xFF18191B),
-    surface2 = Color(0xFF212326),
-    outline = Color(0xFF2D3034),
+    surface = Color(0xFF17191B),
+    surface2 = Color(0xFF202326),
+    outline = Color(0xFF2B2F33),
     primary = Color(0xFF26D6B0),
     onPrimary = Color(0xFF04231C),
     primarySoft = Color(0xFF26D6B0).copy(alpha = 0.14f),
@@ -71,6 +76,9 @@ val DarkPalette = RockBlackPalette(
     textMuted = Color(0xFF8E959C),
     danger = Color(0xFFFF5C6C),
     warning = Color(0xFFFFB547),
+    bgTop = Color(0xFF0E1A1B),
+    bgBottom = Color(0xFF0B0C0D),
+    cardSurface = Color(0xFF17191B).copy(alpha = 0.92f),
 )
 
 val LightPalette = RockBlackPalette(
@@ -86,6 +94,9 @@ val LightPalette = RockBlackPalette(
     textMuted = Color(0xFF5E666D),
     danger = Color(0xFFD93848),
     warning = Color(0xFFB87400),
+    bgTop = Color(0xFFEAF6F3),
+    bgBottom = Color(0xFFF5F7F8),
+    cardSurface = Color(0xFFFFFFFF),
 )
 
 private fun RockBlackPalette.toColorScheme(): ColorScheme {

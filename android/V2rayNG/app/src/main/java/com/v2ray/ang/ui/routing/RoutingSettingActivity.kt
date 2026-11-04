@@ -49,6 +49,8 @@ import com.v2ray.ang.enums.RoutingType
 import com.v2ray.ang.extension.toastError
 import com.v2ray.ang.extension.toastSuccess
 import com.v2ray.ang.handler.MmkvManager
+import com.v2ray.ang.handler.RoutingProfileManager
+import com.v2ray.ang.handler.SettingsChangeManager
 import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.ui.base.HelperBaseComponentActivity
 import com.v2ray.ang.ui.compose.AppDropdownMenuItems
@@ -77,12 +79,15 @@ private enum class RoutingMenuAction(@StringRes val labelRes: Int) {
     ExportClipboard(R.string.routing_settings_export_rulesets_to_clipboard)
 }
 
-private enum class RoutingPreset(val type: RoutingType, @StringRes val labelRes: Int) {
-    ChinaWhitelist(RoutingType.WHITE, R.string.routing_preset_china_whitelist),
-    ChinaBlacklist(RoutingType.BLACK, R.string.routing_preset_china_blacklist),
-    Global(RoutingType.GLOBAL, R.string.routing_preset_global),
-    IranWhitelist(RoutingType.WHITE_IRAN, R.string.routing_preset_iran_whitelist),
-    RussiaWhitelist(RoutingType.WHITE_RUSSIA, R.string.routing_preset_russia_whitelist)
+// RockBlack: the China / Iran presets are replaced by the RockBlack routing profiles.
+internal enum class RoutingPreset(
+    val profile: RoutingProfileManager.Preset,
+    @StringRes val labelRes: Int,
+) {
+    Russia(RoutingProfileManager.Preset.RUSSIA, R.string.rb_routing_russia),
+    Global(RoutingProfileManager.Preset.GLOBAL, R.string.rb_routing_global),
+    BlockAds(RoutingProfileManager.Preset.BLOCK_ADS, R.string.rb_routing_block_ads),
+    Direct(RoutingProfileManager.Preset.DIRECT, R.string.rb_routing_direct),
 }
 
 class RoutingSettingActivity : HelperBaseComponentActivity() {
@@ -108,7 +113,7 @@ class RoutingSettingActivity : HelperBaseComponentActivity() {
                 MmkvManager.encodeSettings(AppConfig.PREF_ROUTING_DOMAIN_STRATEGY, value)
                 domainStrategyState.value = value
             },
-            onImportPredefined = { type -> importPredefined(type) },
+            onImportPredefined = { preset -> importPredefined(preset) },
             onImportClipboard = { importFromClipboard() },
             onImportQRcode = { importQRcode() },
             onExportClipboard = { export2Clipboard() }
@@ -125,10 +130,11 @@ class RoutingSettingActivity : HelperBaseComponentActivity() {
         return MmkvManager.decodeSettingsString(AppConfig.PREF_ROUTING_DOMAIN_STRATEGY) ?: strategies.first()
     }
 
-    private fun importPredefined(type: RoutingType) {
+    private fun importPredefined(preset: RoutingPreset) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                SettingsManager.resetRoutingRulesetsFromPresets(this@RoutingSettingActivity, type)
+                RoutingProfileManager.applyProfile(preset.profile.id)
+                SettingsChangeManager.makeRestartService()
                 launch(Dispatchers.Main) {
                     viewModel.reload()
                     toastSuccess(R.string.toast_success)
@@ -189,14 +195,14 @@ class RoutingSettingActivity : HelperBaseComponentActivity() {
 }
 
 @Composable
-fun RoutingSettingScreen(
+internal fun RoutingSettingScreen(
     viewModel: RoutingSettingsViewModel,
     domainStrategyState: MutableStateFlow<String>,
     onBackClick: () -> Unit,
     onAddRule: () -> Unit,
     onEditRule: (Int) -> Unit,
     onDomainStrategySelected: (String) -> Unit,
-    onImportPredefined: (RoutingType) -> Unit,
+    onImportPredefined: (RoutingPreset) -> Unit,
     onImportClipboard: () -> Unit,
     onImportQRcode: () -> Unit,
     onExportClipboard: () -> Unit
@@ -312,7 +318,7 @@ fun RoutingSettingScreen(
             optionText = { stringResource(it.labelRes) },
             onSelected = { preset ->
                 showPresetDialog = false
-                onImportPredefined(preset.type)
+                onImportPredefined(preset)
             },
             onDismiss = { showPresetDialog = false }
         )

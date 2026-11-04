@@ -63,8 +63,20 @@ private val drawerItems = primaryDrawerItems + listOf(
     MainDestination.About
 )
 
+/** RockBlack UI 3.0: global tools that used to live in the top bar overflow menu. */
+enum class MainDrawerTool(@DrawableRes val iconRes: Int, @StringRes val labelRes: Int) {
+    Search(R.drawable.ic_search_24dp, R.string.menu_item_search),
+    UpdateSubscriptions(R.drawable.ic_refresh_24dp, R.string.title_sub_update),
+    PingAll(R.drawable.rb_ic_speed, R.string.rb_group_ping),
+    RestartService(R.drawable.ic_restore_24dp, R.string.title_service_restart),
+}
+
 @Composable
-fun MainDrawerContent(drawerState: DrawerState, onNavigate: (MainDestination) -> Unit) {
+fun MainDrawerContent(
+    drawerState: DrawerState,
+    onNavigate: (MainDestination) -> Unit,
+    onTool: ((MainDrawerTool) -> Unit)? = null,
+) {
     val drawerScrollState = rememberScrollState()
     val c = RockBlackTheme.colors
 
@@ -123,6 +135,28 @@ fun MainDrawerContent(drawerState: DrawerState, onNavigate: (MainDestination) ->
                         .padding(NavigationDrawerItemDefaults.ItemPadding)
                         .height(48.dp)
                 )
+            }
+            if (onTool != null) {
+                AppDivider(Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                Text(
+                    text = stringResource(R.string.rb_tools),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = c.textMuted,
+                    modifier = Modifier.padding(start = 28.dp, top = 4.dp, bottom = 4.dp)
+                )
+                MainDrawerTool.entries.forEach { tool ->
+                    NavigationDrawerItem(
+                        label = { Text(stringResource(tool.labelRes), style = MaterialTheme.typography.bodyLarge) },
+                        selected = false,
+                        onClick = { onTool(tool) },
+                        icon = { Icon(painterResource(tool.iconRes), contentDescription = null, modifier = Modifier.size(22.dp)) },
+                        shape = MaterialTheme.shapes.small,
+                        colors = itemColors,
+                        modifier = Modifier
+                            .padding(NavigationDrawerItemDefaults.ItemPadding)
+                            .height(48.dp)
+                    )
+                }
             }
             Spacer(Modifier.height(16.dp))
         }

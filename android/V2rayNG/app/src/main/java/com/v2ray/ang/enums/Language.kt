@@ -3,18 +3,16 @@ package com.v2ray.ang.enums
 import androidx.core.os.LocaleListCompat
 import java.util.Locale
 
+/**
+ * In-app languages. RockBlack ships English (default resources), Russian and German only;
+ * any other device or stored locale falls back to [AUTO], which resolves to English resources
+ * unless the system language is Russian or German.
+ */
 enum class Language(val code: String, val languageTag: String) {
     AUTO("auto", ""),
     ENGLISH("en", "en"),
-    CHINA("zh-rCN", "zh-CN"),
-    TRADITIONAL_CHINESE("zh-rTW", "zh-TW"),
-    VIETNAMESE("vi", "vi"),
     RUSSIAN("ru", "ru"),
-    PERSIAN("fa", "fa"),
-    ARABIC("ar", "ar"),
-    AZERBAIJANI("az", "az"),
-    BANGLA("bn", "bn"),
-    BAKHTIARI("bqi-rIR", "bqi-IR");
+    GERMAN("de", "de");
 
     val locale: Locale?
         get() = languageTag.takeIf { it.isNotEmpty() }?.let(Locale::forLanguageTag)
@@ -27,33 +25,25 @@ enum class Language(val code: String, val languageTag: String) {
         }
 
     companion object {
+        /** Maps a stored preference value; legacy values (zh-rCN, fa, vi, ...) become [AUTO]. */
         fun fromCode(code: String): Language {
             return entries.find { it.code == code } ?: AUTO
         }
 
+        /** Maps a BCP 47 tag; unsupported languages become [AUTO]. */
         fun fromLanguageTag(languageTag: String?): Language {
             if (languageTag.isNullOrBlank()) return AUTO
 
-            val locale = Locale.forLanguageTag(languageTag)
-            return when (locale.language) {
+            return when (Locale.forLanguageTag(languageTag).language) {
                 "en" -> ENGLISH
-                "zh" -> if (
-                    locale.script == "Hant" || locale.country in setOf("TW", "HK", "MO")
-                ) {
-                    TRADITIONAL_CHINESE
-                } else {
-                    CHINA
-                }
-
-                "vi" -> VIETNAMESE
                 "ru" -> RUSSIAN
-                "fa" -> PERSIAN
-                "ar" -> ARABIC
-                "az" -> AZERBAIJANI
-                "bn" -> BANGLA
-                "bqi" -> BAKHTIARI
+                "de" -> GERMAN
                 else -> AUTO
             }
         }
+
+        /** True when [languageTag] is empty (follow system) or one of the shipped languages. */
+        fun isSupportedTag(languageTag: String?): Boolean =
+            languageTag.isNullOrBlank() || fromLanguageTag(languageTag) != AUTO
     }
 }
