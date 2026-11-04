@@ -5,7 +5,7 @@ using MaterialDesignThemes.Wpf;
 namespace v2rayN.Common;
 
 /// <summary>
-/// RockBlack UI 2.0 colour tokens (branding/DESIGN.md) applied on top of the MaterialDesign theme.
+/// RockBlack UI 3.0 colour tokens (branding/DESIGN.md) applied on top of the MaterialDesign theme.
 /// Presentation only: the stored theme setting keeps its upstream meaning; an empty value means dark.
 /// </summary>
 internal static class RockBlackPalette
@@ -13,17 +13,21 @@ internal static class RockBlackPalette
     private sealed record Tokens(
         Color Bg, Color Surface, Color Surface2, Color Outline,
         Color Primary, Color OnPrimary, Color PrimarySoft,
-        Color Text, Color TextMuted, Color Danger, Color Warning);
+        Color Text, Color TextMuted, Color Danger, Color Warning,
+        Color BgTop, Color CardSurface);
 
+    // UI 3.0: bgTop -> bgBottom gradient; cards use surface @ 92 % on top of it
     private static readonly Tokens Dark = new(
-        C("#0F1011"), C("#18191B"), C("#212326"), C("#2D3034"),
+        C("#0B0C0D"), C("#17191B"), C("#202326"), C("#2B2F33"),
         C("#26D6B0"), C("#04231C"), C("#2426D6B0"),
-        C("#F1F3F4"), C("#8E959C"), C("#FF5C6C"), C("#FFB547"));
+        C("#F1F3F4"), C("#8E959C"), C("#FF5C6C"), C("#FFB547"),
+        C("#0E1A1B"), C("#EB17191B"));
 
     private static readonly Tokens Light = new(
-        C("#F3F5F6"), C("#FFFFFF"), C("#EEF1F2"), C("#DCE1E4"),
+        C("#F5F7F8"), C("#FFFFFF"), C("#EEF1F2"), C("#DCE1E4"),
         C("#0FA383"), C("#FFFFFF"), C("#1F0FA383"),
-        C("#14171A"), C("#5E666D"), C("#D93848"), C("#B87400"));
+        C("#14171A"), C("#5E666D"), C("#D93848"), C("#B87400"),
+        C("#EAF6F3"), C("#FFFFFF"));
 
     public static bool IsDark(string? theme)
     {
@@ -131,6 +135,19 @@ internal static class RockBlackPalette
         res["RB.TextMuted"] = B(t.TextMuted);
         res["RB.Danger"] = B(t.Danger);
         res["RB.Warning"] = B(t.Warning);
+        res["RB.CardSurface"] = B(t.CardSurface);
+        res["RB.PrimaryRing1"] = B(WithAlpha(t.Primary, 0x40));
+        res["RB.PrimaryRing2"] = B(WithAlpha(t.Primary, 0x1F));
+        res["RB.DangerSoft"] = B(WithAlpha(t.Danger, 0x26));
+        res["RB.PrimaryColor"] = t.Primary;
+        var gradient = new LinearGradientBrush(t.BgTop, t.Bg, new System.Windows.Point(0, 0), new System.Windows.Point(0, 1));
+        gradient.Freeze();
+        res["RB.BgGradient"] = gradient;
+    }
+
+    private static Color WithAlpha(Color c, byte a)
+    {
+        return Color.FromArgb(a, c.R, c.G, c.B);
     }
 
     public static Brush GetBrush(string key, Brush fallback)

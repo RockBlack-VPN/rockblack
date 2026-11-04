@@ -32,9 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Launcher\Locales\zh-CN.json" LogicalName="v2rayN.WebAPI.Launcher.Locales.zh-CN.json" />
-    <EmbeddedResource Include="Launcher\Locales\zh-TW.json" LogicalName="v2rayN.WebAPI.Launcher.Locales.zh-TW.json" />
     <EmbeddedResource Include="Launcher\Locales\en-US.json" LogicalName="v2rayN.WebAPI.Launcher.Locales.en-US.json" />
+    <EmbeddedResource Include="Launcher\Locales\ru-RU.json" LogicalName="v2rayN.WebAPI.Launcher.Locales.ru-RU.json" />
+    <EmbeddedResource Include="Launcher\Locales\de-DE.json" LogicalName="v2rayN.WebAPI.Launcher.Locales.de-DE.json" />
   </ItemGroup>
 
   <ItemGroup>

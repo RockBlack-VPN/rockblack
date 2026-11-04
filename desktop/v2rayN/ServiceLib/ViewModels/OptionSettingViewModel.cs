@@ -56,6 +56,14 @@ public partial class OptionSettingViewModel : MyReactiveObject, ICloseable
     [Reactive] public partial int SpeedTestTimeout { get; set; }
     [Reactive] public partial string SpeedTestUrl { get; set; }
     [Reactive] public partial string SpeedPingTestUrl { get; set; }
+
+    /// <summary>RockBlack ping method index (<see cref="EPingMethod"/>: 0 GET via proxy, 1 HEAD via proxy, 2 TCP).</summary>
+    [Reactive] public partial int PingMethod { get; set; }
+
+    [Reactive] public partial bool PingOnLaunch { get; set; }
+
+    /// <summary>Ping display: false = time (ms), true = status icon.</summary>
+    [Reactive] public partial bool PingShowIcon { get; set; }
     [Reactive] public partial string UdpTestTarget { get; set; }
     [Reactive] public partial int MixedConcurrencyCount { get; set; }
     [Reactive] public partial bool EnableHWA { get; set; }
@@ -191,6 +199,9 @@ public partial class OptionSettingViewModel : MyReactiveObject, ICloseable
         SpeedTestUrl = _config.SpeedTestItem.SpeedTestUrl;
         MixedConcurrencyCount = _config.SpeedTestItem.MixedConcurrencyCount;
         SpeedPingTestUrl = _config.SpeedTestItem.SpeedPingTestUrl;
+        PingMethod = (int)_config.SpeedTestItem.PingMethod;
+        PingOnLaunch = _config.SpeedTestItem.PingOnLaunch;
+        PingShowIcon = _config.SpeedTestItem.PingShowIcon;
         UdpTestTarget = _config.SpeedTestItem.UdpTestTarget;
         EnableHWA = _config.GuiItem.EnableHWA;
         SubConvertUrl = _config.ConstItem.SubConvertUrl;
@@ -370,6 +381,9 @@ public partial class OptionSettingViewModel : MyReactiveObject, ICloseable
         _config.SpeedTestItem.MixedConcurrencyCount = MixedConcurrencyCount;
         _config.SpeedTestItem.SpeedTestUrl = SpeedTestUrl;
         _config.SpeedTestItem.SpeedPingTestUrl = SpeedPingTestUrl;
+        _config.SpeedTestItem.PingMethod = Enum.IsDefined(typeof(EPingMethod), PingMethod) ? (EPingMethod)PingMethod : EPingMethod.ProxyGet;
+        _config.SpeedTestItem.PingOnLaunch = PingOnLaunch;
+        _config.SpeedTestItem.PingShowIcon = PingShowIcon;
         _config.SpeedTestItem.UdpTestTarget = UdpTestTarget;
         _config.GuiItem.EnableHWA = EnableHWA;
         _config.ConstItem.SubConvertUrl = SubConvertUrl;

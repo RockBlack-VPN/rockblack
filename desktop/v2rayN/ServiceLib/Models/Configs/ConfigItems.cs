@@ -97,6 +97,16 @@ public class UIItem
     public List<ColumnItem> MainColumnItem { get; set; }
     public List<WindowSizeItem> WindowSizeItem { get; set; }
     public bool HideColumnIpInfo { get; set; }
+
+    // RockBlack UI 3.0 main screen
+    /// <summary>Subscription ids of collapsed groups ("" = manual servers).</summary>
+    public List<string>? CollapsedGroups { get; set; }
+
+    /// <summary>Per-group display sort (subscription id -> <see cref="EServerSortMode"/>).</summary>
+    public Dictionary<string, int>? GroupSortModes { get; set; }
+
+    /// <summary>Whether the tunnel was switched on by the user; restored on the next launch.</summary>
+    public bool? RbConnected { get; set; }
 }
 
 public class ConstItem
@@ -152,6 +162,15 @@ public class SpeedTestItem
     public string UdpTestTarget { get; set; }
     public int? SpeedTestPageSize { get; set; }
     public int? SpeedTestDelayInterval { get; set; }
+
+    /// <summary>Ping method used by the main screen (speedometer button, ping on launch).</summary>
+    public EPingMethod PingMethod { get; set; } = EPingMethod.ProxyGet;
+
+    /// <summary>Ping all servers once the app has started.</summary>
+    public bool PingOnLaunch { get; set; }
+
+    /// <summary>Show a coloured status dot instead of the latency in ms.</summary>
+    public bool PingShowIcon { get; set; }
 }
 
 public class RoutingBasicItem
@@ -159,6 +178,9 @@ public class RoutingBasicItem
     public string DomainStrategy { get; set; }
     public string DomainStrategy4Singbox { get; set; }
     public string RoutingIndexId { get; set; }
+
+    /// <summary>Version of the RockBlack built-in routing presets last written (<see cref="RoutingPresets.Version"/>).</summary>
+    public int RbRoutingVersion { get; set; }
 }
 
 public class ColumnItem

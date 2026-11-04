@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Net;
 using ServiceLib;
 using ServiceLib.Common;
@@ -114,7 +114,7 @@ public class RegionalPresetStagingTests
         await capturedStage!.DnsItems[0].NormalDNS.Should().BeEqualTo("existing-xray-data");
         await capturedStage.SimpleDnsItem.RemoteDNS.Should().BeEqualTo(ConfigHandler.InitBuiltinSimpleDNS().RemoteDNS);
         await capturedStage.Routing.IsBuiltinFallback.Should().BeTrue();
-        await capturedStage.Routing.Items.Count.Should().BeEqualTo(3);
+        await capturedStage.Routing.Items.Count.Should().BeEqualTo(RoutingPresets.Builtins.Count);
         await config.ConstItem.GeoSourceUrl.Should().BeEqualTo("original-geo-source");
         await dnsRows.SequenceEqual(new[] { "original dns" }).Should().BeTrue();
         await routingRows.SequenceEqual(new[] { "original routing" }).Should().BeTrue();
@@ -582,9 +582,9 @@ public class RegionalPresetStagingTests
         var staged = await stager.StageAsync(EPresetType.Russia, CreateDnsRows(), [], null, CancellationToken.None);
 
         await staged.Routing.IsBuiltinFallback.Should().BeTrue();
-        await staged.Routing.Items.Count.Should().BeEqualTo(3);
-        await staged.Routing.Items[0].Remarks.Should().BeEqualTo("V4-绕过大陆(Whitelist)");
-        await staged.Routing.DefaultRemarks.Should().BeEqualTo(staged.Routing.Items[0].Remarks);
+        await staged.Routing.Items.Count.Should().BeEqualTo(RoutingPresets.Builtins.Count);
+        await staged.Routing.Items.Any(item => item.Remarks.Contains("绕过大陆")).Should().BeFalse();
+        await staged.Routing.DefaultRemarks.Should().BeEqualTo(staged.Routing.Items.First(item => item.Id == RoutingPresets.DefaultId).Remarks);
         await staged.Routing.Items.All(item => item.RuleNum > 0).Should().BeTrue();
         await staged.Routing.ExistingDefaultItemId.Should().BeNull();
     }
@@ -673,6 +673,6 @@ public class RegionalPresetStagingTests
         await staged.DnsItems[0].NormalDNS.Should().BeEqualTo("existing-xray-data");
         await staged.SimpleDnsItem.RemoteDNS.Should().BeEqualTo(ConfigHandler.InitBuiltinSimpleDNS().RemoteDNS);
         await staged.Routing.IsBuiltinFallback.Should().BeTrue();
-        await staged.Routing.Items.Count.Should().BeEqualTo(3);
+        await staged.Routing.Items.Count.Should().BeEqualTo(RoutingPresets.Builtins.Count);
     }
 }

@@ -52,6 +52,8 @@ public partial class OptionSettingWindow : WindowBase<OptionSettingViewModel>
         cmbSpeedTestTimeout.ItemsSource = Enumerable.Range(2, 5).Select(i => i * 5).ToList();
         cmbSpeedTestUrl.ItemsSource = Global.SpeedTestUrls;
         cmbSpeedPingTestUrl.ItemsSource = Global.SpeedPingTestUrls;
+        cmbPingMethod.ItemsSource = new[] { ResUI.RbPingMethodGet, ResUI.RbPingMethodHead, ResUI.RbPingMethodTcp };
+        cmbPingDisplay.ItemsSource = new[] { ResUI.RbPingDisplayTime, ResUI.RbPingDisplayIcon };
         cmbUdpTestTarget.ItemsSource = Global.UdpTestTargets;
         cmbSubConvertUrl.ItemsSource = Global.SubConvertUrls;
         cmbGetFilesSourceUrl.ItemsSource = Global.GeoFilesSources;
@@ -111,6 +113,9 @@ public partial class OptionSettingWindow : WindowBase<OptionSettingViewModel>
             this.Bind(ViewModel, vm => vm.SpeedTestTimeout, v => v.cmbSpeedTestTimeout.SelectedValue).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.SpeedTestUrl, v => v.cmbSpeedTestUrl.Text).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.SpeedPingTestUrl, v => v.cmbSpeedPingTestUrl.Text).DisposeWith(disposables);
+            this.Bind(ViewModel, vm => vm.PingMethod, v => v.cmbPingMethod.SelectedIndex).DisposeWith(disposables);
+            this.Bind(ViewModel, vm => vm.PingShowIcon, v => v.cmbPingDisplay.SelectedIndex, b => b ? 1 : 0, i => i == 1).DisposeWith(disposables);
+            this.Bind(ViewModel, vm => vm.PingOnLaunch, v => v.togPingOnLaunch.IsChecked).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.UdpTestTarget, v => v.cmbUdpTestTarget.Text).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.MixedConcurrencyCount, v => v.cmbMixedConcurrencyCount.SelectedValue).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.SubConvertUrl, v => v.cmbSubConvertUrl.Text).DisposeWith(disposables);

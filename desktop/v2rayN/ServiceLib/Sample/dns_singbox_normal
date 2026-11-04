@@ -3,13 +3,13 @@
     {
       "tag": "remote",
       "type": "tcp",
-      "server": "8.8.8.8",
+      "server": "1.1.1.1",
       "detour": "proxy"
     },
     {
       "tag": "local",
       "type": "udp",
-      "server": "223.5.5.5"
+      "server": "77.88.8.8"
     }
   ],
   "rules": [
@@ -21,7 +21,7 @@
     },
     {
       "rule_set": [
-        "geosite-cn"
+        "geosite-category-ru"
       ],
       "server": "local"
     }

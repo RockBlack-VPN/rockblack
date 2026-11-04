@@ -1,0 +1,95 @@
+<base:WindowBase
+    x:Class="v2rayN.Views.ToolsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:base="clr-namespace:v2rayN.Base"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:resx="clr-namespace:ServiceLib.Resx;assembly=ServiceLib"
+    xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
+    Title="RockBlack"
+    Width="1100"
+    Height="720"
+    MinWidth="640"
+    MinHeight="420"
+    x:TypeArguments="vms:MainWindowViewModel"
+    Background="{DynamicResource RB.BgGradient}"
+    Icon="/Resources/v2rayN.ico"
+    ResizeMode="CanResizeWithGrip"
+    ShowInTaskbar="True"
+    Style="{StaticResource WindowGlobal}"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <!--  Advanced upstream views kept from the classic layout: full server table, logs, Clash proxies / connections  -->
+    <Window.Resources>
+        <Style
+            x:Key="ToolsTab"
+            BasedOn="{StaticResource MaterialDesignTabItem}"
+            TargetType="{x:Type TabItem}">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="materialDesign:ColorZoneAssist.Mode" Value="Custom" />
+            <Setter Property="materialDesign:ColorZoneAssist.Foreground" Value="{DynamicResource RB.Primary}" />
+        </Style>
+    </Window.Resources>
+    <materialDesign:DialogHost
+        materialDesign:TransitionAssist.DisableTransitions="True"
+        CloseOnClickAway="True"
+        DialogBackground="{DynamicResource RB.Surface}"
+        DialogContentUniformCornerRadius="18"
+        Identifier="ToolsDialog"
+        Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
+        <Border
+            Margin="16"
+            Padding="10,4,10,10"
+            Style="{StaticResource RB.Card}">
+            <TabControl x:Name="tabTools" HorizontalContentAlignment="Left">
+                <TabItem x:Name="tabServers" Style="{StaticResource ToolsTab}">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon
+                                Margin="0,0,8,0"
+                                VerticalAlignment="Center"
+                                Kind="TableLarge" />
+                            <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.RbAdvancedServers}" />
+                        </StackPanel>
+                    </TabItem.Header>
+                </TabItem>
+                <TabItem x:Name="tabLogs" Style="{StaticResource ToolsTab}">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon
+                                Margin="0,0,8,0"
+                                VerticalAlignment="Center"
+                                Kind="TextBoxOutline" />
+                            <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.RbLogs}" />
+                        </StackPanel>
+                    </TabItem.Header>
+                </TabItem>
+                <TabItem x:Name="tabClashProxies" Style="{StaticResource ToolsTab}">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon
+                                Margin="0,0,8,0"
+                                VerticalAlignment="Center"
+                                Kind="ArrowDecisionOutline" />
+                            <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.TbProxies}" />
+                        </StackPanel>
+                    </TabItem.Header>
+                </TabItem>
+                <TabItem x:Name="tabClashConnections" Style="{StaticResource ToolsTab}">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon
+                                Margin="0,0,8,0"
+                                VerticalAlignment="Center"
+                                Kind="LanConnect" />
+                            <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.TbConnections}" />
+                        </StackPanel>
+                    </TabItem.Header>
+                </TabItem>
+            </TabControl>
+        </Border>
+    </materialDesign:DialogHost>
+</base:WindowBase>

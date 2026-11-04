@@ -67,6 +67,14 @@ internal class Program
            .LogToTrace()
            .UseReactiveUI(_ => { });
 
+#if DEBUG
+        // Automated UI screenshots: draw menus/flyouts inside the window so window captures include them.
+        if (Environment.GetEnvironmentVariable("RB_SMOKE_OPEN").IsNotEmpty())
+        {
+            builder = builder.With(new Win32PlatformOptions { OverlayPopups = true });
+        }
+#endif
+
         if (OperatingSystem.IsMacOS())
         {
             var showInDock = Design.IsDesignMode || AppManager.Instance.Config.UiItem.MacOSShowInDock;

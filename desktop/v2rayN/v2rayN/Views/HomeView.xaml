@@ -1,0 +1,1146 @@
+<reactiveui:ReactiveUserControl
+    x:Class="v2rayN.Views.HomeView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="clr-namespace:v2rayN.Converters"
+    xmlns:ctl="clr-namespace:v2rayN.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:reactiveui="http://reactiveui.net"
+    xmlns:resx="clr-namespace:ServiceLib.Resx;assembly=ServiceLib"
+    xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
+    d:DesignHeight="760"
+    d:DesignWidth="520"
+    x:TypeArguments="vms:HomeViewModel"
+    Style="{StaticResource ViewGlobal}"
+    mc:Ignorable="d">
+    <!--
+        RockBlack UI 3.0 main screen (branding/DESIGN.md): power button, session timer, live speed,
+        routing / mode chips and one scrolling list of collapsible subscription cards.
+        Bound to the shared ServiceLib HomeViewModel / ServerGroupViewModel / ServerItemViewModel.
+    -->
+    <UserControl.Resources>
+        <conv:RbBoolToVisibilityConverter x:Key="Vis" />
+        <conv:RbEqualsToVisibilityConverter x:Key="EqVis" />
+        <conv:RbPercentToStarConverter x:Key="PctStar" />
+
+        <Style x:Key="HdrIcon" TargetType="{x:Type materialDesign:PackIcon}">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="MenuIcon" TargetType="{x:Type materialDesign:PackIcon}">
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="18" />
+            <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+        </Style>
+        <Style
+            x:Key="Spinner"
+            BasedOn="{StaticResource MaterialDesignCircularProgressBar}"
+            TargetType="{x:Type ProgressBar}">
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="18" />
+            <Setter Property="IsIndeterminate" Value="True" />
+            <Setter Property="Foreground" Value="{DynamicResource RB.Primary}" />
+            <Setter Property="Value" Value="0" />
+        </Style>
+
+        <!--  ===== Power button: 150 px disc, rings at +28 / +56, glow, pulse while connecting  =====  -->
+        <Style x:Key="PowerButton" TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="236" />
+            <Setter Property="Height" Value="236" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Grid
+                            x:Name="body"
+                            Background="Transparent"
+                            RenderTransformOrigin="0.5,0.5">
+                            <Ellipse
+                                x:Name="ring2"
+                                Width="206"
+                                Height="206"
+                                Stroke="{DynamicResource RB.Outline}"
+                                StrokeThickness="1" />
+                            <Ellipse
+                                x:Name="ring1"
+                                Width="178"
+                                Height="178"
+                                Stroke="{DynamicResource RB.Outline}"
+                                StrokeThickness="1" />
+                            <Ellipse
+                                x:Name="glow"
+                                Width="150"
+                                Height="150"
+                                Fill="{DynamicResource RB.Primary}"
+                                Opacity="0">
+                                <Ellipse.Effect>
+                                    <BlurEffect KernelType="Gaussian" Radius="32" />
+                                </Ellipse.Effect>
+                            </Ellipse>
+                            <Ellipse
+                                x:Name="discOff"
+                                Width="150"
+                                Height="150"
+                                Fill="{DynamicResource RB.Surface2}"
+                                Stroke="{DynamicResource RB.Outline}"
+                                StrokeThickness="1">
+                                <Ellipse.Effect>
+                                    <DropShadowEffect
+                                        BlurRadius="24"
+                                        Direction="270"
+                                        Opacity="0.18"
+                                        ShadowDepth="4" />
+                                </Ellipse.Effect>
+                            </Ellipse>
+                            <Ellipse
+                                x:Name="discOn"
+                                Width="150"
+                                Height="150"
+                                Fill="{DynamicResource RB.Primary}"
+                                Opacity="0" />
+                            <materialDesign:PackIcon
+                                x:Name="icon"
+                                Width="56"
+                                Height="56"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource RB.TextMuted}"
+                                Kind="Power" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="discOff" Property="Stroke" Value="{DynamicResource RB.Primary}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="discOff" Property="Stroke" Value="{DynamicResource RB.Primary}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="body" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.97" ScaleY="0.97" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <DataTrigger Binding="{Binding ConnectionState}" Value="Connecting">
+                                <Setter TargetName="ring1" Property="Stroke" Value="{DynamicResource RB.Primary}" />
+                                <Setter TargetName="ring2" Property="Stroke" Value="{DynamicResource RB.Primary}" />
+                                <Setter TargetName="icon" Property="Foreground" Value="{DynamicResource RB.OnPrimary}" />
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard x:Name="pulse">
+                                        <Storyboard RepeatBehavior="Forever">
+                                            <DoubleAnimation
+                                                AutoReverse="True"
+                                                Storyboard.TargetName="ring1"
+                                                Storyboard.TargetProperty="Opacity"
+                                                From="0.2"
+                                                To="0.6"
+                                                Duration="0:0:0.9" />
+                                            <DoubleAnimation
+                                                AutoReverse="True"
+                                                BeginTime="0:0:0.15"
+                                                Storyboard.TargetName="ring2"
+                                                Storyboard.TargetProperty="Opacity"
+                                                From="0.2"
+                                                To="0.6"
+                                                Duration="0:0:0.9" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <StopStoryboard BeginStoryboardName="pulse" />
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ConnectionState}" Value="Connected">
+                                <Setter TargetName="ring1" Property="Stroke" Value="{DynamicResource RB.PrimaryRing1}" />
+                                <Setter TargetName="ring2" Property="Stroke" Value="{DynamicResource RB.PrimaryRing2}" />
+                                <Setter TargetName="discOff" Property="Stroke" Value="{DynamicResource RB.Primary}" />
+                                <Setter TargetName="icon" Property="Foreground" Value="{DynamicResource RB.OnPrimary}" />
+                            </DataTrigger>
+                            <!--  disc fill / glow cross-fade (200 ms) is driven from HomeView.xaml.cs for every state change  -->
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  ===== Server row actions (chevron / right click)  =====  -->
+        <ContextMenu x:Key="RowMenu" x:Shared="False" Style="{StaticResource DefContextMenu}">
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding SelectCmd}"
+                Header="{x:Static resx:ResUI.RbSelect}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon Kind="CheckCircleOutline" Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding PingCmd}"
+                Header="{x:Static resx:ResUI.RbPing}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon Kind="Speedometer" Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding EditCmd}"
+                Header="{x:Static resx:ResUI.RbEdit}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon Kind="PencilOutline" Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding ShareCmd}"
+                Header="{x:Static resx:ResUI.RbShareQr}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon Kind="QrcodeScan" Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding CopyLinkCmd}"
+                Header="{x:Static resx:ResUI.RbCopyLink}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon Kind="ContentCopy" Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding DeleteCmd}"
+                Foreground="{DynamicResource RB.Danger}"
+                Header="{x:Static resx:ResUI.RbDelete}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon
+                        Foreground="{DynamicResource RB.Danger}"
+                        Kind="DeleteOutline"
+                        Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+
+        <!--  ===== Subscription card menu (⋯)  =====  -->
+        <ContextMenu x:Key="GroupMenu" x:Shared="False" Style="{StaticResource DefContextMenu}">
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding SortByPingCmd}"
+                Header="{x:Static resx:ResUI.RbSortByPing}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon
+                        Foreground="{DynamicResource RB.Primary}"
+                        Kind="Check"
+                        Style="{StaticResource MenuIcon}"
+                        Visibility="{Binding SortMode, Converter={StaticResource EqVis}, ConverterParameter=Ping}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding SortByNameCmd}"
+                Header="{x:Static resx:ResUI.RbSortByName}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon
+                        Foreground="{DynamicResource RB.Primary}"
+                        Kind="Check"
+                        Style="{StaticResource MenuIcon}"
+                        Visibility="{Binding SortMode, Converter={StaticResource EqVis}, ConverterParameter=Name}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding SortDefaultCmd}"
+                Header="{x:Static resx:ResUI.RbSortDefault}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon
+                        Foreground="{DynamicResource RB.Primary}"
+                        Kind="Check"
+                        Style="{StaticResource MenuIcon}"
+                        Visibility="{Binding SortMode, Converter={StaticResource EqVis}, ConverterParameter=Default}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding SelectFastestCmd}"
+                Header="{x:Static resx:ResUI.RbSelectFastest}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon Kind="LightningBoltOutline" Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding PingCmd}"
+                Header="{x:Static resx:ResUI.RbPingAll}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon Kind="Speedometer" Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding RefreshCmd}"
+                Header="{x:Static resx:ResUI.RbRefresh}"
+                Visibility="{Binding CanRefresh, Converter={StaticResource Vis}}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon Kind="Sync" Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding OpenSupportCmd}"
+                Header="{x:Static resx:ResUI.RbSupport}"
+                Visibility="{Binding HasSupportUrl, Converter={StaticResource Vis}}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon Kind="Lifebuoy" Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding OpenWebPageCmd}"
+                Header="{x:Static resx:ResUI.RbWebsite}"
+                Visibility="{Binding HasWebPageUrl, Converter={StaticResource Vis}}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon Kind="Web" Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding EditCmd}"
+                Header="{x:Static resx:ResUI.RbEditSubscription}"
+                Visibility="{Binding IsManual, Converter={StaticResource Vis}, ConverterParameter=invert}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon Kind="PencilOutline" Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem
+                Height="{StaticResource MenuItemHeight}"
+                Command="{Binding DeleteCmd}"
+                Foreground="{DynamicResource RB.Danger}"
+                Header="{x:Static resx:ResUI.RbDeleteSubscription}"
+                Visibility="{Binding IsManual, Converter={StaticResource Vis}, ConverterParameter=invert}">
+                <MenuItem.Icon>
+                    <materialDesign:PackIcon
+                        Foreground="{DynamicResource RB.Danger}"
+                        Kind="DeleteOutline"
+                        Style="{StaticResource MenuIcon}" />
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+
+        <!--  ===== Server row  =====  -->
+        <DataTemplate x:Key="ServerRowTemplate">
+            <Border
+                x:Name="row"
+                Height="64"
+                AutomationProperties.Name="{Binding Name}"
+                BorderBrush="{DynamicResource RB.Outline}"
+                BorderThickness="0,1,0,0"
+                ContextMenu="{StaticResource RowMenu}"
+                Cursor="Hand"
+                ToolTip="{Binding Address}">
+                <Border.Style>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource RB.Surface2}" />
+                            </Trigger>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource RB.PrimarySoft}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Border.InputBindings>
+                    <MouseBinding Command="{Binding SelectCmd}" Gesture="LeftClick" />
+                </Border.InputBindings>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3" />
+                        <ColumnDefinition Width="13" />
+                        <ColumnDefinition Width="28" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle
+                        Grid.Column="0"
+                        Fill="{DynamicResource RB.Primary}"
+                        Visibility="{Binding IsSelected, Converter={StaticResource Vis}}" />
+                    <ctl:FlagBadge
+                        Grid.Column="2"
+                        Width="28"
+                        Height="28"
+                        VerticalAlignment="Center"
+                        CornerRadius="6"
+                        CountryCode="{Binding CountryCode}" />
+                    <StackPanel
+                        Grid.Column="4"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource RB.Text}"
+                            Text="{Binding Name}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            Margin="0,1,0,0"
+                            FontSize="13"
+                            Foreground="{DynamicResource RB.TextMuted}"
+                            Text="{Binding Subtitle}"
+                            TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <Grid
+                        Grid.Column="5"
+                        MinWidth="56"
+                        VerticalAlignment="Center">
+                        <TextBlock
+                            x:Name="delayText"
+                            HorizontalAlignment="Right"
+                            FontSize="13"
+                            Text="{Binding DelayText}"
+                            Typography.NumeralAlignment="Tabular">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding DelayState}" Value="Good">
+                                            <Setter Property="Foreground" Value="{DynamicResource RB.Primary}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DelayState}" Value="Warning">
+                                            <Setter Property="Foreground" Value="{DynamicResource RB.Warning}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DelayState}" Value="Bad">
+                                            <Setter Property="Foreground" Value="{DynamicResource RB.Danger}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DelayState}" Value="Timeout">
+                                            <Setter Property="Foreground" Value="{DynamicResource RB.Danger}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DataContext.PingShowIcon, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <Ellipse
+                            Width="10"
+                            Height="10"
+                            Margin="0,0,4,0"
+                            HorizontalAlignment="Right"
+                            ToolTip="{Binding DelayText}"
+                            Visibility="{Binding DataContext.PingShowIcon, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource Vis}}">
+                            <Ellipse.Style>
+                                <Style TargetType="{x:Type Ellipse}">
+                                    <Setter Property="Fill" Value="{DynamicResource RB.Outline}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding DelayState}" Value="Good">
+                                            <Setter Property="Fill" Value="{DynamicResource RB.Primary}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DelayState}" Value="Warning">
+                                            <Setter Property="Fill" Value="{DynamicResource RB.Warning}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DelayState}" Value="Bad">
+                                            <Setter Property="Fill" Value="{DynamicResource RB.Danger}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DelayState}" Value="Timeout">
+                                            <Setter Property="Fill" Value="{DynamicResource RB.Danger}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DelayState}" Value="Testing">
+                                            <Setter Property="Fill" Value="{DynamicResource RB.TextMuted}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                    </Grid>
+                    <Button
+                        Grid.Column="6"
+                        Width="32"
+                        Height="32"
+                        Margin="4,0,8,0"
+                        AutomationProperties.Name="{x:Static resx:ResUI.RbMore}"
+                        Click="RowMenuButton_Click"
+                        ContextMenu="{StaticResource RowMenu}"
+                        Foreground="{DynamicResource RB.TextMuted}"
+                        Style="{StaticResource RB.GhostButton}"
+                        ToolTip="{x:Static resx:ResUI.RbMore}">
+                        <materialDesign:PackIcon
+                            Width="20"
+                            Height="20"
+                            Kind="ChevronRight" />
+                    </Button>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!--  ===== Subscription card  =====  -->
+        <DataTemplate x:Key="GroupCardTemplate">
+            <Border
+                Margin="0,0,0,16"
+                BorderBrush="{DynamicResource RB.Outline}"
+                BorderThickness="1"
+                CornerRadius="18"
+                SnapsToDevicePixels="True">
+                <materialDesign:Card
+                    Padding="0"
+                    materialDesign:ElevationAssist.Elevation="Dp0"
+                    Background="{DynamicResource RB.CardSurface}"
+                    ClipContent="True"
+                    UniformCornerRadius="17">
+                    <StackPanel>
+                        <!--  header: collapse, name + updated time, refresh, ping all, menu  -->
+                        <Grid Margin="8,10,8,10" Background="Transparent">
+                            <Grid.InputBindings>
+                                <MouseBinding Command="{Binding ToggleExpandCmd}" Gesture="LeftClick" />
+                            </Grid.InputBindings>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                Grid.Column="0"
+                                Margin="0,0,6,0"
+                                VerticalAlignment="Center"
+                                Command="{Binding ToggleExpandCmd}"
+                                Foreground="{DynamicResource RB.TextMuted}"
+                                Style="{StaticResource RB.GhostButton}">
+                                <Grid>
+                                    <materialDesign:PackIcon
+                                        Kind="ChevronUp"
+                                        Style="{StaticResource HdrIcon}"
+                                        Visibility="{Binding IsExpanded, Converter={StaticResource Vis}}" />
+                                    <materialDesign:PackIcon
+                                        Kind="ChevronDown"
+                                        Style="{StaticResource HdrIcon}"
+                                        Visibility="{Binding IsExpanded, Converter={StaticResource Vis}, ConverterParameter=invert}" />
+                                </Grid>
+                            </Button>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock
+                                    FontSize="17"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource RB.Text}"
+                                    Text="{Binding Name}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    Margin="0,1,0,0"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource RB.TextMuted}"
+                                    Text="{Binding SubtitleText}"
+                                    TextTrimming="CharacterEllipsis"
+                                    Typography.NumeralAlignment="Tabular"
+                                    Visibility="{Binding HasSubtitle, Converter={StaticResource Vis}}" />
+                            </StackPanel>
+                            <Button
+                                Grid.Column="2"
+                                AutomationProperties.Name="{x:Static resx:ResUI.RbRefresh}"
+                                Command="{Binding RefreshCmd}"
+                                Style="{StaticResource RB.GhostButton}"
+                                ToolTip="{x:Static resx:ResUI.RbRefresh}"
+                                Visibility="{Binding CanRefresh, Converter={StaticResource Vis}}">
+                                <Grid>
+                                    <materialDesign:PackIcon
+                                        Kind="Sync"
+                                        Style="{StaticResource HdrIcon}"
+                                        Visibility="{Binding IsRefreshing, Converter={StaticResource Vis}, ConverterParameter=invert}" />
+                                    <ProgressBar Style="{StaticResource Spinner}" Visibility="{Binding IsRefreshing, Converter={StaticResource Vis}}" />
+                                </Grid>
+                            </Button>
+                            <Button
+                                Grid.Column="3"
+                                AutomationProperties.Name="{x:Static resx:ResUI.RbPingAll}"
+                                Command="{Binding PingCmd}"
+                                Style="{StaticResource RB.GhostButton}"
+                                ToolTip="{x:Static resx:ResUI.RbPingAll}">
+                                <Grid>
+                                    <materialDesign:PackIcon
+                                        Kind="Speedometer"
+                                        Style="{StaticResource HdrIcon}"
+                                        Visibility="{Binding IsPinging, Converter={StaticResource Vis}, ConverterParameter=invert}" />
+                                    <ProgressBar Style="{StaticResource Spinner}" Visibility="{Binding IsPinging, Converter={StaticResource Vis}}" />
+                                </Grid>
+                            </Button>
+                            <Button
+                                Grid.Column="4"
+                                AutomationProperties.Name="{x:Static resx:ResUI.RbMore}"
+                                Click="GroupMenuButton_Click"
+                                ContextMenu="{StaticResource GroupMenu}"
+                                Style="{StaticResource RB.GhostButton}"
+                                ToolTip="{x:Static resx:ResUI.RbMore}">
+                                <materialDesign:PackIcon Kind="DotsHorizontal" Style="{StaticResource HdrIcon}" />
+                            </Button>
+                        </Grid>
+
+                        <StackPanel Visibility="{Binding IsExpanded, Converter={StaticResource Vis}}">
+                            <!--  expiry banner  -->
+                            <Border
+                                Padding="16,10"
+                                Background="{DynamicResource RB.Danger}"
+                                Visibility="{Binding ShowExpiryBanner, Converter={StaticResource Vis}}">
+                                <DockPanel>
+                                    <Button
+                                        Height="30"
+                                        Margin="12,0,0,0"
+                                        Padding="14,0"
+                                        Background="#33FFFFFF"
+                                        BorderThickness="0"
+                                        Command="{Binding OpenWebPageCmd}"
+                                        Content="{x:Static resx:ResUI.RbRenew}"
+                                        DockPanel.Dock="Right"
+                                        Foreground="White"
+                                        Style="{StaticResource RB.ChipButton}"
+                                        Visibility="{Binding HasWebPageUrl, Converter={StaticResource Vis}}" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        Foreground="White"
+                                        Text="{Binding ExpiryBannerText}"
+                                        TextWrapping="Wrap" />
+                                </DockPanel>
+                            </Border>
+
+                            <!--  info bar: traffic progress, expiry, support link  -->
+                            <Border
+                                Padding="12,8"
+                                Background="{DynamicResource RB.Surface2}"
+                                BorderBrush="{DynamicResource RB.Outline}"
+                                BorderThickness="0,1,0,0"
+                                Visibility="{Binding HasInfo, Converter={StaticResource Vis}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon
+                                        Grid.Column="0"
+                                        Width="20"
+                                        Height="20"
+                                        Margin="2,0,10,0"
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource RB.Primary}"
+                                        Kind="InformationOutline" />
+                                    <Border
+                                        Grid.Column="1"
+                                        Height="22"
+                                        VerticalAlignment="Center"
+                                        Background="{DynamicResource RB.Bg}"
+                                        BorderBrush="{DynamicResource RB.Outline}"
+                                        BorderThickness="1"
+                                        CornerRadius="11">
+                                        <Grid>
+                                            <Grid Margin="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="{Binding TrafficPercent, Converter={StaticResource PctStar}}" />
+                                                    <ColumnDefinition Width="{Binding TrafficPercent, Converter={StaticResource PctStar}, ConverterParameter=rest}" />
+                                                </Grid.ColumnDefinitions>
+                                                <Border
+                                                    Background="{DynamicResource RB.PrimaryRing1}"
+                                                    CornerRadius="10"
+                                                    Visibility="{Binding HasTrafficLimit, Converter={StaticResource Vis}}" />
+                                            </Grid>
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource RB.Text}"
+                                                Text="{Binding TrafficText}"
+                                                Typography.NumeralAlignment="Tabular" />
+                                        </Grid>
+                                    </Border>
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        Margin="14,0,4,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource RB.Text}"
+                                        Text="{Binding ExpiryText}"
+                                        Typography.NumeralAlignment="Tabular"
+                                        Visibility="{Binding HasExpiry, Converter={StaticResource Vis}}" />
+                                    <Button
+                                        Grid.Column="3"
+                                        Width="32"
+                                        Height="32"
+                                        Margin="4,0,0,0"
+                                        AutomationProperties.Name="{x:Static resx:ResUI.RbSupport}"
+                                        Command="{Binding OpenSupportCmd}"
+                                        Foreground="{DynamicResource RB.Primary}"
+                                        Style="{StaticResource RB.GhostButton}"
+                                        ToolTip="{Binding SupportUrl}"
+                                        Visibility="{Binding HasSupportUrl, Converter={StaticResource Vis}}">
+                                        <Grid>
+                                            <materialDesign:PackIcon
+                                                Kind="Send"
+                                                Style="{StaticResource HdrIcon}"
+                                                Visibility="{Binding IsTelegramSupport, Converter={StaticResource Vis}}" />
+                                            <materialDesign:PackIcon
+                                                Kind="LinkVariant"
+                                                Style="{StaticResource HdrIcon}"
+                                                Visibility="{Binding IsTelegramSupport, Converter={StaticResource Vis}, ConverterParameter=invert}" />
+                                        </Grid>
+                                    </Button>
+                                    <Button
+                                        Grid.Column="4"
+                                        Width="32"
+                                        Height="32"
+                                        AutomationProperties.Name="{x:Static resx:ResUI.RbWebsite}"
+                                        Command="{Binding OpenWebPageCmd}"
+                                        Foreground="{DynamicResource RB.Primary}"
+                                        Style="{StaticResource RB.GhostButton}"
+                                        ToolTip="{Binding WebPageUrl}"
+                                        Visibility="{Binding HasWebPageUrl, Converter={StaticResource Vis}}">
+                                        <materialDesign:PackIcon Kind="Web" Style="{StaticResource HdrIcon}" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <!--  announce  -->
+                            <Border
+                                Padding="16,8"
+                                Background="{DynamicResource RB.Surface2}"
+                                BorderBrush="{DynamicResource RB.Outline}"
+                                BorderThickness="0,1,0,0"
+                                Visibility="{Binding HasAnnounce, Converter={StaticResource Vis}}">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource RB.Text}"
+                                    Text="{Binding Announce}"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </Border>
+
+                            <ItemsControl
+                                Focusable="False"
+                                ItemTemplate="{StaticResource ServerRowTemplate}"
+                                ItemsSource="{Binding Servers}" />
+                        </StackPanel>
+                    </StackPanel>
+                </materialDesign:Card>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid x:Name="root">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="colLeft" Width="*" />
+            <ColumnDefinition x:Name="colRight" Width="0" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="rowTop" Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  ===== Power / status pane  =====  -->
+        <StackPanel
+            x:Name="powerPane"
+            Grid.Row="0"
+            Grid.Column="0"
+            Margin="16,0,16,8"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+            <Button
+                x:Name="btnPower"
+                HorizontalAlignment="Center"
+                AutomationProperties.Name="{Binding ConnectionStateText}"
+                Command="{Binding ToggleConnectCmd}"
+                Style="{StaticResource PowerButton}"
+                ToolTip="{Binding ConnectionStateText}" />
+            <TextBlock
+                Margin="0,2,0,0"
+                HorizontalAlignment="Center"
+                FontSize="15"
+                FontWeight="SemiBold"
+                Text="{Binding ConnectionStateText}">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource RB.Primary}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <TextBlock
+                Margin="0,4,0,0"
+                HorizontalAlignment="Center"
+                FontSize="24"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource RB.Text}"
+                Text="{Binding SessionTimeText}"
+                Typography.NumeralAlignment="Tabular"
+                Visibility="{Binding IsConnected, Converter={StaticResource Vis}}" />
+            <StackPanel
+                Margin="0,6,0,0"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                TextElement.FontSize="13"
+                TextElement.Foreground="{DynamicResource RB.TextMuted}"
+                Visibility="{Binding ShowSpeed, Converter={StaticResource Vis}}">
+                <materialDesign:PackIcon
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource RB.Primary}"
+                    Kind="ArrowDown" />
+                <TextBlock
+                    MinWidth="78"
+                    Margin="4,0,18,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding SpeedDownText}"
+                    Typography.NumeralAlignment="Tabular" />
+                <materialDesign:PackIcon
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource RB.Primary}"
+                    Kind="ArrowUp" />
+                <TextBlock
+                    MinWidth="78"
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding SpeedUpText}"
+                    Typography.NumeralAlignment="Tabular" />
+            </StackPanel>
+
+            <!--  chips: routing profile + mode  -->
+            <WrapPanel Margin="0,16,0,0" HorizontalAlignment="Center">
+                <Button
+                    x:Name="btnRouting"
+                    Margin="4"
+                    AutomationProperties.Name="{Binding RoutingChipText}"
+                    Click="BtnRouting_Click"
+                    Style="{StaticResource RB.ChipButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon
+                            Width="16"
+                            Height="16"
+                            Margin="0,0,8,0"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource RB.Primary}"
+                            Kind="CallSplit" />
+                        <TextBlock
+                            MaxWidth="220"
+                            VerticalAlignment="Center"
+                            Text="{Binding RoutingChipText}"
+                            TextTrimming="CharacterEllipsis" />
+                        <materialDesign:PackIcon
+                            Width="16"
+                            Height="16"
+                            Margin="6,0,0,0"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource RB.TextMuted}"
+                            Kind="ChevronDown" />
+                    </StackPanel>
+                </Button>
+                <Border
+                    Height="38"
+                    Margin="4"
+                    Padding="3"
+                    Background="{DynamicResource RB.Surface2}"
+                    BorderBrush="{DynamicResource RB.Outline}"
+                    BorderThickness="1"
+                    CornerRadius="19">
+                    <StackPanel Orientation="Horizontal">
+                        <Button
+                            x:Name="togProxy"
+                            AutomationProperties.Name="{x:Static resx:ResUI.RbModeProxy}"
+                            Command="{Binding SetProxyModeCmd}"
+                            Tag="{Binding IsProxyMode}"
+                            Style="{StaticResource RB.SegmentButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon
+                                    Width="15"
+                                    Height="15"
+                                    Margin="0,0,6,0"
+                                    VerticalAlignment="Center"
+                                    Kind="Web" />
+                                <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.RbModeProxy}" />
+                            </StackPanel>
+                        </Button>
+                        <Button
+                            x:Name="togTun"
+                            AutomationProperties.Name="{x:Static resx:ResUI.RbModeTun}"
+                            Command="{Binding SetTunModeCmd}"
+                            Tag="{Binding IsTunMode}"
+                            Style="{StaticResource RB.SegmentButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon
+                                    Width="15"
+                                    Height="15"
+                                    Margin="0,0,6,0"
+                                    VerticalAlignment="Center"
+                                    Kind="ShieldLockOutline" />
+                                <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.RbModeTun}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <!--  routing profiles sheet  -->
+            <Popup
+                x:Name="routingPopup"
+                AllowsTransparency="True"
+                Placement="Bottom"
+                PlacementTarget="{Binding ElementName=btnRouting}"
+                PopupAnimation="Fade"
+                StaysOpen="False"
+                VerticalOffset="6">
+                <Border
+                    Width="340"
+                    Margin="12"
+                    Padding="8"
+                    Background="{DynamicResource RB.Surface}"
+                    BorderBrush="{DynamicResource RB.Outline}"
+                    BorderThickness="1"
+                    CornerRadius="18">
+                    <Border.Effect>
+                        <DropShadowEffect
+                            BlurRadius="18"
+                            Opacity="0.35"
+                            ShadowDepth="4" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock
+                            Margin="10,6,10,8"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource RB.TextMuted}"
+                            Text="{x:Static resx:ResUI.RbRoutingProfiles}" />
+                        <ItemsControl x:Name="lstRouting" ItemsSource="{Binding RoutingProfiles}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        Margin="0,1"
+                                        HorizontalContentAlignment="Stretch"
+                                        AutomationProperties.Name="{Binding Name}"
+                                        Click="RoutingItem_Click"
+                                        Command="{Binding DataContext.SelectRoutingCmd, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                        CommandParameter="{Binding}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="{x:Type Button}">
+                                                <Border
+                                                    x:Name="bd"
+                                                    Padding="10,8"
+                                                    Background="Transparent"
+                                                    CornerRadius="12">
+                                                    <ContentPresenter />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bd" Property="Background" Value="{DynamicResource RB.Surface2}" />
+                                                    </Trigger>
+                                                    <Trigger Property="IsKeyboardFocused" Value="True">
+                                                        <Setter TargetName="bd" Property="Background" Value="{DynamicResource RB.Surface2}" />
+                                                    </Trigger>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                        <Setter TargetName="bd" Property="Background" Value="{DynamicResource RB.PrimarySoft}" />
+                                                    </DataTrigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <Grid Cursor="Hand">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid Margin="0,1,12,0" VerticalAlignment="Top">
+                                                <materialDesign:PackIcon
+                                                    Width="20"
+                                                    Height="20"
+                                                    Foreground="{DynamicResource RB.Primary}"
+                                                    Kind="CheckCircle"
+                                                    Visibility="{Binding IsActive, Converter={StaticResource Vis}}" />
+                                                <materialDesign:PackIcon
+                                                    Width="20"
+                                                    Height="20"
+                                                    Foreground="{DynamicResource RB.Outline}"
+                                                    Kind="CircleOutline"
+                                                    Visibility="{Binding IsActive, Converter={StaticResource Vis}, ConverterParameter=invert}" />
+                                            </Grid>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock
+                                                    FontSize="14"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{DynamicResource RB.Text}"
+                                                    Text="{Binding Name}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                                <TextBlock
+                                                    Margin="0,2,0,0"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource RB.TextMuted}"
+                                                    Text="{Binding Description}"
+                                                    TextWrapping="Wrap">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="{x:Type TextBlock}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Description}" Value="">
+                                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Border
+                            Height="1"
+                            Margin="6,6"
+                            Background="{DynamicResource RB.Outline}" />
+                        <Button
+                            x:Name="btnRoutingSettings"
+                            Height="36"
+                            Margin="0,0,0,2"
+                            HorizontalAlignment="Stretch"
+                            Click="BtnRoutingSettings_Click"
+                            Style="{StaticResource RB.NavButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon
+                                    Width="18"
+                                    Height="18"
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Center"
+                                    Kind="TuneVariant" />
+                                <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.RbRoutingSettingsMore}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </StackPanel>
+
+        <!--  ===== Subscription cards  =====  -->
+        <ScrollViewer
+            x:Name="listPane"
+            Grid.Row="1"
+            Grid.Column="0"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <ScrollViewer.Resources>
+                <!--  slim scrollbar: rounded thumb only  -->
+                <Style TargetType="{x:Type ScrollBar}">
+                    <Setter Property="Width" Value="10" />
+                    <Setter Property="MinWidth" Value="10" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ScrollBar}">
+                                <Track
+                                    x:Name="PART_Track"
+                                    Margin="2,4"
+                                    IsDirectionReversed="True">
+                                    <Track.Thumb>
+                                        <Thumb>
+                                            <Thumb.Template>
+                                                <ControlTemplate TargetType="{x:Type Thumb}">
+                                                    <Border
+                                                        x:Name="th"
+                                                        Background="{DynamicResource RB.Outline}"
+                                                        CornerRadius="3" />
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="th" Property="Background" Value="{DynamicResource RB.TextMuted}" />
+                                                        </Trigger>
+                                                        <Trigger Property="IsDragging" Value="True">
+                                                            <Setter TargetName="th" Property="Background" Value="{DynamicResource RB.Primary}" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Thumb.Template>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0" />
+                                    </Track.DecreaseRepeatButton>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0" />
+                                    </Track.IncreaseRepeatButton>
+                                </Track>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ScrollViewer.Resources>
+            <StackPanel x:Name="listColumn" MaxWidth="560">
+                <ItemsControl
+                    Focusable="False"
+                    ItemTemplate="{StaticResource GroupCardTemplate}"
+                    ItemsSource="{Binding Groups}" />
+
+                <!--  empty state  -->
+                <Border
+                    Padding="24"
+                    Background="{DynamicResource RB.CardSurface}"
+                    BorderBrush="{DynamicResource RB.Outline}"
+                    BorderThickness="1"
+                    CornerRadius="18"
+                    Visibility="{Binding HasGroups, Converter={StaticResource Vis}, ConverterParameter=invert}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <materialDesign:PackIcon
+                            Width="40"
+                            Height="40"
+                            HorizontalAlignment="Center"
+                            Foreground="{DynamicResource RB.Primary}"
+                            Kind="ServerNetwork" />
+                        <TextBlock
+                            Margin="0,12,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="17"
+                            FontWeight="SemiBold"
+                            Text="{x:Static resx:ResUI.RbEmptyTitle}" />
+                        <TextBlock
+                            MaxWidth="360"
+                            Margin="0,6,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            Foreground="{DynamicResource RB.TextMuted}"
+                            Text="{x:Static resx:ResUI.RbEmptyHint}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,16,0,0" HorizontalAlignment="Center">
+                            <Button
+                                x:Name="btnEmptyAddSub"
+                                Margin="4"
+                                Command="{Binding AddSubscriptionCmd}"
+                                Content="{x:Static resx:ResUI.RbAddSubscription}"
+                                Style="{StaticResource DefButton}" />
+                            <Button
+                                x:Name="btnEmptyClipboard"
+                                Margin="4"
+                                Click="BtnEmptyClipboard_Click"
+                                Content="{x:Static resx:ResUI.menuAddServerViaClipboard}"
+                                Style="{StaticResource RB.ChipButton}" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</reactiveui:ReactiveUserControl>

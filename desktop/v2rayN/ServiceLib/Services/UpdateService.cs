@@ -468,7 +468,9 @@ public partial class UpdateService(Config config, Func<bool, string, Task> updat
         }
 
         // Append default items
-        geoSiteFiles.AddRange(["google", "cn", "geolocation-cn", "category-ads-all"]);
+        // Append default items (RockBlack presets: Russia direct, ad block)
+        geoSiteFiles.AddRange(["google", "category-ru", "category-ads-all", "private"]);
+        geoipFiles.AddRange(["ru", "private"]);
 
         // Download files
         var path = Utils.GetBinPath("srss");

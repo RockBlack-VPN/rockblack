@@ -119,9 +119,9 @@ public class WebLauncherTests
     {
         foreach (var locale in new[]
         {
-            LauncherLocale.SimplifiedChinese,
-            LauncherLocale.TraditionalChinese,
             LauncherLocale.English,
+            LauncherLocale.Russian,
+            LauncherLocale.German,
         })
         {
             var help = LauncherMessages.Help(locale);
@@ -427,35 +427,35 @@ public class WebLauncherTests
     public async Task LauncherMessagesUseTheSharedLocaleResources()
     {
         var command = LauncherMessages.ExecutableCommand("/opt/v2rayn/v2rayN.WebAPI");
-        var chinese = LauncherMessages.Started("http://127.0.0.1:5080", command, LauncherLocale.SimplifiedChinese);
+        var russian = LauncherMessages.Started("http://127.0.0.1:5080", command, LauncherLocale.Russian);
         var english = LauncherMessages.Started("http://127.0.0.1:5080", command, LauncherLocale.English);
 
-        await chinese.Contains("API 健康端点", StringComparison.Ordinal).Should().BeTrue();
-        await chinese.Contains("Ctrl+C 不会停止", StringComparison.Ordinal).Should().BeTrue();
-        await chinese.Contains("./v2rayN.WebAPI --stop", StringComparison.Ordinal).Should().BeTrue();
-        await LauncherMessages.AlreadyRunning("http://127.0.0.1:5080", command, false, LauncherLocale.TraditionalChinese)
+        await russian.Contains("Конечная точка проверки API", StringComparison.Ordinal).Should().BeTrue();
+        await russian.Contains("Ctrl+C её не остановит", StringComparison.Ordinal).Should().BeTrue();
+        await russian.Contains("./v2rayN.WebAPI --stop", StringComparison.Ordinal).Should().BeTrue();
+        await LauncherMessages.AlreadyRunning("http://127.0.0.1:5080", command, false, LauncherLocale.German)
             .Contains("--stop", StringComparison.Ordinal).Should().BeTrue();
-        await (LauncherMessages.Started("http://127.0.0.1:5080", command, LauncherLocale.TraditionalChinese)
+        await (LauncherMessages.Started("http://127.0.0.1:5080", command, LauncherLocale.German)
             .Contains("--stop", StringComparison.Ordinal)).Should().BeTrue();
         await english.Contains("API health endpoint", StringComparison.Ordinal).Should().BeTrue();
         await LauncherMessages.ForegroundStarted("http://127.0.0.1:5080", LauncherLocale.English)
             .Contains("Ctrl+C", StringComparison.Ordinal).Should().BeTrue();
         await (LauncherMessages.StopMessage(WebStopResult.NotRunning, LauncherLocale.English)
             == "v2rayN.WebAPI is not running for this data directory.").Should().BeTrue();
-        await LauncherMessages.StopMessage(WebStopResult.NotRunning, LauncherLocale.SimplifiedChinese)
-            .Contains("数据目录", StringComparison.Ordinal).Should().BeTrue();
-        await LauncherMessages.StopMessage(WebStopResult.NotRunning, LauncherLocale.TraditionalChinese)
-            .Contains("資料目錄", StringComparison.Ordinal).Should().BeTrue();
+        await LauncherMessages.StopMessage(WebStopResult.NotRunning, LauncherLocale.Russian)
+            .Contains("каталога данных", StringComparison.Ordinal).Should().BeTrue();
+        await LauncherMessages.StopMessage(WebStopResult.NotRunning, LauncherLocale.German)
+            .Contains("Datenverzeichnis", StringComparison.Ordinal).Should().BeTrue();
         await LauncherMessages.StopMessage(WebStopResult.SupervisorManaged, LauncherLocale.English)
             .Contains("systemctl stop", StringComparison.Ordinal).Should().BeTrue();
-        await LauncherMessages.StopMessage(WebStopResult.CoreProcessStillRunning, LauncherLocale.SimplifiedChinese)
+        await LauncherMessages.StopMessage(WebStopResult.CoreProcessStillRunning, LauncherLocale.Russian)
             .Contains("Core", StringComparison.Ordinal).Should().BeTrue();
         await LauncherMessages.StopMessage(WebStopResult.ProbeUnavailable, LauncherLocale.English)
             .Contains("loopback HTTP health endpoint", StringComparison.Ordinal).Should().BeTrue();
-        await LauncherMessages.StopMessage(WebStopResult.ProbeUnavailable, LauncherLocale.SimplifiedChinese)
-            .Contains("回环 HTTP 健康端点", StringComparison.Ordinal).Should().BeTrue();
-        await LauncherMessages.StopMessage(WebStopResult.ProbeUnavailable, LauncherLocale.TraditionalChinese)
-            .Contains("回送 HTTP 健康端點", StringComparison.Ordinal).Should().BeTrue();
+        await LauncherMessages.StopMessage(WebStopResult.ProbeUnavailable, LauncherLocale.Russian)
+            .Contains("loopback-адреса с HTTP-проверкой", StringComparison.Ordinal).Should().BeTrue();
+        await LauncherMessages.StopMessage(WebStopResult.ProbeUnavailable, LauncherLocale.German)
+            .Contains("Loopback-HTTP-Health-Endpunkt", StringComparison.Ordinal).Should().BeTrue();
         await LauncherMessages.StartUnprobeable(LauncherLocale.English)
             .Contains("--foreground", StringComparison.Ordinal).Should().BeTrue();
         if (OperatingSystem.IsLinux())
@@ -463,8 +463,9 @@ public class WebLauncherTests
             await (LauncherMessages.ExecutableCommand("/usr/share/dotnet/dotnet", "/opt/v2rayn/v2rayN.WebAPI.dll")
                 == "\"/usr/share/dotnet/dotnet\" \"/opt/v2rayn/v2rayN.WebAPI.dll\"").Should().BeTrue();
         }
-        await (LauncherMessages.ResolveLocale("zh_Hant_TW") == LauncherLocale.TraditionalChinese).Should().BeTrue();
-        await (LauncherMessages.ResolveLocale("zh_CN.UTF-8") == LauncherLocale.SimplifiedChinese).Should().BeTrue();
+        await (LauncherMessages.ResolveLocale("ru_RU.UTF-8") == LauncherLocale.Russian).Should().BeTrue();
+        await (LauncherMessages.ResolveLocale("de_DE.UTF-8") == LauncherLocale.German).Should().BeTrue();
+        await (LauncherMessages.ResolveLocale("zh_CN.UTF-8") == LauncherLocale.English).Should().BeTrue();
         await (LauncherMessages.ResolveLocale("fr_FR.UTF-8") == LauncherLocale.English).Should().BeTrue();
     }
 

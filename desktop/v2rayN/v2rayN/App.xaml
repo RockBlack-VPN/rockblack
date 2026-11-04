@@ -17,10 +17,18 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!--  RockBlack design tokens (dark defaults; RockBlackPalette switches them with the theme)  -->
-            <SolidColorBrush x:Key="RB.Bg" Color="#0F1011" />
-            <SolidColorBrush x:Key="RB.Surface" Color="#18191B" />
-            <SolidColorBrush x:Key="RB.Surface2" Color="#212326" />
-            <SolidColorBrush x:Key="RB.Outline" Color="#2D3034" />
+            <SolidColorBrush x:Key="RB.Bg" Color="#0B0C0D" />
+            <SolidColorBrush x:Key="RB.Surface" Color="#17191B" />
+            <SolidColorBrush x:Key="RB.Surface2" Color="#202326" />
+            <SolidColorBrush x:Key="RB.Outline" Color="#2B2F33" />
+            <SolidColorBrush x:Key="RB.CardSurface" Color="#EB17191B" />
+            <SolidColorBrush x:Key="RB.PrimaryRing1" Color="#4026D6B0" />
+            <SolidColorBrush x:Key="RB.PrimaryRing2" Color="#1F26D6B0" />
+            <SolidColorBrush x:Key="RB.DangerSoft" Color="#26FF5C6C" />
+            <LinearGradientBrush x:Key="RB.BgGradient" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Offset="0" Color="#0E1A1B" />
+                <GradientStop Offset="1" Color="#0B0C0D" />
+            </LinearGradientBrush>
             <SolidColorBrush x:Key="RB.Primary" Color="#26D6B0" />
             <SolidColorBrush x:Key="RB.OnPrimary" Color="#04231C" />
             <SolidColorBrush x:Key="RB.PrimarySoft" Color="#2426D6B0" />
@@ -30,7 +38,7 @@
             <SolidColorBrush x:Key="RB.Warning" Color="#FFB547" />
             <SolidColorBrush x:Key="RB.Graphite" Color="#5F6062" />
             <Color x:Key="RB.PrimaryColor">#26D6B0</Color>
-            <CornerRadius x:Key="RB.RadiusCard">16</CornerRadius>
+            <CornerRadius x:Key="RB.RadiusCard">18</CornerRadius>
             <CornerRadius x:Key="RB.RadiusControl">12</CornerRadius>
             <FontFamily x:Key="RB.MonoFont">Cascadia Mono, Consolas, Courier New</FontFamily>
 
@@ -314,6 +322,133 @@
                 </Setter>
             </Style>
 
+            <!--  UI 3.0: borderless round icon button (top bar, card headers)  -->
+            <Style x:Key="RB.GhostButton" TargetType="{x:Type ButtonBase}">
+                <Setter Property="Width" Value="36" />
+                <Setter Property="Height" Value="36" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ButtonBase}">
+                            <Grid Background="Transparent">
+                                <Ellipse x:Name="bd" Fill="{TemplateBinding Background}" />
+                                <ContentPresenter
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bd" Property="Fill" Value="{DynamicResource RB.Surface2}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource RB.Primary}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="bd" Property="Fill" Value="{DynamicResource RB.PrimarySoft}" />
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="bd" Property="Fill" Value="{DynamicResource RB.Surface2}" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.4" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!--  UI 3.0: pill chip button (routing profile, mode)  -->
+            <Style x:Key="RB.ChipButton" TargetType="{x:Type ButtonBase}">
+                <Setter Property="Height" Value="38" />
+                <Setter Property="Padding" Value="14,0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Background" Value="{DynamicResource RB.Surface2}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource RB.Outline}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ButtonBase}">
+                            <Border
+                                x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="19"
+                                SnapsToDevicePixels="True">
+                                <ContentPresenter
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource RB.Primary}" />
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource RB.Primary}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="bd" Property="Background" Value="{DynamicResource RB.PrimarySoft}" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.4" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!--  UI 3.0: one half of the segmented mode chip (System proxy | TUN)  -->
+            <Style x:Key="RB.SegmentButton" TargetType="{x:Type ButtonBase}">
+                <Setter Property="Height" Value="30" />
+                <Setter Property="Padding" Value="12,0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ButtonBase}">
+                            <Border
+                                x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="Transparent"
+                                BorderThickness="1"
+                                CornerRadius="15"
+                                SnapsToDevicePixels="True">
+                                <ContentPresenter
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+                                </Trigger>
+                                <!--  Tag = "selected" (bound to the view model, so a failed switch never shows as active)  -->
+                                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                                    <Setter TargetName="bd" Property="Background" Value="{DynamicResource RB.Primary}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource RB.OnPrimary}" />
+                                </DataTrigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource RB.Primary}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
             <Style
                 x:Key="DefButton"
                 BasedOn="{StaticResource MaterialDesignRaisedButton}"
@@ -434,7 +569,14 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
+                <Style.Triggers>
+                    <!--  keep the row text readable on the selected (primarySoft) row  -->
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Foreground" Value="{DynamicResource RB.Text}" />
+                    </Trigger>
+                </Style.Triggers>
             </Style>
+
             <Style
                 x:Key="RB.DataGridColumnHeader"
                 BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}"

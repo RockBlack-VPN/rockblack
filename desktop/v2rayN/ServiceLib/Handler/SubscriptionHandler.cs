@@ -35,7 +35,10 @@ public static class SubscriptionHandler
                 await updateFunc?.Invoke(false, $"{hashCode}{ResUI.MsgStartGettingSubscriptions}");
 
                 // Get all subscription content (main subscription + additional subscriptions)
-                var result = await DownloadAllSubscriptions(config, item, blProxy, downloadHandle);
+                var (result, mainBody, mainHeaders) = await DownloadAllSubscriptionsWithInfo(config, item, blProxy, downloadHandle);
+
+                // Provider metadata (traffic, expiry, title, support links, announce)
+                await SaveSubscriptionInfo(item, mainHeaders, mainBody);
 
                 // Process download result
                 if (await ProcessDownloadResult(config, item.Id, result, hashCode, updateFunc))
@@ -114,8 +117,16 @@ public static class SubscriptionHandler
 
     private static async Task<string> DownloadAllSubscriptions(Config config, SubItem item, bool blProxy, DownloadService downloadHandle)
     {
+        return (await DownloadAllSubscriptionsWithInfo(config, item, blProxy, downloadHandle)).Result;
+    }
+
+    /// <summary>Main + additional subscription content, plus the main body and response headers (provider metadata).</summary>
+    private static async Task<(string Result, string MainBody, IReadOnlyDictionary<string, string>? MainHeaders)> DownloadAllSubscriptionsWithInfo(Config config, SubItem item, bool blProxy, DownloadService downloadHandle)
+    {
         // Download main subscription content
         var result = await DownloadMainSubscription(config, item, blProxy, downloadHandle);
+        var mainBody = result;
+        var mainHeaders = downloadHandle.LastResponseHeaders;
 
         // Process additional subscription links (if any)
         if (item.ConvertTarget.IsNullOrEmpty() && item.MoreUrl.TrimEx().IsNotEmpty())
@@ -123,7 +134,52 @@ public static class SubscriptionHandler
             result = await DownloadAdditionalSubscriptions(item, result, blProxy, downloadHandle);
         }
 
-        return result;
+        return (result, mainBody, mainHeaders);
+    }
+
+    /// <summary>
+    /// Stores the provider metadata of a subscription (see <see cref="SubscriptionInfoParser"/>).
+    /// Also adopts the provider's update interval when the user has not configured one.
+    /// </summary>
+    public static async Task SaveSubscriptionInfo(SubItem item, IReadOnlyDictionary<string, string>? headers, string? body)
+    {
+        try
+        {
+            if (headers == null && body.IsNullOrEmpty())
+            {
+                return;
+            }
+            var fresh = SubscriptionInfoParser.Parse(item.Id, headers, body);
+
+            // Happ routing profile delivered with the subscription (happ://routing/add|onadd|off).
+            if (fresh.Routing.IsNotEmpty())
+            {
+                var routing = await HappRoutingImporter.ApplyAsync(AppManager.Instance.Config, item.Id, fresh.Routing);
+                if (routing.Changed)
+                {
+                    AppEvents.RoutingProfilesChanged.Publish(routing.ActiveChanged);
+                }
+            }
+
+            var stored = await AppManager.Instance.GetSubInfoItem(item.Id);
+            if (stored == null && fresh.IsEmpty)
+            {
+                return;
+            }
+            var info = SubscriptionInfoParser.Merge(stored, fresh);
+            info.UpdateTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+            await SQLiteHelper.Instance.ReplaceAsync(info);
+
+            if (item.AutoUpdateInterval <= 0 && info.UpdateIntervalHours > 0)
+            {
+                item.AutoUpdateInterval = info.UpdateIntervalHours * 60;
+                await SQLiteHelper.Instance.UpdateAsync(item);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog("SaveSubscriptionInfo", ex);
+        }
     }
 
     private static async Task<string> DownloadMainSubscription(Config config, SubItem item, bool blProxy, DownloadService downloadHandle)

@@ -1342,7 +1342,7 @@
     <value>Iran</value>
   </data>
   <data name="TbSettingsChinaUserTip" xml:space="preserve">
-    <value>Users in China region can ignore this item</value>
+    <value>Can usually be left unchanged</value>
   </data>
   <data name="menuAddServerViaImage" xml:space="preserve">
     <value>Scan QR code in the image</value>
@@ -1468,7 +1468,7 @@
     <value>Validate Regional Domain IPs</value>
   </data>
   <data name="TbValidateDirectExpectedIPsDesc" xml:space="preserve">
-    <value>When configured, validates IPs returned for regional domains (e.g., geosite:cn - geoip:cn), returning only expected IPs</value>
+    <value>When configured, validates IPs returned for regional domains (e.g., geosite:category-ru - geoip:ru), returning only expected IPs</value>
   </data>
   <data name="TbCustomDNSEnable" xml:space="preserve">
     <value>Enable Custom DNS</value>
@@ -1934,5 +1934,233 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   </data>
   <data name="RbSubscriptions" xml:space="preserve">
     <value>Subscriptions</value>
+  </data>
+  <data name="RbConnecting" xml:space="preserve">
+    <value>Connecting…</value>
+  </data>
+  <data name="RbRoutingChip" xml:space="preserve">
+    <value>Routing: {0}</value>
+  </data>
+  <data name="RbModeProxy" xml:space="preserve">
+    <value>System proxy</value>
+  </data>
+  <data name="RbModeTun" xml:space="preserve">
+    <value>TUN</value>
+  </data>
+  <data name="RbSortByPing" xml:space="preserve">
+    <value>Sort by ping</value>
+  </data>
+  <data name="RbSortByName" xml:space="preserve">
+    <value>Sort by name</value>
+  </data>
+  <data name="RbSortDefault" xml:space="preserve">
+    <value>As delivered</value>
+  </data>
+  <data name="RbSelectFastest" xml:space="preserve">
+    <value>Select fastest</value>
+  </data>
+  <data name="RbPingAll" xml:space="preserve">
+    <value>Ping all</value>
+  </data>
+  <data name="RbPing" xml:space="preserve">
+    <value>Ping</value>
+  </data>
+  <data name="RbRefresh" xml:space="preserve">
+    <value>Update subscription</value>
+  </data>
+  <data name="RbRefreshAll" xml:space="preserve">
+    <value>Update all subscriptions</value>
+  </data>
+  <data name="RbMore" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="RbSelect" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="RbEdit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="RbShareQr" xml:space="preserve">
+    <value>Share (QR code)</value>
+  </data>
+  <data name="RbCopyLink" xml:space="preserve">
+    <value>Copy link</value>
+  </data>
+  <data name="RbDelete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="RbEditSubscription" xml:space="preserve">
+    <value>Edit subscription</value>
+  </data>
+  <data name="RbDeleteSubscription" xml:space="preserve">
+    <value>Delete subscription</value>
+  </data>
+  <data name="RbDeleteSubscriptionConfirm" xml:space="preserve">
+    <value>Delete subscription "{0}" and all its servers?</value>
+  </data>
+  <data name="RbDeleteServerConfirm" xml:space="preserve">
+    <value>Delete server "{0}"?</value>
+  </data>
+  <data name="RbEmptyTitle" xml:space="preserve">
+    <value>No servers yet</value>
+  </data>
+  <data name="RbEmptyHint" xml:space="preserve">
+    <value>Add a subscription link or import a server from the clipboard with +</value>
+  </data>
+  <data name="RbSupport" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="RbWebsite" xml:space="preserve">
+    <value>Website</value>
+  </data>
+  <data name="RbManualServers" xml:space="preserve">
+    <value>Server list</value>
+  </data>
+  <data name="RbExpires" xml:space="preserve">
+    <value>Expires: {0}</value>
+  </data>
+  <data name="RbExpiresIn" xml:space="preserve">
+    <value>Your subscription expires in {0}</value>
+  </data>
+  <data name="RbExpiresToday" xml:space="preserve">
+    <value>Your subscription expires today</value>
+  </data>
+  <data name="RbExpired" xml:space="preserve">
+    <value>Subscription has expired</value>
+  </data>
+  <data name="RbDaysOne" xml:space="preserve">
+    <value>{0} day</value>
+  </data>
+  <data name="RbDaysFew" xml:space="preserve">
+    <value>{0} days</value>
+  </data>
+  <data name="RbDaysMany" xml:space="preserve">
+    <value>{0} days</value>
+  </data>
+  <data name="RbRenew" xml:space="preserve">
+    <value>Renew</value>
+  </data>
+  <data name="RbTimeout" xml:space="preserve">
+    <value>Timeout</value>
+  </data>
+  <data name="RbNotAvailable" xml:space="preserve">
+    <value>n/a</value>
+  </data>
+  <data name="RbMs" xml:space="preserve">
+    <value>{0} ms</value>
+  </data>
+  <data name="RbSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="RbAdd" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="RbCollapse" xml:space="preserve">
+    <value>Collapse</value>
+  </data>
+  <data name="RbExpand" xml:space="preserve">
+    <value>Expand</value>
+  </data>
+  <data name="RbRoutingProfiles" xml:space="preserve">
+    <value>Routing profile</value>
+  </data>
+  <data name="RbRoutingGlobal" xml:space="preserve">
+    <value>Global</value>
+  </data>
+  <data name="RbRoutingRussia" xml:space="preserve">
+    <value>Russia</value>
+  </data>
+  <data name="RbRoutingBlockAds" xml:space="preserve">
+    <value>Block ads only</value>
+  </data>
+  <data name="RbRoutingDirect" xml:space="preserve">
+    <value>Direct</value>
+  </data>
+  <data name="RbRoutingGlobalDesc" xml:space="preserve">
+    <value>Everything through the proxy (local network direct)</value>
+  </data>
+  <data name="RbRoutingRussiaDesc" xml:space="preserve">
+    <value>Russian sites and IPs direct, ads blocked</value>
+  </data>
+  <data name="RbRoutingBlockAdsDesc" xml:space="preserve">
+    <value>Everything through the proxy, ads blocked</value>
+  </data>
+  <data name="RbRoutingDirectDesc" xml:space="preserve">
+    <value>No proxy: everything goes direct (for testing)</value>
+  </data>
+  <data name="RbAutoUpdateHours" xml:space="preserve">
+    <value>auto {0} h</value>
+  </data>
+  <data name="RbAutoUpdateMinutes" xml:space="preserve">
+    <value>auto {0} min</value>
+  </data>
+  <data name="RbPingSettings" xml:space="preserve">
+    <value>Ping</value>
+  </data>
+  <data name="RbPingMethod" xml:space="preserve">
+    <value>Ping method</value>
+  </data>
+  <data name="RbPingMethodGet" xml:space="preserve">
+    <value>Via proxy (GET)</value>
+  </data>
+  <data name="RbPingMethodHead" xml:space="preserve">
+    <value>Via proxy (HEAD)</value>
+  </data>
+  <data name="RbPingMethodTcp" xml:space="preserve">
+    <value>TCP</value>
+  </data>
+  <data name="RbPingOnLaunch" xml:space="preserve">
+    <value>Ping servers on launch</value>
+  </data>
+  <data name="RbPingTestUrl" xml:space="preserve">
+    <value>Ping test URL</value>
+  </data>
+  <data name="RbPingDisplay" xml:space="preserve">
+    <value>Ping display</value>
+  </data>
+  <data name="RbPingDisplayTime" xml:space="preserve">
+    <value>Time (ms)</value>
+  </data>
+  <data name="RbPingDisplayIcon" xml:space="preserve">
+    <value>Status icon</value>
+  </data>
+  <data name="RbAdvancedServers" xml:space="preserve">
+    <value>Server list (advanced)</value>
+  </data>
+  <data name="RbRoutingSettingsMore" xml:space="preserve">
+    <value>Routing settings…</value>
+  </data>
+  <data name="RbAddSubscription" xml:space="preserve">
+    <value>Add subscription</value>
+  </data>
+  <data name="RbImportGroup" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="RbAddManually" xml:space="preserve">
+    <value>Add manually</value>
+  </data>
+  <data name="RbAddFromClipboard" xml:space="preserve">
+    <value>Import from clipboard</value>
+  </data>
+  <data name="RbScanQr" xml:space="preserve">
+    <value>Scan QR code from screen</value>
+  </data>
+  <data name="RbQrFromImage" xml:space="preserve">
+    <value>Import QR code from image</value>
+  </data>
+  <data name="RbServerActions" xml:space="preserve">
+    <value>Server actions</value>
+  </data>
+  <data name="RbAdvanced" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="RbAppearance" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="RbExit" xml:space="preserve">
+    <value>Quit RockBlack</value>
+  </data>
+  <data name="RbRoutingFromSubscription" xml:space="preserve">
+    <value>From your subscription</value>
   </data>
 </root>

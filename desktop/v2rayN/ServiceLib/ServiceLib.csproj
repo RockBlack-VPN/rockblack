@@ -24,9 +24,10 @@
         <EmbeddedResource Include="Sample\chrome_roots_pem" />
 		<EmbeddedResource Include="Sample\clash_mixin_yaml" />
 		<EmbeddedResource Include="Sample\clash_tun_yaml" />
-		<EmbeddedResource Include="Sample\custom_routing_black" />
+		<EmbeddedResource Include="Sample\custom_routing_ads" />
+		<EmbeddedResource Include="Sample\custom_routing_direct" />
 		<EmbeddedResource Include="Sample\custom_routing_global" />
-		<EmbeddedResource Include="Sample\custom_routing_white" />
+		<EmbeddedResource Include="Sample\custom_routing_russia" />
 		<EmbeddedResource Include="Sample\dns_singbox_normal" />
 		<EmbeddedResource Include="Sample\dns_v2ray_normal" />
 		<EmbeddedResource Include="Sample\kill_as_sudo_linux_sh" />
@@ -58,20 +59,8 @@
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
 		</Compile>
-		<EmbeddedResource Update="Resx\ResUI.az.resx">
-			<Generator>PublicResXFileCodeGenerator</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Update="Resx\ResUI.fa.resx">
+		<EmbeddedResource Update="Resx\ResUI.de.resx">
 			<SubType>Designer</SubType>
-			<Generator>PublicResXFileCodeGenerator</Generator>
-		</EmbeddedResource>
-        <EmbeddedResource Update="Resx\ResUI.fr.resx">
-			<Generator>PublicResXFileCodeGenerator</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Update="Resx\ResUI.hu.resx">
-			<Generator>PublicResXFileCodeGenerator</Generator>
-		</EmbeddedResource>
-        <EmbeddedResource Update="Resx\ResUI.id.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Resx\ResUI.resx">
@@ -80,14 +69,6 @@
 			<Generator>PublicResXFileCodeGenerator</Generator>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Resx\ResUI.ru.resx">
-			<SubType>Designer</SubType>
-			<Generator>PublicResXFileCodeGenerator</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Update="Resx\ResUI.zh-Hans.resx">
-			<SubType>Designer</SubType>
-			<Generator>PublicResXFileCodeGenerator</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Update="Resx\ResUI.zh-Hant.resx">
 			<SubType>Designer</SubType>
 			<Generator>PublicResXFileCodeGenerator</Generator>
 		</EmbeddedResource>

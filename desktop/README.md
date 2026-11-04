@@ -27,7 +27,11 @@ Built by [`.github/workflows/desktop-build.yml`](../.github/workflows/desktop-bu
 
 - **Identity**: product name RockBlack in window titles, tray tooltip, message boxes,
   assembly metadata (Product/Company/Title) and all localized strings that showed "v2rayN"
-  (az, fa, fr, hu, id, ru, zh-Hans, zh-Hant, en; AmazTool updater too).
+  (AmazTool updater too).
+- **Languages**: English (default), Russian and German only (`ResUI.resx`, `ResUI.ru.resx`,
+  `ResUI.de.resx`; AmazTool `Resource{,.ru,.de}.resx`). The upstream az, fa, fr, hu, id,
+  zh-Hans and zh-Hant translations were removed; a saved language that is no longer available
+  falls back to the system language (ru/de) or English.
 - **Executable**: `RockBlack.exe` (WPF, Windows) / `RockBlack` (Avalonia, Linux/macOS) via
   `AssemblyName`; C# namespaces, project names and root namespaces are unchanged (`v2rayN.*`).
   Avalonia asset URIs moved to `avares://RockBlack/`; the updater (AmazTool) restarts `RockBlack`.
@@ -53,5 +57,6 @@ Built by [`.github/workflows/desktop-build.yml`](../.github/workflows/desktop-bu
   (`tech.rockblack.desktop`) + DMG, `rockblack.iss` Inno Setup installer).
   Upstream workflows are kept for reference in `upstream-ci/desktop/`.
 
-The `v2rayN.WebAPI` project is not built or shipped and was left as in upstream.
+The `v2rayN.WebAPI` project is not built or shipped and was left as in upstream, except that
+its launcher messages are English/Russian/German like the rest of the client.
 `v2rayN/GlobalHotKeys` is the upstream git submodule, unmodified.

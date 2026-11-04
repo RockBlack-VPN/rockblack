@@ -41,11 +41,7 @@ cat > "$app/Contents/Info.plist" <<EOF
   <array>
     <string>en</string>
     <string>ru</string>
-    <string>zh-Hans</string>
-    <string>zh-Hant</string>
-    <string>fa</string>
-    <string>fr</string>
-    <string>hu</string>
+    <string>de</string>
   </array>
   <key>CFBundleDisplayName</key>
   <string>RockBlack</string>

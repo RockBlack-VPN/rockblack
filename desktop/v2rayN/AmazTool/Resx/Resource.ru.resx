@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,39 +118,39 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Restartv2rayN" xml:space="preserve">
-    <value>正在重啟，請等待...</value>
+    <value>Запуск RockBlack, подождите...</value>
   </data>
   <data name="Guidelines" xml:space="preserve">
-    <value>請從主應用程式運行。</value>
+    <value>Запустите его из основного приложения.</value>
   </data>
   <data name="UpgradeFileNotFound" xml:space="preserve">
-    <value>升級失敗，檔案不存在。</value>
+    <value>Ошибка обновления: файл не найден.</value>
   </data>
   <data name="InProgress" xml:space="preserve">
-    <value>正在進行中，請等待...</value>
+    <value>Выполняется, подождите...</value>
   </data>
   <data name="TryTerminateProcess" xml:space="preserve">
-    <value>嘗試結束 RockBlack 進程...</value>
+    <value>Попытка завершить процесс RockBlack...</value>
   </data>
   <data name="FailedTerminateProcess" xml:space="preserve">
-    <value>請手動關閉正在執行的 RockBlack，否則可能會升級失敗。</value>
+    <value>Не удалось завершить RockBlack. Закройте его вручную, иначе обновление может не удаться.</value>
   </data>
   <data name="StartUnzipping" xml:space="preserve">
-    <value>開始解壓縮更新包...</value>
+    <value>Распаковка пакета обновления...</value>
   </data>
   <data name="SuccessUnzipping" xml:space="preserve">
-    <value>解壓縮更新包成功。</value>
+    <value>Пакет обновления успешно распакован.</value>
   </data>
   <data name="FailedUnzipping" xml:space="preserve">
-    <value>解壓縮更新包失敗。</value>
+    <value>Не удалось распаковать пакет обновления.</value>
   </data>
   <data name="FailedUpgrade" xml:space="preserve">
-    <value>升級失敗。</value>
+    <value>Ошибка обновления.</value>
   </data>
   <data name="SuccessUpgrade" xml:space="preserve">
-    <value>升級成功。</value>
+    <value>Обновление выполнено успешно.</value>
   </data>
   <data name="Information" xml:space="preserve">
-    <value>提示</value>
+    <value>Информация</value>
   </data>
 </root>

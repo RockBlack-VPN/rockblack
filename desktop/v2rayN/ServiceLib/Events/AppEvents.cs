@@ -14,4 +14,10 @@ public static class AppEvents
     public static readonly EventChannel<bool> ShutdownRequested = new();
 
     public static readonly EventChannel<ESysProxyType> SysProxyChangeRequested = new();
+
+    /// <summary>
+    /// The routing profile list changed outside the routing editor (e.g. a Happ profile imported from
+    /// a subscription); the value is true when the active profile changed (reload the core).
+    /// </summary>
+    public static readonly EventChannel<bool> RoutingProfilesChanged = new();
 }

@@ -94,7 +94,8 @@ public static class ConfigHandler
             IcmpRouting = Global.TunIcmpRoutingPolicies.First(),
             EnableLegacyProtect = true,
         };
-        config.GuiItem ??= new();
+        // RockBlack: live speed under the power button is on by default for new configs.
+        config.GuiItem ??= new() { DisplayRealTimeSpeed = true };
         if (!Global.RootCertProviders.Contains(config.GuiItem.RootCertProvider))
         {
             config.GuiItem.RootCertProvider = Global.RootCertProviders.First();
@@ -105,11 +106,14 @@ public static class ConfigHandler
         config.UiItem.MainColumnItem ??= [];
         config.UiItem.WindowSizeItem ??= [];
 
-        if (config.UiItem.CurrentLanguage.IsNullOrEmpty())
+        // RockBlack: en/ru/de only. Empty (first run) or a removed language from an older
+        // config (zh-Hans, fa, ...) follows the system UI language when it is ru/de, else English.
+        if (config.UiItem.CurrentLanguage.IsNullOrEmpty()
+            || !Global.Languages.Contains(config.UiItem.CurrentLanguage))
         {
-            config.UiItem.CurrentLanguage = Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName.Equals("zh", StringComparison.CurrentCultureIgnoreCase)
-                ? Global.Languages.First()
-                : Global.Languages[2];
+            var systemLanguage = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+            config.UiItem.CurrentLanguage = Global.Languages.FirstOrDefault(
+                t => t.Equals(systemLanguage, StringComparison.OrdinalIgnoreCase)) ?? Global.Languages.First();
         }
 
         config.ConstItem ??= new ConstItem();
@@ -119,6 +123,15 @@ public static class ConfigHandler
         config.SimpleDNSItem.FakeIPRange ??= Global.FakeIPRanges.FirstOrDefault();
         config.SimpleDNSItem.GlobalFakeIp ??= true;
         config.SimpleDNSItem.BootstrapDNS ??= Global.DomainPureIPDNSAddress.FirstOrDefault();
+        // RockBlack: migrate the upstream China DNS defaults (AliDNS / DNSPod) to Yandex / Cloudflare.
+        if (Global.LegacyDirectDNSAddress.Contains(config.SimpleDNSItem.DirectDNS ?? string.Empty))
+        {
+            config.SimpleDNSItem.DirectDNS = Global.DomainDirectDNSAddress.FirstOrDefault();
+        }
+        if (Global.LegacyDirectDNSAddress.Contains(config.SimpleDNSItem.BootstrapDNS ?? string.Empty))
+        {
+            config.SimpleDNSItem.BootstrapDNS = Global.DomainPureIPDNSAddress.FirstOrDefault();
+        }
         config.SimpleDNSItem.ServeStale ??= false;
         config.SimpleDNSItem.ParallelQuery ??= false;
         config.SimpleDNSItem.EnableHappyEyeballs ??= false;
@@ -2390,6 +2403,13 @@ public static class ConfigHandler
         }
         await SQLiteHelper.Instance.DeleteAsync(item);
         await RemoveServersViaSubid(config, id, false);
+        await SQLiteHelper.Instance.ExecuteAsync($"delete from SubInfoItem where Id = '{id.Replace("'", "")}'");
+        // The Happ routing profile imported from this subscription goes with it.
+        var routingWasActive = await HappRoutingImporter.RemoveForSubscriptionAsync(config, id);
+        if (routingWasActive != null)
+        {
+            AppEvents.RoutingProfilesChanged.Publish(routingWasActive == true);
+        }
 
         if (item.Id == config.SubIndexId)
         {
@@ -2699,73 +2719,84 @@ public static class ConfigHandler
     }
 
     /// <summary>
-    /// Initialize built-in routing rules
-    /// Creates default routing configurations (whitelist, blacklist, global)
+    /// Initialize the RockBlack built-in routing profiles (Global, Russia, Block ads only, Direct)
+    /// and migrate configs created by upstream v2rayN:
+    /// the China-oriented built-ins (Whitelist / Blacklist / Global) are removed, missing
+    /// RockBlack built-ins are (re-)created and Russia becomes active when nothing valid is active.
+    /// Custom and template-imported profiles are kept untouched.
     /// </summary>
     /// <param name="config">Current configuration</param>
-    /// <param name="blImportAdvancedRules">Whether to import advanced rules</param>
+    /// <param name="blImportAdvancedRules">Re-create the built-ins from the embedded rules (keeps the active profile)</param>
     /// <returns>0 if successful</returns>
     public static async Task<int> InitBuiltinRouting(Config config, bool blImportAdvancedRules = false)
     {
-        var ver = "V4-";
-        var items = await AppManager.Instance.RoutingItems();
+        var items = await AppManager.Instance.RoutingItems() ?? [];
 
         //TODO Temporary code to be removed later
-        var lockItem = items?.FirstOrDefault(t => t.Locked == true);
+        var lockItem = items.FirstOrDefault(t => t.Locked == true);
         if (lockItem != null)
         {
             await ConfigHandler.RemoveRoutingItem(lockItem);
-            items = await AppManager.Instance.RoutingItems();
+            items = await AppManager.Instance.RoutingItems() ?? [];
         }
 
-        if (!blImportAdvancedRules && items.Count() > 0) // items.Count(u => u.Remarks.StartsWith(ver)) > 0)
+        // Upstream China-oriented built-ins are replaced by the RockBlack presets.
+        var removedActive = false;
+        foreach (var legacy in items.Where(RoutingPresets.IsLegacyUpstreamBuiltin).ToList())
         {
-            //migrate
-            //TODO Temporary code to be removed later
-            if (config.RoutingBasicItem.RoutingIndexId.IsNotEmpty())
+            removedActive |= legacy.IsActive;
+            await RemoveRoutingItem(legacy);
+            items.Remove(legacy);
+        }
+
+        // (Re-)create missing built-ins; rewrite all of them when the embedded rules changed
+        // or when the user explicitly asked to import the built-in rules again.
+        var rewriteAll = blImportAdvancedRules || config.RoutingBasicItem.RbRoutingVersion < RoutingPresets.Version;
+        foreach (var preset in RoutingPresets.Builtins)
+        {
+            var existing = items.FirstOrDefault(t => t.Id == preset.Id);
+            if (existing != null && !rewriteAll)
             {
-                var item = items.FirstOrDefault(t => t.Id == config.RoutingBasicItem.RoutingIndexId);
-                if (item != null)
-                {
-                    await SetDefaultRouting(config, item);
-                }
-                config.RoutingBasicItem.RoutingIndexId = string.Empty;
+                continue;
             }
-
-            return 0;
+            var item = RoutingPresets.CreateItem(preset);
+            if (existing != null)
+            {
+                item.IsActive = existing.IsActive;
+                item.DomainStrategy = existing.DomainStrategy;
+                item.DomainStrategy4Singbox = existing.DomainStrategy4Singbox;
+                item.CustomIcon = existing.CustomIcon;
+                item.CustomRulesetPath4Singbox = existing.CustomRulesetPath4Singbox;
+                items.Remove(existing);
+            }
+            await SQLiteHelper.Instance.ReplaceAsync(item);
+            items.Add(item);
+        }
+        if (config.RoutingBasicItem.RbRoutingVersion != RoutingPresets.Version)
+        {
+            config.RoutingBasicItem.RbRoutingVersion = RoutingPresets.Version;
+            await SaveConfig(config);
         }
 
-        var maxSort = items.Count;
-        //Bypass the mainland
-        var item2 = new RoutingItem()
+        //migrate
+        //TODO Temporary code to be removed later
+        if (config.RoutingBasicItem.RoutingIndexId.IsNotEmpty())
         {
-            Remarks = $"{ver}绕过大陆(Whitelist)",
-            Url = string.Empty,
-            Sort = maxSort + 1,
-        };
-        await AddBatchRoutingRules(item2, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "white"));
+            var item = items.FirstOrDefault(t => t.Id == config.RoutingBasicItem.RoutingIndexId);
+            if (item != null)
+            {
+                await SetDefaultRouting(config, item);
+            }
+            config.RoutingBasicItem.RoutingIndexId = string.Empty;
+        }
 
-        //Blacklist
-        var item3 = new RoutingItem()
+        if (removedActive || !items.Any(t => t.IsActive))
         {
-            Remarks = $"{ver}黑名单(Blacklist)",
-            Url = string.Empty,
-            Sort = maxSort + 2,
-        };
-        await AddBatchRoutingRules(item3, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "black"));
-
-        //Global
-        var item1 = new RoutingItem()
-        {
-            Remarks = $"{ver}全局(Global)",
-            Url = string.Empty,
-            Sort = maxSort + 3,
-        };
-        await AddBatchRoutingRules(item1, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "global"));
-
-        if (!blImportAdvancedRules)
-        {
-            await SetDefaultRouting(config, item2);
+            var defaultItem = items.FirstOrDefault(t => t.Id == RoutingPresets.DefaultId);
+            if (defaultItem != null)
+            {
+                await SetDefaultRouting(config, defaultItem);
+            }
         }
         return 0;
     }

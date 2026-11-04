@@ -1342,7 +1342,7 @@
     <value>Иран</value>
   </data>
   <data name="TbSettingsChinaUserTip" xml:space="preserve">
-    <value>Пользователи из Китая могут пропустить этот пункт</value>
+    <value>Обычно можно оставить без изменений</value>
   </data>
   <data name="menuAddServerViaImage" xml:space="preserve">
     <value>Сканировать QR-код с изображения</value>
@@ -1468,7 +1468,7 @@
     <value>Проверять IP-адреса региональных доменов</value>
   </data>
   <data name="TbValidateDirectExpectedIPsDesc" xml:space="preserve">
-    <value>При включении проверяет IP-адреса, возвращаемые для региональных доменов (например, geosite:cn - geoip:cn), и оставляет только ожидаемые IP-адреса</value>
+    <value>При включении проверяет IP-адреса, возвращаемые для региональных доменов (например, geosite:category-ru - geoip:ru), и оставляет только ожидаемые IP-адреса</value>
   </data>
   <data name="TbCustomDNSEnable" xml:space="preserve">
     <value>Включить пользовательский DNS</value>
@@ -1925,5 +1925,242 @@
   </data>
   <data name="RbSubscriptions" xml:space="preserve">
     <value>Подписки</value>
+  </data>
+  <data name="menuColumns" xml:space="preserve">
+    <value>Столбцы</value>
+  </data>
+  <data name="TbWarp" xml:space="preserve">
+    <value>Warp</value>
+  </data>
+  <data name="LvPreResolve" xml:space="preserve">
+    <value>Заранее разрешать домены серверов</value>
+  </data>
+  <data name="RbConnecting" xml:space="preserve">
+    <value>Подключение…</value>
+  </data>
+  <data name="RbRoutingChip" xml:space="preserve">
+    <value>Маршрутизация: {0}</value>
+  </data>
+  <data name="RbModeProxy" xml:space="preserve">
+    <value>Системный прокси</value>
+  </data>
+  <data name="RbModeTun" xml:space="preserve">
+    <value>TUN</value>
+  </data>
+  <data name="RbSortByPing" xml:space="preserve">
+    <value>Сортировать по пингу</value>
+  </data>
+  <data name="RbSortByName" xml:space="preserve">
+    <value>Сортировать по имени</value>
+  </data>
+  <data name="RbSortDefault" xml:space="preserve">
+    <value>Как в подписке</value>
+  </data>
+  <data name="RbSelectFastest" xml:space="preserve">
+    <value>Выбрать самый быстрый</value>
+  </data>
+  <data name="RbPingAll" xml:space="preserve">
+    <value>Пинговать все</value>
+  </data>
+  <data name="RbPing" xml:space="preserve">
+    <value>Пинг</value>
+  </data>
+  <data name="RbRefresh" xml:space="preserve">
+    <value>Обновить подписку</value>
+  </data>
+  <data name="RbRefreshAll" xml:space="preserve">
+    <value>Обновить все подписки</value>
+  </data>
+  <data name="RbMore" xml:space="preserve">
+    <value>Ещё</value>
+  </data>
+  <data name="RbSelect" xml:space="preserve">
+    <value>Выбрать</value>
+  </data>
+  <data name="RbEdit" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
+  <data name="RbShareQr" xml:space="preserve">
+    <value>Поделиться (QR-код)</value>
+  </data>
+  <data name="RbCopyLink" xml:space="preserve">
+    <value>Копировать ссылку</value>
+  </data>
+  <data name="RbDelete" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="RbEditSubscription" xml:space="preserve">
+    <value>Изменить подписку</value>
+  </data>
+  <data name="RbDeleteSubscription" xml:space="preserve">
+    <value>Удалить подписку</value>
+  </data>
+  <data name="RbDeleteSubscriptionConfirm" xml:space="preserve">
+    <value>Удалить подписку «{0}» и все её серверы?</value>
+  </data>
+  <data name="RbDeleteServerConfirm" xml:space="preserve">
+    <value>Удалить сервер «{0}»?</value>
+  </data>
+  <data name="RbEmptyTitle" xml:space="preserve">
+    <value>Серверов пока нет</value>
+  </data>
+  <data name="RbEmptyHint" xml:space="preserve">
+    <value>Добавьте ссылку на подписку или импортируйте сервер из буфера обмена кнопкой +</value>
+  </data>
+  <data name="RbSupport" xml:space="preserve">
+    <value>Поддержка</value>
+  </data>
+  <data name="RbWebsite" xml:space="preserve">
+    <value>Сайт</value>
+  </data>
+  <data name="RbManualServers" xml:space="preserve">
+    <value>Список серверов</value>
+  </data>
+  <data name="RbExpires" xml:space="preserve">
+    <value>Истекает: {0}</value>
+  </data>
+  <data name="RbExpiresIn" xml:space="preserve">
+    <value>Ваша подписка истекает через {0}</value>
+  </data>
+  <data name="RbExpiresToday" xml:space="preserve">
+    <value>Ваша подписка истекает сегодня</value>
+  </data>
+  <data name="RbExpired" xml:space="preserve">
+    <value>Срок подписки истёк</value>
+  </data>
+  <data name="RbDaysOne" xml:space="preserve">
+    <value>{0} день</value>
+  </data>
+  <data name="RbDaysFew" xml:space="preserve">
+    <value>{0} дня</value>
+  </data>
+  <data name="RbDaysMany" xml:space="preserve">
+    <value>{0} дней</value>
+  </data>
+  <data name="RbRenew" xml:space="preserve">
+    <value>Продлить</value>
+  </data>
+  <data name="RbTimeout" xml:space="preserve">
+    <value>Таймаут</value>
+  </data>
+  <data name="RbNotAvailable" xml:space="preserve">
+    <value>н/д</value>
+  </data>
+  <data name="RbMs" xml:space="preserve">
+    <value>{0} мс</value>
+  </data>
+  <data name="RbSettings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="RbAdd" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="RbCollapse" xml:space="preserve">
+    <value>Свернуть</value>
+  </data>
+  <data name="RbExpand" xml:space="preserve">
+    <value>Развернуть</value>
+  </data>
+  <data name="RbRoutingProfiles" xml:space="preserve">
+    <value>Профиль маршрутизации</value>
+  </data>
+  <data name="RbRoutingGlobal" xml:space="preserve">
+    <value>Глобальный</value>
+  </data>
+  <data name="RbRoutingRussia" xml:space="preserve">
+    <value>Россия</value>
+  </data>
+  <data name="RbRoutingBlockAds" xml:space="preserve">
+    <value>Только блокировка рекламы</value>
+  </data>
+  <data name="RbRoutingDirect" xml:space="preserve">
+    <value>Напрямую</value>
+  </data>
+  <data name="RbRoutingGlobalDesc" xml:space="preserve">
+    <value>Весь трафик через прокси (локальная сеть напрямую)</value>
+  </data>
+  <data name="RbRoutingRussiaDesc" xml:space="preserve">
+    <value>Российские сайты и IP напрямую, реклама блокируется</value>
+  </data>
+  <data name="RbRoutingBlockAdsDesc" xml:space="preserve">
+    <value>Весь трафик через прокси, реклама блокируется</value>
+  </data>
+  <data name="RbRoutingDirectDesc" xml:space="preserve">
+    <value>Без прокси: весь трафик напрямую (для проверки)</value>
+  </data>
+  <data name="RbAutoUpdateHours" xml:space="preserve">
+    <value>авто {0} ч</value>
+  </data>
+  <data name="RbAutoUpdateMinutes" xml:space="preserve">
+    <value>авто {0} мин</value>
+  </data>
+  <data name="RbPingSettings" xml:space="preserve">
+    <value>Пинг</value>
+  </data>
+  <data name="RbPingMethod" xml:space="preserve">
+    <value>Метод пинга</value>
+  </data>
+  <data name="RbPingMethodGet" xml:space="preserve">
+    <value>Через прокси (GET)</value>
+  </data>
+  <data name="RbPingMethodHead" xml:space="preserve">
+    <value>Через прокси (HEAD)</value>
+  </data>
+  <data name="RbPingMethodTcp" xml:space="preserve">
+    <value>TCP</value>
+  </data>
+  <data name="RbPingOnLaunch" xml:space="preserve">
+    <value>Пинговать серверы при запуске</value>
+  </data>
+  <data name="RbPingTestUrl" xml:space="preserve">
+    <value>URL для проверки пинга</value>
+  </data>
+  <data name="RbPingDisplay" xml:space="preserve">
+    <value>Отображение пинга</value>
+  </data>
+  <data name="RbPingDisplayTime" xml:space="preserve">
+    <value>Время (мс)</value>
+  </data>
+  <data name="RbPingDisplayIcon" xml:space="preserve">
+    <value>Значок статуса</value>
+  </data>
+  <data name="RbAdvancedServers" xml:space="preserve">
+    <value>Список серверов (расширенный)</value>
+  </data>
+  <data name="RbRoutingSettingsMore" xml:space="preserve">
+    <value>Настройки маршрутизации…</value>
+  </data>
+  <data name="RbAddSubscription" xml:space="preserve">
+    <value>Добавить подписку</value>
+  </data>
+  <data name="RbImportGroup" xml:space="preserve">
+    <value>Импорт</value>
+  </data>
+  <data name="RbAddManually" xml:space="preserve">
+    <value>Добавить вручную</value>
+  </data>
+  <data name="RbAddFromClipboard" xml:space="preserve">
+    <value>Импорт из буфера обмена</value>
+  </data>
+  <data name="RbScanQr" xml:space="preserve">
+    <value>Сканировать QR-код с экрана</value>
+  </data>
+  <data name="RbQrFromImage" xml:space="preserve">
+    <value>Импорт QR-кода из изображения</value>
+  </data>
+  <data name="RbServerActions" xml:space="preserve">
+    <value>Действия с сервером</value>
+  </data>
+  <data name="RbAdvanced" xml:space="preserve">
+    <value>Дополнительно</value>
+  </data>
+  <data name="RbAppearance" xml:space="preserve">
+    <value>Оформление</value>
+  </data>
+  <data name="RbExit" xml:space="preserve">
+    <value>Выйти из RockBlack</value>
+  </data>
+  <data name="RbRoutingFromSubscription" xml:space="preserve">
+    <value>Из вашей подписки</value>
   </data>
 </root>

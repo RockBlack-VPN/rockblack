@@ -549,7 +549,7 @@
                     <Grid
                         Margin="{StaticResource Margin4}"
                         ColumnDefinitions="Auto,Auto,*"
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
 
                         <TextBlock
                             x:Name="tbAutoRun"
@@ -927,6 +927,46 @@
                             VerticalAlignment="Center"
                             Text="{x:Static resx:ResUI.TbSettingsChinaUserTip}"
                             TextWrapping="Wrap" />
+
+                        <!--  RockBlack UI 3.0: ping (main screen speedometer, ping on launch)  -->
+                        <TextBlock
+                            Grid.Row="28"
+                            Grid.Column="0"
+                            Margin="{StaticResource Margin4}"
+                            VerticalAlignment="Center"
+                            Text="{x:Static resx:ResUI.RbPingMethod}" />
+                        <ComboBox
+                            x:Name="cmbPingMethod"
+                            Grid.Row="28"
+                            Grid.Column="1"
+                            Width="200"
+                            Margin="{StaticResource Margin4}" />
+
+                        <TextBlock
+                            Grid.Row="29"
+                            Grid.Column="0"
+                            Margin="{StaticResource Margin4}"
+                            VerticalAlignment="Center"
+                            Text="{x:Static resx:ResUI.RbPingDisplay}" />
+                        <ComboBox
+                            x:Name="cmbPingDisplay"
+                            Grid.Row="29"
+                            Grid.Column="1"
+                            Width="200"
+                            Margin="{StaticResource Margin4}" />
+
+                        <TextBlock
+                            Grid.Row="30"
+                            Grid.Column="0"
+                            Margin="{StaticResource Margin4}"
+                            VerticalAlignment="Center"
+                            Text="{x:Static resx:ResUI.RbPingOnLaunch}" />
+                        <ToggleSwitch
+                            x:Name="togPingOnLaunch"
+                            Grid.Row="30"
+                            Grid.Column="1"
+                            Margin="{StaticResource Margin4}"
+                            HorizontalAlignment="Left" />
                     </Grid>
                 </ScrollViewer>
             </TabItem>

@@ -165,7 +165,8 @@ public partial class ProfilesView
             txtContent = { Text = url },
         };
 
-        await DialogHost.Show(dialog, "RootDialog");
+        //RockBlack UI 3.0: the full server table lives in the tools window, which has its own dialog host
+        await DialogHost.Show(dialog, Window.GetWindow(this) is ToolsWindow ? "ToolsDialog" : "RootDialog");
     }
 
     public void RefreshServersBiz()

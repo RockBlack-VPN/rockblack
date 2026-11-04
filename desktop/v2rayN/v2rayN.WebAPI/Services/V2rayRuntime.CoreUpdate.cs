@@ -1228,7 +1228,8 @@ public sealed partial class V2rayRuntime
         // Match ServiceLib.UpdateService.GetSrsFileAllRequest exactly: configured rule sets,
         // plus its default geosite downloads. Do not treat every .srs or geo*-named file in
         // the Core directory as owned by this transaction.
-        geositeRules.AddRange(["google", "cn", "geolocation-cn", "category-ads-all"]);
+        geositeRules.AddRange(["google", "category-ru", "category-ads-all", "private"]);
+        geoipRules.AddRange(["ru", "private"]);
         var srsDirectory = Path.GetFullPath(Utils.GetBinPath("srss"));
         foreach (var (type, names) in new[] { ("geoip", geoipRules), ("geosite", geositeRules) })
         {

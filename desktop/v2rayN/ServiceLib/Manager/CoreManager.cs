@@ -144,6 +144,9 @@ public class CoreManager
         return await RunProcess(coreInfo, fileName, true, false);
     }
 
+    /// <summary>True while the main core process is running.</summary>
+    public bool IsCoreRunning => _linuxSudo || _processService is { HasExited: false };
+
     public async Task CoreStop()
     {
         try

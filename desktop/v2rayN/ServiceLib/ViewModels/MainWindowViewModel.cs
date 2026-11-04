@@ -17,6 +17,9 @@ public partial class MainWindowViewModel : MyReactiveObject
     public BackupAndRestoreViewModel BackupAndRestoreViewModel { get; } = new();
     public StatusBarViewModel StatusBarViewModel { get; } = StatusBarViewModel.Instance;
 
+    /// <summary>RockBlack UI 3.0 main screen (power button, routing / mode chips, subscription cards).</summary>
+    public HomeViewModel HomeViewModel { get; }
+
     #region Menu
 
     //servers
@@ -92,6 +95,17 @@ public partial class MainWindowViewModel : MyReactiveObject
     {
         _config = AppManager.Instance.Config;
         BlIsWindows = Utils.IsWindows();
+
+        HomeViewModel = new HomeViewModel
+        {
+            ReloadFunc = Reload,
+            RefreshAllFunc = async () =>
+            {
+                await RefreshSubscriptions();
+                await RefreshServersDispatcherAsync();
+            },
+            UpdateSubscriptionFunc = UpdateSubscriptionProcess,
+        };
         MainGirdOrientation = _config.UiItem.MainGirdOrientation;
 
         #region WhenAnyValue && ReactiveCommand
@@ -269,6 +283,19 @@ public partial class MainWindowViewModel : MyReactiveObject
             .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(bl => BlNewUpdate = bl);
 
+        // Happ routing profile imported / removed by a subscription.
+        AppEvents.RoutingProfilesChanged
+            .AsObservable()
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .SubscribeAsync(async activeChanged =>
+            {
+                await StatusBarViewModel.RefreshRoutingsMenu();
+                if (activeChanged)
+                {
+                    await Reload();
+                }
+            });
+
         #endregion AppEvents
 
         ProfilesViewModel.RefreshServersRequested
@@ -345,6 +372,8 @@ public partial class MainWindowViewModel : MyReactiveObject
         await RefreshServersDispatcherAsync();
 
         await Reload();
+
+        _ = HomeViewModel.OnStartedAsync();
     }
 
     #endregion Init
@@ -411,6 +440,7 @@ public partial class MainWindowViewModel : MyReactiveObject
     {
         await ProfilesViewModel.RefreshServersBiz();
         await StatusBarViewModel.RefreshServersBiz();
+        await HomeViewModel.RefreshAsync();
 
         // await Task.Delay(200);
     }
@@ -592,6 +622,7 @@ public partial class MainWindowViewModel : MyReactiveObject
         if (ret == true)
         {
             MainGirdOrientation = _config.UiItem.MainGirdOrientation;
+            HomeViewModel.ReloadSettings();
             RxSchedulers.MainThreadScheduler.Schedule(async () =>
             {
                 await StatusBarViewModel.InboundDisplayStatus();
@@ -684,6 +715,19 @@ public partial class MainWindowViewModel : MyReactiveObject
         try
         {
             SetReloadEnabled(false);
+            HomeViewModel.SetReloading(true);
+
+            // RockBlack: the power button switched the tunnel off -> keep the core stopped.
+            if (_config.UiItem.RbConnected != true)
+            {
+                await Task.Run(async () =>
+                {
+                    await CoreManager.Instance.CoreStop();
+                    await SysProxyHandler.UpdateSysProxy(_config, false);
+                });
+                ReloadResult(false);
+                return;
+            }
 
             RxSchedulers.MainThreadScheduler.Schedule(() =>
             {
@@ -724,6 +768,10 @@ public partial class MainWindowViewModel : MyReactiveObject
                     IpInfo = result.Ip,
                     Delay = result.Time > 0 ? result.Time.ToString() : null
                 });
+                if (result.Time > 0)
+                {
+                    HomeViewModel.SetDelayResult(profileItem.IndexId, result.Time.ToString());
+                }
             });
 
             var showClashUI = AppManager.Instance.IsRunningCore(ECoreType.sing_box);
@@ -746,6 +794,7 @@ public partial class MainWindowViewModel : MyReactiveObject
         finally
         {
             SetReloadEnabled(true);
+            HomeViewModel.SetReloading(false);
             _reloadSemaphore.Release();
             //If there is a next reload job, execute it.
             if (_hasNextReloadJob)

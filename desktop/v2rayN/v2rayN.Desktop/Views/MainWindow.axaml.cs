@@ -1,3 +1,4 @@
+using Avalonia.VisualTree;
 using Avalonia.Controls.Notifications;
 using DialogHostAvalonia;
 using v2rayN.Desktop.Base;
@@ -6,14 +7,21 @@ using v2rayN.Desktop.Manager;
 
 namespace v2rayN.Desktop.Views;
 
+/// <summary>
+/// RockBlack UI 3.0 main window: top bar (settings menu, brand, add menu), the Happ-style
+/// <see cref="HomeView"/> and a collapsible logs panel. Every upstream window stays reachable
+/// from the settings menu.
+/// </summary>
 public partial class MainWindow : WindowBase<MainWindowViewModel>
 {
     private static Config _config;
-    private readonly SingleReplaceableDisposable _layoutBindingsDisposable = new();
     private readonly WindowNotificationManager? _manager;
     private CheckUpdateView? _checkUpdateView;
     private BackupAndRestoreView? _backupAndRestoreView;
+    private ThemeSettingView? _themeSettingView;
+    private Window? _advancedServersWindow;
     private bool _blCloseByUser = false;
+    private GridLength _logsHeight = new(260);
 
     public MainWindow()
     {
@@ -24,14 +32,26 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
 
         KeyDown += MainWindow_KeyDown;
         menuSettingsSetUWP.Click += MenuSettingsSetUWP_Click;
-        menuPromotion.Click += MenuPromotion_Click;
         menuCheckUpdate.Click += MenuCheckUpdate_Click;
         btnNewUpdate.Click += MenuCheckUpdate_Click;
         menuBackupAndRestore.Click += MenuBackupAndRestore_Click;
         menuClose.Click += MenuClose_Click;
-        navLogs.IsCheckedChanged += (_, _) => SetLogsPanelVisible(navLogs.IsChecked == true);
+        menuTheme.Click += MenuTheme_Click;
+        menuAdvancedServers.Click += MenuAdvancedServers_Click;
+        menuLogs.Click += (_, _) => SetLogsPanelVisible(!cardLogs.IsVisible);
+        homeView.RoutingSettingsRequested += (_, _) => ExecuteCommand(ViewModel?.RoutingSettingCmd);
 
-        conTheme.Content ??= new ThemeSettingView();
+        DataContextChanged += (_, _) =>
+        {
+            if (DataContext is MainWindowViewModel vm && homeView.DataContext != vm.HomeViewModel)
+            {
+                homeView.ViewModel = vm.HomeViewModel;
+                homeView.DataContext = vm.HomeViewModel;
+            }
+        };
+
+        // Creating the theme view applies the saved theme, font and font size at startup.
+        _themeSettingView = new ThemeSettingView();
 
         this.WhenActivated(disposables =>
         {
@@ -60,13 +80,13 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
             this.BindCommand(ViewModel, vm => vm.SubSettingCmd, v => v.menuSubSetting).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.SubUpdateCmd, v => v.menuSubUpdate).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.SubUpdateViaProxyCmd, v => v.menuSubUpdateViaProxy).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.SubGroupUpdateCmd, v => v.menuSubGroupUpdate).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.SubGroupUpdateViaProxyCmd, v => v.menuSubGroupUpdateViaProxy).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.HomeViewModel.AddSubscriptionCmd, v => v.menuAddSubscription).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.HomeViewModel.RefreshAllCmd, v => v.menuRefreshAll).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.HomeViewModel.PingAllCmd, v => v.menuPingAll).DisposeWith(disposables);
 
             //setting
             this.BindCommand(ViewModel, vm => vm.OptionSettingCmd, v => v.menuOptionSetting).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.RoutingSettingCmd, v => v.menuRoutingSetting).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.RoutingSettingCmd, v => v.navRouting).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.DNSSettingCmd, v => v.menuDNSSetting).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.FullConfigTemplateCmd, v => v.menuFullConfigTemplate).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.GlobalHotkeySettingCmd, v => v.menuGlobalHotkeySetting).DisposeWith(disposables);
@@ -83,12 +103,12 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
 
             this.OneWayBind(ViewModel, vm => vm.StatusBarViewModel, v => v.contentStatusBarView.Content).DisposeWith(disposables);
 
-            _layoutBindingsDisposable.DisposeWith(disposables);
-
-            this.WhenAnyValue(v => v.ViewModel.MainGirdOrientation)
-                .ObserveOn(RxSchedulers.MainThreadScheduler)
-                .Subscribe(UpdateLayout)
-                .DisposeWith(disposables);
+            this.OneWayBind(ViewModel, vm => vm.MsgViewModel, v => v.tabMsgView.Content).DisposeWith(disposables);
+            this.OneWayBind(ViewModel, vm => vm.ClashProxiesViewModel, v => v.tabClashProxies.Content).DisposeWith(disposables);
+            this.OneWayBind(ViewModel, vm => vm.ClashConnectionsViewModel, v => v.tabClashConnections.Content).DisposeWith(disposables);
+            this.OneWayBind(ViewModel, vm => vm.ShowClashUI, v => v.tabClashProxies.IsVisible).DisposeWith(disposables);
+            this.OneWayBind(ViewModel, vm => vm.ShowClashUI, v => v.tabClashConnections.IsVisible).DisposeWith(disposables);
+            this.Bind(ViewModel, vm => vm.TabMainSelectedIndex, v => v.tabMain.SelectedIndex).DisposeWith(disposables);
 
             ViewModel.ReadTextFromClipboardInteraction.RegisterHandler(async interaction =>
             {
@@ -240,11 +260,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         }
     }
 
-    private void MenuPromotion_Click(object? sender, RoutedEventArgs e)
-    {
-        ProcUtils.ProcessStart(Global.PromotionUrl);
-    }
-
     private void MenuSettingsSetUWP_Click(object? sender, RoutedEventArgs e)
     {
         ProcUtils.ProcessStart(Utils.GetBinPath("EnableLoopback.exe"));
@@ -290,6 +305,40 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         DialogHost.Show(_backupAndRestoreView);
     }
 
+    private void MenuTheme_Click(object? sender, RoutedEventArgs e)
+    {
+        _themeSettingView ??= new ThemeSettingView();
+        DialogHost.Show(new Border { Padding = new Thickness(16), MinWidth = 340, Child = _themeSettingView });
+    }
+
+    /// <summary>The upstream server table (filters, multi-select, export, …) in its own window.</summary>
+    private void MenuAdvancedServers_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_advancedServersWindow != null)
+        {
+            _advancedServersWindow.Activate();
+            return;
+        }
+        var view = new ProfilesView { ViewModel = ViewModel?.ProfilesViewModel };
+        _advancedServersWindow = new Window
+        {
+            Title = $"{Global.AppName} - {ResUI.RbAdvancedServers}",
+            Width = 1100,
+            Height = 680,
+            MinWidth = 700,
+            MinHeight = 400,
+            Icon = Icon,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Content = new Border { Padding = new Thickness(12), Child = view },
+        };
+        _advancedServersWindow.Closed += (_, _) =>
+        {
+            _advancedServersWindow = null;
+            _ = ViewModel?.HomeViewModel.RefreshAsync();
+        };
+        _advancedServersWindow.Show(this);
+    }
+
     private async void MenuClose_Click(object? sender, RoutedEventArgs e)
     {
         try
@@ -321,6 +370,14 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         {
             HotkeyManager.Instance.Dispose();
             desktop.Shutdown();
+        }
+    }
+
+    private static void ExecuteCommand(System.Windows.Input.ICommand? command)
+    {
+        if (command?.CanExecute(null) == true)
+        {
+            command.Execute(null);
         }
     }
 
@@ -369,104 +426,62 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         {
             ShowHideWindow(false);
         }
-        RestoreUI();
+#if DEBUG
+        OpenSmokeFlyout(Environment.GetEnvironmentVariable("RB_SMOKE_OPEN"));
+#endif
     }
 
-    private void RestoreUI()
+#if DEBUG
+
+    /// <summary>Debug builds only: opens a menu / sheet after start-up for automated UI screenshots.</summary>
+    private void OpenSmokeFlyout(string? what)
     {
-        if (_config.UiItem.MainGirdHeight1 > 0 && _config.UiItem.MainGirdHeight2 > 0)
+        if (what.IsNullOrEmpty())
         {
-            if (_config.UiItem.MainGirdOrientation == EGirdOrientation.Horizontal)
-            {
-                gridMain.ColumnDefinitions[0].Width = new GridLength(_config.UiItem.MainGirdHeight1, GridUnitType.Star);
-                gridMain.ColumnDefinitions[2].Width = new GridLength(_config.UiItem.MainGirdHeight2, GridUnitType.Star);
-            }
-            else if (_config.UiItem.MainGirdOrientation == EGirdOrientation.Vertical)
-            {
-                gridMain1.RowDefinitions[0].Height = new GridLength(_config.UiItem.MainGirdHeight1, GridUnitType.Star);
-                gridMain1.RowDefinitions[2].Height = new GridLength(_config.UiItem.MainGirdHeight2, GridUnitType.Star);
-            }
+            return;
         }
+        DispatcherTimer.RunOnce(() =>
+        {
+            Control? Find(string tip) => homeView.GetVisualDescendants().OfType<Button>()
+                .FirstOrDefault(b => Equals(ToolTip.GetTip(b), tip) && b.IsEffectivelyVisible);
+            Button? target = what switch
+            {
+                "settings" => btnSettings,
+                "add" => btnAdd,
+                "routing" => homeView.FindControl<Button>("btnRouting"),
+                "more" => Find(ResUI.RbMore) as Button,
+                "row" => Find(ResUI.RbServerActions) as Button,
+                _ => null,
+            };
+            if (what == "logs")
+            {
+                SetLogsPanelVisible(true);
+                return;
+            }
+            target?.Flyout?.ShowAt(target);
+        }, TimeSpan.FromSeconds(4));
     }
+
+#endif
 
     private void StorageUI()
     {
         ConfigHandler.SaveWindowSizeItem(_config, GetType().Name, Width, Height);
-
-        if (_config.UiItem.MainGirdOrientation == EGirdOrientation.Horizontal)
-        {
-            ConfigHandler.SaveMainGirdHeight(_config, gridMain.ColumnDefinitions[0].ActualWidth, gridMain.ColumnDefinitions[2].ActualWidth);
-        }
-        else if (_config.UiItem.MainGirdOrientation == EGirdOrientation.Vertical)
-        {
-            ConfigHandler.SaveMainGirdHeight(_config, gridMain1.RowDefinitions[0].ActualHeight, gridMain1.RowDefinitions[2].ActualHeight);
-        }
     }
 
-    private void UpdateLayout(EGirdOrientation orientation)
+    /// <summary>Collapsible logs panel (log / Clash tabs) below the main screen.</summary>
+    private void SetLogsPanelVisible(bool visible)
     {
-        var currentLayoutDisposables = new MultipleDisposable();
-        _layoutBindingsDisposable.Create(currentLayoutDisposables);
-
-        ClearLayoutContent();
-
-        gridMain.IsVisible = orientation == EGirdOrientation.Horizontal;
-        gridMain1.IsVisible = orientation == EGirdOrientation.Vertical;
-        gridMain2.IsVisible = orientation == EGirdOrientation.Tab;
-
-        switch (orientation)
+        var row = gridRoot.RowDefinitions[3];
+        if (!visible && row.Height.Value > 0)
         {
-            case EGirdOrientation.Horizontal:
-                this.OneWayBind(ViewModel, vm => vm.ProfilesViewModel, v => v.tabProfiles.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.MsgViewModel, v => v.tabMsgView.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ClashProxiesViewModel, v => v.tabClashProxies.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ClashConnectionsViewModel, v => v.tabClashConnections.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ShowClashUI, v => v.tabClashProxies.IsVisible).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ShowClashUI, v => v.tabClashConnections.IsVisible).DisposeWith(currentLayoutDisposables);
-                this.Bind(ViewModel, vm => vm.TabMainSelectedIndex, v => v.tabMain.SelectedIndex).DisposeWith(currentLayoutDisposables);
-                break;
-
-            case EGirdOrientation.Vertical:
-                this.OneWayBind(ViewModel, vm => vm.ProfilesViewModel, v => v.tabProfiles1.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.MsgViewModel, v => v.tabMsgView1.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ClashProxiesViewModel, v => v.tabClashProxies1.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ClashConnectionsViewModel, v => v.tabClashConnections1.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ShowClashUI, v => v.tabClashProxies1.IsVisible).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ShowClashUI, v => v.tabClashConnections1.IsVisible).DisposeWith(currentLayoutDisposables);
-                this.Bind(ViewModel, vm => vm.TabMainSelectedIndex, v => v.tabMain1.SelectedIndex).DisposeWith(currentLayoutDisposables);
-                break;
-
-            case EGirdOrientation.Tab:
-            default:
-                this.OneWayBind(ViewModel, vm => vm.ProfilesViewModel, v => v.tabProfiles2.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.MsgViewModel, v => v.tabMsgView2.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ClashProxiesViewModel, v => v.tabClashProxies2.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ClashConnectionsViewModel, v => v.tabClashConnections2.Content).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ShowClashUI, v => v.tabClashProxies2.IsVisible).DisposeWith(currentLayoutDisposables);
-                this.OneWayBind(ViewModel, vm => vm.ShowClashUI, v => v.tabClashConnections2.IsVisible).DisposeWith(currentLayoutDisposables);
-                this.Bind(ViewModel, vm => vm.TabMainSelectedIndex, v => v.tabMain2.SelectedIndex).DisposeWith(currentLayoutDisposables);
-                break;
+            _logsHeight = row.Height;
         }
+        row.Height = visible ? _logsHeight : GridLength.Auto;
+        cardLogs.IsVisible = visible;
+        splitLogs.IsVisible = visible;
+        menuLogs.IsChecked = visible;
 
-        RestoreUI();
-    }
-
-    private void ClearLayoutContent()
-    {
-        tabProfiles.Content = null;
-        tabMsgView.Content = null;
-        tabClashProxies.Content = null;
-        tabClashConnections.Content = null;
-
-        tabProfiles1.Content = null;
-        tabMsgView1.Content = null;
-        tabClashProxies1.Content = null;
-        tabClashConnections1.Content = null;
-
-        tabProfiles2.Content = null;
-        tabMsgView2.Content = null;
-        tabClashProxies2.Content = null;
-        tabClashConnections2.Content = null;
     }
 
     private void AddHelpMenuItem()
@@ -496,41 +511,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
             };
             item.Click += MenuItem_Click;
             menuHelp.Items.Add(item);
-        }
-    }
-
-    private MenuFlyout menuHelp => (MenuFlyout)navHelp.Flyout!;
-
-    private GridLength _logsLength = new(1, GridUnitType.Star);
-
-    /// <summary>Collapsible logs panel (view only): hides the log/Clash tabs of the current layout.</summary>
-    private void SetLogsPanelVisible(bool visible)
-    {
-        switch (_config.UiItem.MainGirdOrientation)
-        {
-            case EGirdOrientation.Horizontal:
-                if (!visible && gridMain.ColumnDefinitions[2].Width.Value > 0)
-                {
-                    _logsLength = gridMain.ColumnDefinitions[2].Width;
-                }
-                gridMain.ColumnDefinitions[2].Width = visible ? _logsLength : new GridLength(0);
-                cardLogs.IsVisible = visible;
-                splitMain.IsVisible = visible;
-                break;
-
-            case EGirdOrientation.Vertical:
-                if (!visible && gridMain1.RowDefinitions[2].Height.Value > 0)
-                {
-                    _logsLength = gridMain1.RowDefinitions[2].Height;
-                }
-                gridMain1.RowDefinitions[2].Height = visible ? _logsLength : new GridLength(0);
-                cardLogs1.IsVisible = visible;
-                splitMain1.IsVisible = visible;
-                break;
-
-            default:
-                tabMain2.SelectedIndex = visible ? 1 : 0;
-                break;
         }
     }
 

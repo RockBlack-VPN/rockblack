@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -15,14 +15,7 @@
 			<LastGenOutput>Resource.Designer.cs</LastGenOutput>
 			<Generator>ResXFileCodeGenerator</Generator>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Resx\ResUI.zh-Hans.resx">
-			<SubType>Designer</SubType>
-			<Generator>ResXFileCodeGenerator</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Update="Resx\ResUI.zh-Hant.resx">
-			<SubType>Designer</SubType>
-			<Generator>ResXFileCodeGenerator</Generator>
-		</EmbeddedResource>
+
 	</ItemGroup>
 
 	<Target Name="RemoveAotSatelliteOutputs" AfterTargets="ComputeFilesToPublish" Condition="'$(PublishAot)' == 'true'">

@@ -17,6 +17,8 @@
         <PackageLicenseExpression>GPL-3.0</PackageLicenseExpression>
         <Copyright>Copyright © 2017-$([System.DateTime]::UtcNow.Year) 2dust (v2rayN); RockBlack modifications</Copyright>
         <InvariantGlobalization>false</InvariantGlobalization>
+        <!-- RockBlack: English, Russian and German only; drop other-language satellites of NuGet packages. -->
+        <SatelliteResourceLanguages>en;ru;de</SatelliteResourceLanguages>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">

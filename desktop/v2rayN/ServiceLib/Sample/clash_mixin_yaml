@@ -1,28 +1,27 @@
 #
-# 配置文件内容不会被修改，混合行为只会发生在内存中
+# The configuration file itself is not modified; mixing happens in memory only.
 #
-# 注意下面缩进，请用支持yaml显示的编辑器打开
+# Mind the indentation below; open this file in an editor with YAML support.
 #
-# 使用clash配置文件关键字则覆盖原配置
+# Top-level Clash configuration keys used here override the original configuration.
 #
-# removed-rules    循环匹配rules数组每行,符合则移除当前行 (此规则请放最前面)
+# removed-rules    each entry is matched against every line of the rules array; matching lines are removed (put this key first)
 #
-# append-rules    数组合并至原配置rules数组后
-# prepend-rules   数组合并至原配置rules数组前
-# append-proxies      数组合并至原配置proxies数组后
-# prepend-proxies     数组合并至原配置proxies数组前
-# append-proxy-groups     数组合并至原配置proxy-groups数组后
-# prepend-proxy-groups    数组合并至原配置proxy-groups数组前
-# append-rule-providers     数组合并至原配置rule-providers数组后
-# prepend-rule-providers    数组合并至原配置rule-providers数组前
+# append-rules    array appended after the original rules array
+# prepend-rules   array inserted before the original rules array
+# append-proxies      array appended after the original proxies array
+# prepend-proxies     array inserted before the original proxies array
+# append-proxy-groups     array appended after the original proxy-groups array
+# prepend-proxy-groups    array inserted before the original proxy-groups array
+# append-rule-providers     array appended after the original rule-providers array
+# prepend-rule-providers    array inserted before the original rule-providers array
 #
 
 dns:
   enable: true
   enhanced-mode: fake-ip
   nameserver:
-    - 114.114.114.114
-    - 223.5.5.5
+    - 77.88.8.8
     - 8.8.8.8
   fallback: []
   fake-ip-filter:

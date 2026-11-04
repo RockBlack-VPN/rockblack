@@ -107,6 +107,10 @@ public partial class OptionSettingWindow
             this.Bind(ViewModel, vm => vm.SpeedTestTimeout, v => v.cmbSpeedTestTimeout.Text).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.SpeedTestUrl, v => v.cmbSpeedTestUrl.Text).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.SpeedPingTestUrl, v => v.cmbSpeedPingTestUrl.Text).DisposeWith(disposables);
+            //RockBlack UI 3.0 ping settings
+            this.Bind(ViewModel, vm => vm.PingMethod, v => v.cmbPingMethod.SelectedIndex).DisposeWith(disposables);
+            this.Bind(ViewModel, vm => vm.PingShowIcon, v => v.cmbPingDisplay.SelectedIndex, icon => icon ? 1 : 0, index => index == 1).DisposeWith(disposables);
+            this.Bind(ViewModel, vm => vm.PingOnLaunch, v => v.togPingOnLaunch.IsChecked).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.UdpTestTarget, v => v.cmbUdpTestTarget.Text).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.MixedConcurrencyCount, v => v.cmbMixedConcurrencyCount.Text).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.EnableHWA, v => v.togEnableHWA.IsChecked).DisposeWith(disposables);
@@ -166,7 +170,12 @@ public partial class OptionSettingWindow
             {
                 files.AddRange(Directory.GetFiles(path, pattern));
             }
-            var culture = _config.UiItem.CurrentLanguage == Global.Languages.First() ? "zh-cn" : "en-us";
+            var culture = _config.UiItem.CurrentLanguage switch
+            {
+                "ru" => "ru-ru",
+                "de" => "de-de",
+                _ => "en-us"
+            };
             var culture2 = "en-us";
             foreach (var ttf in files)
             {

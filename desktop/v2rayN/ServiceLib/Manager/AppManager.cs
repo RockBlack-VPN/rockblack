@@ -89,6 +89,7 @@ public sealed class AppManager
         SQLiteHelper.Instance.CreateTable<ProfileExItem>();
         SQLiteHelper.Instance.CreateTable<DNSItem>();
         SQLiteHelper.Instance.CreateTable<FullConfigTemplateItem>();
+        SQLiteHelper.Instance.CreateTable<SubInfoItem>();
 #pragma warning disable CS0618
         SQLiteHelper.Instance.CreateTable<ProfileGroupItem>();
 #pragma warning restore CS0618
@@ -180,6 +181,20 @@ public sealed class AppManager
     public async Task<SubItem?> GetSubItem(string? subid)
     {
         return await SQLiteHelper.Instance.TableAsync<SubItem>().FirstOrDefaultAsync(t => t.Id == subid);
+    }
+
+    public async Task<SubInfoItem?> GetSubInfoItem(string? subid)
+    {
+        if (subid.IsNullOrEmpty())
+        {
+            return null;
+        }
+        return await SQLiteHelper.Instance.TableAsync<SubInfoItem>().FirstOrDefaultAsync(t => t.Id == subid);
+    }
+
+    public async Task<List<SubInfoItem>> SubInfoItems()
+    {
+        return await SQLiteHelper.Instance.TableAsync<SubInfoItem>().ToListAsync();
     }
 
     public async Task<List<ProfileItem>?> ProfileItems(string subid)

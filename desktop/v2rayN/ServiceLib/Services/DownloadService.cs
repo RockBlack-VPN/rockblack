@@ -18,6 +18,23 @@ public class DownloadService
     private static readonly string _tag = "DownloadService";
 
     /// <summary>
+    /// Response headers of the last successful <see cref="TryDownloadString(string, bool, string, CancellationToken)"/>
+    /// served by HttpClient (used for subscription metadata such as <c>subscription-userinfo</c>).
+    /// Null when the fallback downloader was used or nothing has been downloaded yet.
+    /// </summary>
+    public IReadOnlyDictionary<string, string>? LastResponseHeaders { get; private set; }
+
+    private static Dictionary<string, string> CollectHeaders(HttpResponseMessage response)
+    {
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, values) in response.Headers.Concat(response.Content.Headers))
+        {
+            headers[key] = string.Join(", ", values);
+        }
+        return headers;
+    }
+
+    /// <summary>
     /// Downloads data with the specified proxy and reports progress messages.
     /// </summary>
     public async Task<int> DownloadDataAsync(string url, IWebProxy webProxy, Func<bool, string, Task> updateFunc, CancellationToken cancellationToken = default)
@@ -203,6 +220,7 @@ public class DownloadService
     /// </summary>
     public async Task<string?> TryDownloadString(string url, IWebProxy? webProxy, string userAgent, CancellationToken cancellationToken = default)
     {
+        LastResponseHeaders = null;
         try
         {
             var result1 = await DownloadStringAsync(url, webProxy, userAgent, cancellationToken);
@@ -295,7 +313,10 @@ public class DownloadService
             timeoutCts.CancelAfter(webProxy is null ? Global.DirectFetch : Global.ProxyFetch);
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
-            return await client.GetStringAsync(url, linkedCts.Token);
+            using var response = await client.GetAsync(url, linkedCts.Token);
+            response.EnsureSuccessStatusCode();
+            LastResponseHeaders = CollectHeaders(response);
+            return await response.Content.ReadAsStringAsync(linkedCts.Token);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

@@ -36,7 +36,8 @@ public partial class App
 
         if (!AppManager.Instance.InitApp())
         {
-            UI.Show($"Loading GUI configuration file is abnormal,please restart the application{Environment.NewLine}加载GUI配置文件异常,请重启应用");
+            //the configuration (and so the UI language) is not available here: English only
+            UI.Show("Loading the GUI configuration file failed, please restart the application.");
             Environment.Exit(0);
             return;
         }

@@ -118,9 +118,9 @@ public static class LauncherEnvironment
 
 public enum LauncherLocale
 {
-    SimplifiedChinese,
-    TraditionalChinese,
     English,
+    Russian,
+    German,
 }
 
 public static class LauncherMessages
@@ -130,17 +130,15 @@ public static class LauncherMessages
     public static LauncherLocale ResolveLocale(params string?[] localeValues)
     {
         var locale = localeValues.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? string.Empty;
-        var normalized = locale.Replace('_', '-');
-        if (normalized.StartsWith("zh-TW", StringComparison.OrdinalIgnoreCase)
-            || normalized.StartsWith("zh-HK", StringComparison.OrdinalIgnoreCase)
-            || normalized.StartsWith("zh-MO", StringComparison.OrdinalIgnoreCase)
-            || normalized.StartsWith("zh-Hant", StringComparison.OrdinalIgnoreCase))
+        // RockBlack ships English (default), Russian and German only.
+        var language = locale.Replace('_', '-').Split('-', '.', '@')[0];
+        if (language.Equals("ru", StringComparison.OrdinalIgnoreCase))
         {
-            return LauncherLocale.TraditionalChinese;
+            return LauncherLocale.Russian;
         }
 
-        return normalized.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
-            ? LauncherLocale.SimplifiedChinese
+        return language.Equals("de", StringComparison.OrdinalIgnoreCase)
+            ? LauncherLocale.German
             : LauncherLocale.English;
     }
 
@@ -205,8 +203,8 @@ public static class LauncherMessages
     {
         var localeName = locale switch
         {
-            LauncherLocale.SimplifiedChinese => "zh-CN",
-            LauncherLocale.TraditionalChinese => "zh-TW",
+            LauncherLocale.Russian => "ru-RU",
+            LauncherLocale.German => "de-DE",
             _ => "en-US",
         };
         return MessageCache.GetOrAdd($"{localeName}:{key}", _ => ReadMessage(localeName, key));

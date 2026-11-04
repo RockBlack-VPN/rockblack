@@ -11,11 +11,12 @@
     xmlns:view="clr-namespace:v2rayN.Views"
     xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
     Title="RockBlack"
-    Width="1200"
-    Height="800"
-    MinWidth="900"
+    Width="1040"
+    Height="760"
+    MinWidth="420"
     MinHeight="600"
     x:TypeArguments="vms:MainWindowViewModel"
+    Background="{DynamicResource RB.BgGradient}"
     Icon="/Resources/v2rayN.ico"
     ResizeMode="CanResizeWithGrip"
     ShowInTaskbar="True"
@@ -23,251 +24,95 @@
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Popupbox.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
-            <Style x:Key="NavIcon" TargetType="{x:Type materialDesign:PackIcon}">
-                <Setter Property="Width" Value="20" />
-                <Setter Property="Height" Value="20" />
-                <Setter Property="Margin" Value="0,0,12,0" />
-                <Setter Property="VerticalAlignment" Value="Center" />
-            </Style>
-            <Style x:Key="NavText" TargetType="{x:Type TextBlock}">
-                <Setter Property="VerticalAlignment" Value="Center" />
-                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-            </Style>
-            <Style
-                x:Key="RB.TabItem"
-                BasedOn="{StaticResource MaterialDesignTabItem}"
-                TargetType="{x:Type TabItem}">
-                <Setter Property="Height" Value="40" />
-                <Setter Property="Padding" Value="14,0" />
-                <Setter Property="materialDesign:ColorZoneAssist.Mode" Value="Custom" />
-                <Setter Property="materialDesign:ColorZoneAssist.Foreground" Value="{DynamicResource RB.Primary}" />
-            </Style>
-        </ResourceDictionary>
+        <Style x:Key="MenuIcon" TargetType="{x:Type materialDesign:PackIcon}">
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="18" />
+            <Setter Property="Foreground" Value="{DynamicResource RB.TextMuted}" />
+        </Style>
     </Window.Resources>
 
+    <!--  RockBlack UI 3.0 (branding/DESIGN.md): top bar (settings / wordmark / add) + HomeView  -->
     <materialDesign:DialogHost
         materialDesign:TransitionAssist.DisableTransitions="True"
         CloseOnClickAway="True"
         DialogBackground="{DynamicResource RB.Surface}"
-        DialogContentUniformCornerRadius="16"
+        DialogContentUniformCornerRadius="18"
         Identifier="RootDialog"
         SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}"
         Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="232" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-            <!--  ===== Sidebar  =====  -->
-            <Border
-                Grid.Column="0"
-                Background="{DynamicResource RB.Surface}"
-                BorderBrush="{DynamicResource RB.Outline}"
-                BorderThickness="0,0,1,0">
-                <DockPanel Margin="14,18,14,14">
-                    <!--  logo + wordmark  -->
-                    <StackPanel
-                        Margin="6,0,0,22"
-                        DockPanel.Dock="Top"
-                        Orientation="Horizontal">
-                        <Image
-                            Width="34"
-                            Height="42"
-                            RenderOptions.BitmapScalingMode="HighQuality"
-                            Source="/Resources/rockblack-symbol.png" />
-                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-                            <TextBlock FontSize="20" FontWeight="SemiBold">
-                                <Run Foreground="{DynamicResource RB.Primary}" Text="Rock" /><Run Foreground="{DynamicResource RB.Text}" Text="Black" />
-                            </TextBlock>
-                            <TextBlock
-                                Margin="1,-2,0,0"
-                                FontSize="10"
-                                Foreground="{DynamicResource RB.TextMuted}"
-                                Text="V P N" />
-                        </StackPanel>
-                    </StackPanel>
+            <!--  ===== Top bar  =====  -->
+            <Grid Grid.Row="0" Margin="14,12,14,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-                    <!--  bottom actions  -->
-                    <StackPanel DockPanel.Dock="Bottom">
-                        <Button
-                            x:Name="btnNewUpdate"
-                            Margin="0,0,0,10"
-                            HorizontalAlignment="Stretch"
-                            Content="{x:Static resx:ResUI.menuNewUpdate}"
-                            Style="{StaticResource DefButton}"
-                            Visibility="Hidden" />
-                        <Border
-                            Height="1"
-                            Margin="4,0,4,8"
-                            Background="{DynamicResource RB.Outline}" />
-                        <Button
-                            x:Name="menuReload"
-                            AutomationProperties.Name="{x:Static resx:ResUI.menuReload}"
-                            Style="{StaticResource RB.NavButton}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Reload" Style="{StaticResource NavIcon}" />
-                                <TextBlock Style="{StaticResource NavText}" Text="{x:Static resx:ResUI.menuReload}" />
-                            </StackPanel>
-                        </Button>
-                        <Button
-                            x:Name="menuPromotion"
-                            AutomationProperties.Name="{x:Static resx:ResUI.menuPromotion}"
-                            Style="{StaticResource RB.NavButton}"
-                            ToolTip="https://my.rockblack.tech">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Web" Style="{StaticResource NavIcon}" />
-                                <TextBlock Style="{StaticResource NavText}" Text="my.rockblack.tech" />
-                            </StackPanel>
-                        </Button>
-                        <DockPanel Margin="0,4,0,0">
-                            <materialDesign:PopupBox
-                                Width="42"
-                                Height="42"
-                                Padding="-2"
-                                DockPanel.Dock="Right"
-                                Foreground="{DynamicResource RB.TextMuted}"
-                                PlacementMode="RightAndAlignBottomEdges"
-                                StaysOpen="True"
-                                Style="{StaticResource MaterialDesignToolForegroundPopupBox}"
-                                ToolTip="{x:Static resx:ResUI.TbSettingsTheme}">
-                                <materialDesign:PopupBox.ToggleContent>
-                                    <materialDesign:PackIcon
-                                        Width="20"
-                                        Height="20"
-                                        Kind="PaletteOutline" />
-                                </materialDesign:PopupBox.ToggleContent>
-                                <ContentControl x:Name="pbTheme" />
-                            </materialDesign:PopupBox>
-                            <Button
-                                x:Name="menuClose"
-                                AutomationProperties.Name="{x:Static resx:ResUI.menuClose}"
-                                Style="{StaticResource RB.NavButton}">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="ChevronDoubleDown" Style="{StaticResource NavIcon}" />
-                                    <TextBlock Style="{StaticResource NavText}" Text="{x:Static resx:ResUI.menuClose}" />
-                                </StackPanel>
-                            </Button>
-                        </DockPanel>
-                    </StackPanel>
-
-                    <!--  navigation: every upstream top menu is kept, opened as a side menu  -->
-                    <StackPanel>
-                        <Button
-                            x:Name="navServers"
-                            AutomationProperties.Name="{x:Static resx:ResUI.menuServers}"
-                            Style="{StaticResource RB.NavButton}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="ServerNetwork" Style="{StaticResource NavIcon}" />
-                                <TextBlock Style="{StaticResource NavText}" Text="{x:Static resx:ResUI.RbServers}" />
-                            </StackPanel>
-                            <Button.ContextMenu>
-                                <ContextMenu Style="{StaticResource RB.NavMenu}">
-                                    <MenuItem
-                                        x:Name="menuAddServerViaClipboard"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddServerViaClipboard}"
-                                        InputGestureText="Ctrl+V" />
-                                    <MenuItem
-                                        x:Name="menuAddServerViaScan"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddServerViaScan}"
-                                        InputGestureText="Ctrl+S" />
-                                    <MenuItem
-                                        x:Name="menuAddServerViaImage"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddServerViaImage}" />
-                                    <Separator />
-                                    <MenuItem
-                                        x:Name="menuAddCustomServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddCustomServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddPolicyGroupServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddPolicyGroupServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddProxyChainServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddProxyChainServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddCustomOutboundServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddCustomOutboundServer}" />
-                                    <Separator />
-                                    <MenuItem
-                                        x:Name="menuAddVmessServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddVmessServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddVlessServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddVlessServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddShadowsocksServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddShadowsocksServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddTrojanServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddTrojanServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddHysteria2Server"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddHysteria2Server}" />
-                                    <MenuItem
-                                        x:Name="menuAddWireguardServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddWireguardServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddMasqueServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddMasqueServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddSocksServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddSocksServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddHttpServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddHttpServer}" />
-                                    <Separator />
-                                    <MenuItem
-                                        x:Name="menuAddTuicServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddTuicServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddAnytlsServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddAnytlsServer}" />
-                                    <MenuItem
-                                        x:Name="menuAddNaiveServer"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuAddNaiveServer}" />
-                                </ContextMenu>
-                            </Button.ContextMenu>
-                        </Button>
-
-                        <Button
-                            x:Name="navSubscriptions"
-                            AutomationProperties.Name="{x:Static resx:ResUI.menuSubscription}"
-                            Style="{StaticResource RB.NavButton}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="RssBox" Style="{StaticResource NavIcon}" />
-                                <TextBlock Style="{StaticResource NavText}" Text="{x:Static resx:ResUI.RbSubscriptions}" />
-                            </StackPanel>
-                            <Button.ContextMenu>
-                                <ContextMenu Style="{StaticResource RB.NavMenu}">
-                                    <MenuItem
-                                        x:Name="menuSubSetting"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuSubSetting}" />
-                                    <Separator />
+                <!--  settings: every upstream window / action  -->
+                <Grid Grid.Column="0">
+                    <Button
+                        x:Name="btnSettings"
+                        Width="40"
+                        Height="40"
+                        AutomationProperties.Name="{x:Static resx:ResUI.RbSettings}"
+                        Style="{StaticResource RB.GhostButton}"
+                        ToolTip="{x:Static resx:ResUI.RbSettings}">
+                        <materialDesign:PackIcon
+                            Width="24"
+                            Height="24"
+                            Kind="Cog" />
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="menuSettings" Style="{StaticResource DefContextMenu}">
+                                <MenuItem
+                                    x:Name="menuOptionSetting"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuOptionSetting}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="CogOutline" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    x:Name="menuRoutingSetting"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuRoutingSetting}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="CallSplit" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    x:Name="menuDNSSetting"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuDNSSetting}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="Dns" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    x:Name="menuFullConfigTemplate"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuFullConfigTemplate}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="CodeJson" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    x:Name="menuSubSetting"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuSubSetting}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="RssBox" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Height="{StaticResource MenuItemHeight}" Header="{x:Static resx:ResUI.menuSubscription}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="Sync" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
                                     <MenuItem
                                         x:Name="menuSubUpdate"
                                         Height="{StaticResource MenuItemHeight}"
@@ -284,51 +129,75 @@
                                         x:Name="menuSubGroupUpdateViaProxy"
                                         Height="{StaticResource MenuItemHeight}"
                                         Header="{x:Static resx:ResUI.menuSubGroupUpdateViaProxy}" />
-                                </ContextMenu>
-                            </Button.ContextMenu>
-                        </Button>
-
-                        <Button
-                            x:Name="navRouting"
-                            AutomationProperties.Name="{x:Static resx:ResUI.menuRoutingSetting}"
-                            Style="{StaticResource RB.NavButton}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="CallSplit" Style="{StaticResource NavIcon}" />
-                                <TextBlock Style="{StaticResource NavText}" Text="{x:Static resx:ResUI.menuRouting}" />
-                            </StackPanel>
-                        </Button>
-
-                        <Button
-                            x:Name="navSettings"
-                            AutomationProperties.Name="{x:Static resx:ResUI.menuSetting}"
-                            Style="{StaticResource RB.NavButton}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="CogOutline" Style="{StaticResource NavIcon}" />
-                                <TextBlock Style="{StaticResource NavText}" Text="{x:Static resx:ResUI.menuSetting}" />
-                            </StackPanel>
-                            <Button.ContextMenu>
-                                <ContextMenu Style="{StaticResource RB.NavMenu}">
+                                </MenuItem>
+                                <MenuItem
+                                    x:Name="menuGlobalHotkeySetting"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuGlobalHotkeySetting}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="KeyboardOutline" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem
+                                    x:Name="menuAdvancedServers"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.RbAdvancedServers}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="TableLarge" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    x:Name="menuLogs"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.RbLogs}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="TextBoxOutline" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem
+                                    x:Name="menuTheme"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.TbSettingsTheme}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="PaletteOutline" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Height="{StaticResource MenuItemHeight}" Header="{x:Static resx:ResUI.menuRegionalPresets}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="EarthBox" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
                                     <MenuItem
-                                        x:Name="menuOptionSetting"
+                                        x:Name="menuRegionalPresetsDefault"
                                         Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuOptionSetting}" />
+                                        Header="{x:Static resx:ResUI.menuRegionalPresetsDefault}" />
                                     <MenuItem
-                                        x:Name="menuRoutingSetting"
+                                        x:Name="menuRegionalPresetsRussia"
                                         Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuRoutingSetting}" />
+                                        Header="{x:Static resx:ResUI.menuRegionalPresetsRussia}" />
                                     <MenuItem
-                                        x:Name="menuDNSSetting"
+                                        x:Name="menuRegionalPresetsIran"
                                         Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuDNSSetting}" />
+                                        Header="{x:Static resx:ResUI.menuRegionalPresetsIran}" />
+                                </MenuItem>
+                                <MenuItem
+                                    x:Name="menuBackupAndRestore"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuBackupAndRestore}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="BackupRestore" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Height="{StaticResource MenuItemHeight}" Header="{x:Static resx:ResUI.RbMore}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="DotsHorizontal" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
                                     <MenuItem
-                                        x:Name="menuFullConfigTemplate"
+                                        x:Name="menuReload"
                                         Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuFullConfigTemplate}" />
-                                    <MenuItem
-                                        x:Name="menuGlobalHotkeySetting"
-                                        Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuGlobalHotkeySetting}" />
-                                    <Separator />
+                                        Header="{x:Static resx:ResUI.menuReload}"
+                                        InputGestureText="F5" />
                                     <MenuItem
                                         x:Name="menuRebootAsAdmin"
                                         Height="{StaticResource MenuItemHeight}"
@@ -341,275 +210,248 @@
                                         x:Name="menuClearServerStatistics"
                                         Height="{StaticResource MenuItemHeight}"
                                         Header="{x:Static resx:ResUI.menuClearServerStatistics}" />
-                                    <Separator />
-                                    <MenuItem Height="{StaticResource MenuItemHeight}" Header="{x:Static resx:ResUI.menuRegionalPresets}">
-                                        <MenuItem
-                                            x:Name="menuRegionalPresetsDefault"
-                                            Height="{StaticResource MenuItemHeight}"
-                                            Header="{x:Static resx:ResUI.menuRegionalPresetsDefault}" />
-                                        <MenuItem
-                                            x:Name="menuRegionalPresetsRussia"
-                                            Height="{StaticResource MenuItemHeight}"
-                                            Header="{x:Static resx:ResUI.menuRegionalPresetsRussia}" />
-                                        <MenuItem
-                                            x:Name="menuRegionalPresetsIran"
-                                            Height="{StaticResource MenuItemHeight}"
-                                            Header="{x:Static resx:ResUI.menuRegionalPresetsIran}" />
-                                    </MenuItem>
                                     <MenuItem
-                                        x:Name="menuBackupAndRestore"
+                                        x:Name="menuCopyProxyCmd"
                                         Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuBackupAndRestore}" />
+                                        Header="{x:Static resx:ResUI.menuCopyProxyCmdToClipboard}" />
                                     <MenuItem
                                         x:Name="menuOpenTheFileLocation"
                                         Height="{StaticResource MenuItemHeight}"
                                         Header="{x:Static resx:ResUI.menuOpenTheFileLocation}" />
-                                </ContextMenu>
-                            </Button.ContextMenu>
-                        </Button>
-
-                        <ToggleButton
-                            x:Name="navLogs"
-                            AutomationProperties.Name="{x:Static resx:ResUI.RbLogs}"
-                            IsChecked="True"
-                            Style="{StaticResource RB.NavToggle}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="TextBoxOutline" Style="{StaticResource NavIcon}" />
-                                <TextBlock Style="{StaticResource NavText}" Text="{x:Static resx:ResUI.RbLogs}" />
-                            </StackPanel>
-                        </ToggleButton>
-
-                        <Button
-                            x:Name="navHelp"
-                            AutomationProperties.Name="{x:Static resx:ResUI.menuHelp}"
-                            Style="{StaticResource RB.NavButton}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="HelpCircleOutline" Style="{StaticResource NavIcon}" />
-                                <TextBlock Style="{StaticResource NavText}" Text="{x:Static resx:ResUI.menuHelp}" />
-                            </StackPanel>
-                            <Button.ContextMenu>
-                                <ContextMenu x:Name="menuHelp" Style="{StaticResource RB.NavMenu}">
                                     <MenuItem
-                                        x:Name="menuCheckUpdate"
+                                        x:Name="menuPromotion"
                                         Height="{StaticResource MenuItemHeight}"
-                                        Header="{x:Static resx:ResUI.menuCheckUpdate}" />
-                                    <Separator />
-                                </ContextMenu>
-                            </Button.ContextMenu>
-                        </Button>
-                    </StackPanel>
-                </DockPanel>
-            </Border>
-
-            <!--  ===== Main area: status card, servers, logs  =====  -->
-            <Grid Grid.Column="1" Margin="20,20,20,16">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="16" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <ContentControl x:Name="contentStatusBarView" Grid.Row="0" />
-
-                <Grid Grid.Row="2">
-                    <Grid x:Name="gridMain" Visibility="Collapsed">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*" />
-                            <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="1*" />
-                        </Grid.ColumnDefinitions>
-                        <Border
-                            Grid.Column="0"
-                            Padding="12"
-                            Style="{StaticResource RB.Card}">
-                            <ContentControl x:Name="tabProfiles" />
-                        </Border>
-                        <GridSplitter
-                            x:Name="splitMain"
-                            Grid.Column="1"
-                            HorizontalAlignment="Stretch"
-                            Background="Transparent" />
-                        <Border
-                            x:Name="cardLogs"
-                            Grid.Column="2"
-                            Padding="10,4,10,10"
-                            Style="{StaticResource RB.Card}">
-                            <DockPanel>
-                                <StackPanel
-                                    Margin="4,8,0,2"
-                                    DockPanel.Dock="Top"
-                                    Orientation="Horizontal">
-                                    <StackPanel.Style>
-                                        <Style TargetType="{x:Type StackPanel}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Visibility, ElementName=tabMsgView}" Value="Visible">
-                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </StackPanel.Style>
-                                    <materialDesign:PackIcon
-                                        Margin="0,0,8,0"
-                                        VerticalAlignment="Center"
-                                        Foreground="{DynamicResource RB.Primary}"
-                                        Kind="TextBoxOutline" />
-                                    <TextBlock Style="{StaticResource RB.Section}" Text="{x:Static resx:ResUI.RbLogs}" />
-                                </StackPanel>
-                            <TabControl x:Name="tabMain" HorizontalContentAlignment="Left">
-                                <TabItem
-                                    x:Name="tabMsgView"
-                                    Header="{x:Static resx:ResUI.RbLogs}"
-                                    Style="{StaticResource RB.TabItem}" />
-                                <TabItem
-                                    x:Name="tabClashProxies"
-                                    Header="{x:Static resx:ResUI.TbProxies}"
-                                    Style="{StaticResource RB.TabItem}" />
-                                <TabItem
-                                    x:Name="tabClashConnections"
-                                    Header="{x:Static resx:ResUI.TbConnections}"
-                                    Style="{StaticResource RB.TabItem}" />
-                            </TabControl>
-                            </DockPanel>
-                        </Border>
-                    </Grid>
-
-                    <Grid x:Name="gridMain1" Visibility="Collapsed">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="1*" />
-                            <RowDefinition Height="12" />
-                            <RowDefinition Height="1*" />
-                        </Grid.RowDefinitions>
-                        <Border
-                            Grid.Row="0"
-                            Padding="12"
-                            Style="{StaticResource RB.Card}">
-                            <ContentControl x:Name="tabProfiles1" />
-                        </Border>
-                        <GridSplitter
-                            x:Name="splitMain1"
-                            Grid.Row="1"
-                            HorizontalAlignment="Stretch"
-                            Background="Transparent" />
-                        <Border
-                            x:Name="cardLogs1"
-                            Grid.Row="2"
-                            Padding="10,4,10,10"
-                            Style="{StaticResource RB.Card}">
-                            <DockPanel>
-                                <StackPanel
-                                    Margin="4,8,0,2"
-                                    DockPanel.Dock="Top"
-                                    Orientation="Horizontal">
-                                    <StackPanel.Style>
-                                        <Style TargetType="{x:Type StackPanel}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Visibility, ElementName=tabMsgView1}" Value="Visible">
-                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </StackPanel.Style>
-                                    <materialDesign:PackIcon
-                                        Margin="0,0,8,0"
-                                        VerticalAlignment="Center"
-                                        Foreground="{DynamicResource RB.Primary}"
-                                        Kind="TextBoxOutline" />
-                                    <TextBlock Style="{StaticResource RB.Section}" Text="{x:Static resx:ResUI.RbLogs}" />
-                                </StackPanel>
-                            <TabControl x:Name="tabMain1" HorizontalContentAlignment="Left">
-                                <TabItem x:Name="tabMsgView1" Style="{StaticResource RB.TabItem}">
-                                    <TabItem.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon
-                                                Margin="0,0,8,0"
-                                                VerticalAlignment="Center"
-                                                Kind="TextBoxOutline" />
-                                            <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.RbLogs}" />
-                                        </StackPanel>
-                                    </TabItem.Header>
-                                </TabItem>
-                                <TabItem x:Name="tabClashProxies1" Style="{StaticResource RB.TabItem}">
-                                    <TabItem.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon
-                                                Margin="0,0,8,0"
-                                                VerticalAlignment="Center"
-                                                Kind="ArrowDecisionOutline" />
-                                            <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.TbProxies}" />
-                                        </StackPanel>
-                                    </TabItem.Header>
-                                </TabItem>
-                                <TabItem x:Name="tabClashConnections1" Style="{StaticResource RB.TabItem}">
-                                    <TabItem.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon
-                                                Margin="0,0,8,0"
-                                                VerticalAlignment="Center"
-                                                Kind="LanConnect" />
-                                            <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.TbConnections}" />
-                                        </StackPanel>
-                                    </TabItem.Header>
-                                </TabItem>
-                            </TabControl>
-                            </DockPanel>
-                        </Border>
-                    </Grid>
-
-                    <Border
-                        x:Name="gridMain2"
-                        Padding="10,4,10,10"
-                        Style="{StaticResource RB.Card}"
-                        Visibility="Collapsed">
-                        <TabControl x:Name="tabMain2" HorizontalContentAlignment="Left">
-                            <TabItem x:Name="tabProfiles2" Style="{StaticResource RB.TabItem}">
-                                <TabItem.Header>
-                                    <StackPanel Orientation="Horizontal">
+                                        Header="my.rockblack.tech" />
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem
+                                    x:Name="menuCheckUpdate"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuCheckUpdate}">
+                                    <MenuItem.Icon>
                                         <materialDesign:PackIcon
-                                            Margin="0,0,8,0"
-                                            VerticalAlignment="Center"
-                                            Kind="ServerNetwork" />
-                                        <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.RbServers}" />
-                                    </StackPanel>
-                                </TabItem.Header>
-                            </TabItem>
-                            <TabItem x:Name="tabMsgView2" Style="{StaticResource RB.TabItem}">
-                                <TabItem.Header>
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon
-                                            Margin="0,0,8,0"
-                                            VerticalAlignment="Center"
-                                            Kind="TextBoxOutline" />
-                                        <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.RbLogs}" />
-                                    </StackPanel>
-                                </TabItem.Header>
-                            </TabItem>
-                            <TabItem x:Name="tabClashProxies2" Style="{StaticResource RB.TabItem}">
-                                <TabItem.Header>
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon
-                                            Margin="0,0,8,0"
-                                            VerticalAlignment="Center"
-                                            Kind="ArrowDecisionOutline" />
-                                        <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.TbProxies}" />
-                                    </StackPanel>
-                                </TabItem.Header>
-                            </TabItem>
-                            <TabItem x:Name="tabClashConnections2" Style="{StaticResource RB.TabItem}">
-                                <TabItem.Header>
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon
-                                            Margin="0,0,8,0"
-                                            VerticalAlignment="Center"
-                                            Kind="LanConnect" />
-                                        <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.TbConnections}" />
-                                    </StackPanel>
-                                </TabItem.Header>
-                            </TabItem>
-                        </TabControl>
-                    </Border>
-                    <materialDesign:Snackbar x:Name="MainSnackbar" MessageQueue="{materialDesign:MessageQueue}" />
+                                            x:Name="iconCheckUpdate"
+                                            Kind="Update"
+                                            Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    x:Name="menuHelp"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuHelp}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="HelpCircleOutline" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem
+                                    x:Name="menuClose"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuClose}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="ChevronDoubleDown" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    x:Name="menuExit"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuExit}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="Power" Style="{StaticResource MenuIcon}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    <!--  new version badge  -->
+                    <Ellipse
+                        x:Name="dotNewUpdate"
+                        Width="9"
+                        Height="9"
+                        Margin="0,6,6,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Fill="{DynamicResource RB.Primary}"
+                        IsHitTestVisible="False"
+                        Visibility="Collapsed" />
                 </Grid>
+
+                <!--  wordmark  -->
+                <StackPanel
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Image
+                        Width="20"
+                        Height="25"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center"
+                        RenderOptions.BitmapScalingMode="HighQuality"
+                        Source="/Resources/rockblack-symbol.png" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        FontWeight="SemiBold">
+                        <Run Foreground="{DynamicResource RB.Primary}" Text="Rock" /><Run Foreground="{DynamicResource RB.Text}" Text="Black" />
+                    </TextBlock>
+                    <Button
+                        x:Name="btnNewUpdate"
+                        Height="26"
+                        Margin="12,0,0,0"
+                        Padding="10,0"
+                        Content="{x:Static resx:ResUI.menuNewUpdate}"
+                        FontSize="12"
+                        Foreground="{DynamicResource RB.Primary}"
+                        Style="{StaticResource RB.ChipButton}"
+                        Visibility="Collapsed" />
+                </StackPanel>
+
+                <!--  add / import  -->
+                <Button
+                    x:Name="btnAdd"
+                    Grid.Column="2"
+                    Width="40"
+                    Height="40"
+                    AutomationProperties.Name="{x:Static resx:ResUI.RbAdd}"
+                    Style="{StaticResource RB.GhostButton}"
+                    ToolTip="{x:Static resx:ResUI.RbAdd}">
+                    <materialDesign:PackIcon
+                        Width="28"
+                        Height="28"
+                        Kind="Plus" />
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="menuAdd" Style="{StaticResource DefContextMenu}">
+                            <MenuItem
+                                x:Name="menuAddServerViaClipboard"
+                                Height="{StaticResource MenuItemHeight}"
+                                Header="{x:Static resx:ResUI.menuAddServerViaClipboard}"
+                                InputGestureText="Ctrl+V">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="ContentPaste" Style="{StaticResource MenuIcon}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem
+                                x:Name="menuAddServerViaScan"
+                                Height="{StaticResource MenuItemHeight}"
+                                Header="{x:Static resx:ResUI.menuAddServerViaScan}"
+                                InputGestureText="Ctrl+S">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="QrcodeScan" Style="{StaticResource MenuIcon}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem
+                                x:Name="menuAddServerViaImage"
+                                Height="{StaticResource MenuItemHeight}"
+                                Header="{x:Static resx:ResUI.menuAddServerViaImage}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="ImageOutline" Style="{StaticResource MenuIcon}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem
+                                x:Name="menuAddSubscription"
+                                Height="{StaticResource MenuItemHeight}"
+                                Header="{x:Static resx:ResUI.RbAddSubscription}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="RssBox" Style="{StaticResource MenuIcon}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Height="{StaticResource MenuItemHeight}" Header="{x:Static resx:ResUI.RbAddManually}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="ServerPlus" Style="{StaticResource MenuIcon}" />
+                                </MenuItem.Icon>
+                                <MenuItem
+                                    x:Name="menuAddVlessServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddVlessServer}" />
+                                <MenuItem
+                                    x:Name="menuAddVmessServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddVmessServer}" />
+                                <MenuItem
+                                    x:Name="menuAddShadowsocksServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddShadowsocksServer}" />
+                                <MenuItem
+                                    x:Name="menuAddTrojanServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddTrojanServer}" />
+                                <MenuItem
+                                    x:Name="menuAddHysteria2Server"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddHysteria2Server}" />
+                                <MenuItem
+                                    x:Name="menuAddTuicServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddTuicServer}" />
+                                <MenuItem
+                                    x:Name="menuAddWireguardServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddWireguardServer}" />
+                                <MenuItem
+                                    x:Name="menuAddAnytlsServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddAnytlsServer}" />
+                                <MenuItem
+                                    x:Name="menuAddNaiveServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddNaiveServer}" />
+                                <MenuItem
+                                    x:Name="menuAddMasqueServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddMasqueServer}" />
+                                <MenuItem
+                                    x:Name="menuAddSocksServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddSocksServer}" />
+                                <MenuItem
+                                    x:Name="menuAddHttpServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddHttpServer}" />
+                                <Separator />
+                                <MenuItem
+                                    x:Name="menuAddCustomServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddCustomServer}" />
+                                <MenuItem
+                                    x:Name="menuAddCustomOutboundServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddCustomOutboundServer}" />
+                                <MenuItem
+                                    x:Name="menuAddPolicyGroupServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddPolicyGroupServer}" />
+                                <MenuItem
+                                    x:Name="menuAddProxyChainServer"
+                                    Height="{StaticResource MenuItemHeight}"
+                                    Header="{x:Static resx:ResUI.menuAddProxyChainServer}" />
+                            </MenuItem>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
             </Grid>
+
+            <!--  ===== Main screen  =====  -->
+            <ContentControl
+                x:Name="contentHome"
+                Grid.Row="1"
+                Focusable="False" />
+
+            <!--  tray icon host (StatusBarView only carries the notify icon and its menu)  -->
+            <ContentControl
+                x:Name="contentStatusBarView"
+                Grid.Row="1"
+                Width="0"
+                Height="0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Focusable="False" />
+
+            <materialDesign:Snackbar
+                x:Name="MainSnackbar"
+                Grid.Row="1"
+                MessageQueue="{materialDesign:MessageQueue}" />
         </Grid>
     </materialDesign:DialogHost>
 </base:WindowBase>

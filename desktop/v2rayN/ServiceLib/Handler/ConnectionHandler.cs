@@ -69,6 +69,7 @@ public static class ConnectionHandler
     public static async Task<int> GetRealPingTime(IWebProxy? webProxy, CancellationToken cancellationToken = default)
     {
         var url = AppManager.Instance.Config.SpeedTestItem.SpeedPingTestUrl;
+        var method = AppManager.Instance.Config.SpeedTestItem.PingMethod == EPingMethod.ProxyHead ? HttpMethod.Head : HttpMethod.Get;
         var responseTime = -1;
         try
         {
@@ -87,7 +88,8 @@ public static class ConnectionHandler
             for (var i = 0; i < 2; i++)
             {
                 var timer = Stopwatch.StartNew();
-                await client.GetAsync(url, linkedToken).ConfigureAwait(false);
+                using var request = new HttpRequestMessage(method, url);
+                using var response = await client.SendAsync(request, linkedToken).ConfigureAwait(false);
                 timer.Stop();
                 oneTime.Add((int)timer.Elapsed.TotalMilliseconds);
                 await Task.Delay(100, linkedToken);

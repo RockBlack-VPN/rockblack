@@ -247,32 +247,13 @@ internal sealed class RegionalPresetStager(
                 IsBuiltinFallback: true);
         }
 
-        var defaults = new[]
-        {
-            (Name: "绕过大陆(Whitelist)", Resource: "white"),
-            (Name: "黑名单(Blacklist)", Resource: "black"),
-            (Name: "全局(Global)", Resource: "global"),
-        };
-        var builtins = defaults.Select((entry, index) =>
-        {
-            var rulesContent = EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + entry.Resource);
-            var rules = JsonUtils.Deserialize<List<RulesItem>>(rulesContent)
-                ?? throw new InvalidDataException($"The built-in routing rules '{entry.Resource}' are invalid.");
-            return new RoutingItem
-            {
-                Remarks = $"V4-{entry.Name}",
-                Url = string.Empty,
-                RuleNum = rules.Count,
-                RuleSet = JsonUtils.Serialize(rules, false),
-                Enabled = true,
-                Sort = index + 1,
-            };
-        }).ToArray();
+        // RockBlack built-ins (Global, Russia, Block ads only, Direct); Russia is the default.
+        var builtins = RoutingPresets.Builtins.Select(RoutingPresets.CreateItem).ToArray();
 
         return new(
             null,
             builtins,
-            builtins[0].Remarks,
+            builtins.First(item => item.Id == RoutingPresets.DefaultId).Remarks,
             removeIds,
             ClearLegacyRoutingIndex: clearLegacyIndex,
             IsBuiltinFallback: true);

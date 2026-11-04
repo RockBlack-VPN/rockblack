@@ -12,13 +12,13 @@
       ]
     },
     {
-      "address": "223.5.5.5",
+      "address": "77.88.8.8",
       "skipFallback": true,
       "domains": [
-        "geosite:cn"
+        "geosite:category-ru"
       ],
       "expectIPs": [
-        "geoip:cn"
+        "geoip:ru"
       ]
     },
     "1.1.1.1",
