@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Published platform tag, e.g. android-v2.3.15 or desktop-v7.25.6'
+        description: 'Published platform tag, e.g. android-v2.3.15, desktop-v7.25.6 or ios-v1.0.0'
         required: true
         type: string
   workflow_call:
@@ -24,7 +24,8 @@ jobs:
     if: >-
       github.event_name != 'release' ||
       ((!github.event.release.draft && !github.event.release.prerelease) &&
-       (startsWith(github.event.release.tag_name, 'android-v') || startsWith(github.event.release.tag_name, 'desktop-v')))
+       (startsWith(github.event.release.tag_name, 'android-v') || startsWith(github.event.release.tag_name, 'desktop-v') ||
+        startsWith(github.event.release.tag_name, 'ios-v')))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -37,7 +38,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          [[ "$RELEASE_TAG" =~ ^(android|desktop)-v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$RELEASE_TAG" =~ ^(android|desktop|ios)-v[0-9]+\.[0-9]+\.[0-9]+$ ]]
           # Release creation and asset uploads are separate API calls:
           # fail rather than advertise a partly uploaded release.
           for attempt in 1 2 3 4 5 6; do
