@@ -65,6 +65,7 @@ print(best[1] if best else "")
     shot main-dark-connected-en -demoConnected -rbTheme dark -AppleLanguages "(en)" -AppleLocale en_US
     shot main-dark-disconnected-ru -rbTheme dark -AppleLanguages "(ru)" -AppleLocale ru_RU
     shot main-light-connected-de -demoConnected -rbTheme light -AppleLanguages "(de)" -AppleLocale de_DE
+    shot main-dark-expiring-en -demoExpiring -rbTheme dark -AppleLanguages "(en)" -AppleLocale en_US
     ls -la "$OUT"
     ;;
   *)

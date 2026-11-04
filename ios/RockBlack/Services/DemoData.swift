@@ -18,10 +18,14 @@ enum DemoData {
         let netherlands = server("🇳🇱 Netherlands", "vless", security: "reality", network: "xhttp")
         let latvia = server("Latvia", "vless", security: "tls", network: "ws")
         let finland = server("Finland - 02", "trojan", security: "tls")
-        var info = SubscriptionInfo(upload: 312_000_000, download: 3_020_000_000, total: 50_000_000_000)
+        var info = SubscriptionInfo(upload: 312_000_000, download: 3_020_000_000, total: 53_687_091_200)
         info.expire = Calendar.current.date(byAdding: .day, value: 42, to: Date())
         info.supportURL = "https://t.me/rockblack_vpn"
         info.webPageURL = "https://my.rockblack.tech"
+        if ProcessInfo.processInfo.arguments.contains("-demoExpiring") {
+            info.expire = Date().addingTimeInterval(2 * 86_400 + 600)
+            info.announce = "Maintenance on Friday 02:00–03:00 UTC."
+        }
         let main = Subscription(name: "RockBlack", url: "https://my.rockblack.tech/sub/demo",
                                 servers: [germany, netherlands, latvia, finland],
                                 updatedAt: Date().addingTimeInterval(-3600), autoUpdateHours: 12, info: info)

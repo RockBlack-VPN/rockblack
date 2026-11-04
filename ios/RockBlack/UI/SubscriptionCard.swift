@@ -65,7 +65,10 @@ struct SubscriptionCard: View {
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(Palette.text)
                             .lineLimit(1)
-                        if let subtitle { Text(subtitle).font(.caption).foregroundColor(Palette.textMuted).lineLimit(1) }
+                        if let subtitle {
+                            Text(subtitle).font(.caption).foregroundColor(Palette.textMuted)
+                                .lineLimit(1).minimumScaleFactor(0.8)
+                        }
                     }
                     Spacer(minLength: 4)
                 }

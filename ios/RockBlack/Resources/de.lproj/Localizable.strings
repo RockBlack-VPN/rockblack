@@ -89,7 +89,7 @@
 "The log is empty." = "Das Protokoll ist leer.";
 "Theme" = "Design";
 "Time" = "Zeit";
-"Timeout" = "Zeitüberschreitung";
+"Timeout" = "Timeout";
 "Tunnel log" = "Tunnel-Protokoll";
 "Update" = "Aktualisieren";
 "Use this server" = "Diesen Server verwenden";

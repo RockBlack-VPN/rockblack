@@ -114,6 +114,7 @@ final class ImportTests: XCTestCase {
             "protocol": "vless",
             "settings": ["address": "a.example.com", "port": 443, "id": "11111111-2222-3333-4444-555555555555",
                          "encryption": "none"],
+            "streamSettings": ["network": "tcp", "security": "tls", "tlsSettings": ["serverName": "a.example.com"]],
         ]
         for profile in RoutingProfile.allCases {
             var config = XrayConfig.prepareForTunnel(XrayConfig.build(outbound: outbound, profile: profile), tunFd: 0,
