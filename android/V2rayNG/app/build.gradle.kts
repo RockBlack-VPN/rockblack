@@ -14,8 +14,8 @@ android {
         applicationId = "tech.rockblack.app"
         minSdk = 24
         targetSdk = 37
-        versionCode = 756
-        versionName = "2.3.16"
+        versionCode = 757
+        versionName = "2.3.17"
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
         splits {

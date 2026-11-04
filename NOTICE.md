@@ -28,6 +28,20 @@ from their official releases at build time.
   `desktop-vX.Y.Z` / `android-vX.Y.Z` releases plus a permanent `latest` mirror
   and the `RELEASE.json` update feed.
 
+## Changes (2026-11-04, RockBlack-VPN) — UI 3.0
+
+- New Happ-style main screen on Android, Windows (WPF) and macOS/Linux (Avalonia):
+  power button, subscription cards with traffic/expiry info, per-subscription ping,
+  one-tap server switching with automatic reconnect, routing profile selector.
+- Built-in routing and DNS defaults changed from China-oriented to Russia-oriented
+  presets (Global, Russia, Block ads, Direct); Happ routing profile import.
+- Subscription metadata headers (`subscription-userinfo`, `profile-title`,
+  `support-url`, `profile-web-page-url`, `announce`, `routing`) are parsed.
+- Localizations reduced to English, Russian and German; German translation added;
+  all other upstream translations removed.
+- New `ios/` client (RockBlack's own code, GPL-3.0) using
+  [XTLS/libXray](https://github.com/XTLS/libXray) unmodified.
+
 The complete history of changes is the git history of this repository: the first
 commit is the unmodified upstream import, every later commit is a RockBlack change.
 Detailed per-platform notes: [desktop/README.md](desktop/README.md),

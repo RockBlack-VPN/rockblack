@@ -38,10 +38,32 @@
 > macOS builds are not notarized. On first launch, right-click the app and choose **Open**,
 > or run `xattr -cr /Applications/RockBlack.app`.
 
+### iOS
+
+| Platform | Link |
+|:---------|:-----|
+| iPhone / iPad (iOS 16+) | [Download IPA](https://github.com/RockBlack-VPN/rockblack/releases/download/latest/RockBlack-unsigned.ipa) · [iOS releases](https://github.com/RockBlack-VPN/rockblack/releases?q=iOS&expanded=true) |
+
+> [!NOTE]
+> The iOS build is published unsigned until an Apple Developer signing identity is
+> configured. Install it with TrollStore, or re-sign it with your own paid developer
+> account (AltStore / SideStore / Sideloadly). A VPN extension cannot run with a free
+> Apple ID. See [ios/README.md](ios/README.md).
+
+## Interface
+
+One screen, as in Happ: a large power button with the session timer and live speed,
+the routing profile and mode switches, and your subscriptions as collapsible cards —
+traffic and expiry bar, support link, and servers with flags, protocol and ping.
+Tap a server to switch (the tunnel reconnects automatically), tap the speedometer to
+ping a whole subscription. Design: [branding/DESIGN.md](branding/DESIGN.md).
+
+Languages: **English, Русский, Deutsch**.
+
 ## Android updates with Obtainium
 
 Android releases use **`android-vX.Y.Z`** (title **`Android vX.Y.Z`**).
-Desktop releases use **`desktop-vX.Y.Z`**. Their versions are independent.
+Desktop releases use **`desktop-vX.Y.Z`**, iOS releases **`ios-vX.Y.Z`**. Their versions are independent.
 
 [Add RockBlack to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22tech.rockblack.app%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FRockBlack-VPN%2Frockblack%22%2C%22author%22%3A%22RockBlack-VPN%22%2C%22name%22%3A%22RockBlack%22%2C%22additionalSettings%22%3A%22%7B%5C%22filterReleaseTitlesByRegEx%5C%22%3A%5C%22%5EAndroid%20v%5B0-9%5D%2B%5C%5C%5C%5C.%5B0-9%5D%2B%5C%5C%5C%5C.%5B0-9%5D%2B%24%5C%22%2C%5C%22apkFilterRegEx%5C%22%3A%5C%22%5ERockBlack%5C%5C%5C%5C.apk%24%5C%22%2C%5C%22versionExtractionRegEx%5C%22%3A%5C%22%5B0-9%5D%2B%5C%5C%5C%5C.%5B0-9%5D%2B%5C%5C%5C%5C.%5B0-9%5D%2B%5C%22%2C%5C%22verifyLatestTag%5C%22%3Afalse%2C%5C%22fallbackToOlderReleases%5C%22%3Atrue%2C%5C%22includePrereleases%5C%22%3Afalse%7D%22%7D) · [Import configuration](obtainium.json)
 
@@ -66,17 +88,18 @@ keeps version-specific URLs for application updates. For publishing, see
 
 ## Features
 
-| | Android | Desktop |
-|:--|:-:|:-:|
-| **Subscriptions** — add by URL, QR code or share link, with auto-refresh | ✅ | ✅ |
-| **Routing** — split traffic by domain/IP into proxy, direct or block, with custom DNS | ✅ | ✅ |
-| **Full config import** — raw Xray JSON (and sing-box / mihomo on desktop) | ✅ | ✅ |
-| **TLS fragmentation & mux** — configurable Xray fragment settings to get past DPI | ✅ | ✅ |
-| **TUN mode** — system-wide VPN tunnel | ✅ | ✅ |
-| **System proxy** — one-click system proxy with PAC / bypass rules | — | ✅ |
-| **Per-app proxy** — route or exclude individual apps | ✅ | — |
-| **Speed & latency test** — real delay test for every server | ✅ | ✅ |
-| **Quick tile, widget & tray** — connect without opening the app | Tile · Widget | Tray |
+| | Android | Desktop | iOS |
+|:--|:-:|:-:|:-:|
+| **Subscriptions** — add by URL, QR code or share link, with auto-refresh | ✅ | ✅ | ✅ |
+| **Subscription info** — traffic, expiry, support link, announcements (`subscription-userinfo` etc.) | ✅ | ✅ | ✅ |
+| **Routing profiles** — Global, Russia (default), Block ads, Direct, custom; Happ `happ://routing` import | ✅ | ✅ | ✅ |
+| **Ping** — per-subscription real delay (via proxy) or TCP, ping on launch, sort / select fastest | ✅ | ✅ | ✅ |
+| **Full config import** — raw Xray JSON (and sing-box / mihomo on desktop) | ✅ | ✅ | ✅ |
+| **TLS fragmentation & mux** — configurable Xray fragment settings to get past DPI | ✅ | ✅ | — |
+| **TUN mode** — system-wide VPN tunnel | ✅ | ✅ | ✅ |
+| **System proxy** — one-click system proxy with PAC / bypass rules | — | ✅ | — |
+| **Per-app proxy** — route or exclude individual apps | ✅ | — | — |
+| **Quick tile, widget & tray** — connect without opening the app | Tile · Widget | Tray | — |
 
 **Privacy** — servers, keys and subscriptions never leave your device. RockBlack
 sends no telemetry.
