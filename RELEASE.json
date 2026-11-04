@@ -32,5 +32,12 @@
       "x64_portable": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.7/rockblack-linux-x64-portable.zip",
       "arm64_portable": "https://github.com/RockBlack-VPN/rockblack/releases/download/desktop-v7.25.7/rockblack-linux-arm64-portable.zip"
     }
+  },
+  "ios": {
+    "version": "1.0.0",
+    "tag": "ios-v1.0.0",
+    "name": "RockBlack iOS 1.0.0",
+    "download": "https://github.com/RockBlack-VPN/rockblack/releases/download/ios-v1.0.0/RockBlack-unsigned.ipa",
+    "signed": false
   }
 }
